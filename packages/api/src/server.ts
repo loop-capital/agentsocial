@@ -92,6 +92,7 @@ const PUBLIC_PREFIXES = [
   "/health",
   "/webhooks",
   "/browser-auth",
+  "/channels/callback",
   "/docs",
   "/legal",
 ];
@@ -121,7 +122,7 @@ await server.register(commentsRoutes, { prefix: "/api/v1/comments" });
 await server.register(mediaRoutes, { prefix: "/api/v1/media" });
 await server.register(analyticsRoutes, { prefix: "/api/v1/analytics" });
 await server.register(webhooksRoutes, { prefix: "/api/v1/webhooks" });
-await server.register(callbackRoutes);
+await server.register(callbackRoutes, { prefix: "/api/v1" });
 await server.register(syncRoutes, { prefix: "/api/v1/sync" });
 await server.register(browserAuthRoutes, { prefix: "/api/v1/channels" });
 

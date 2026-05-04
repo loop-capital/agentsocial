@@ -2,19 +2,16 @@ import type { FastifyInstance } from "fastify";
 import { eq, and } from "drizzle-orm";
 import { connectChannelSchema, updateChannelSchema } from "@agentsocial/shared";
 import { db, channels, brands } from "../db/index.js";
+import { getTwitterOAuthUrl } from "../connectors/twitter.js";
+import { getLinkedInOAuthUrl } from "../connectors/linkedin.js";
+import { getFacebookOAuthUrl } from "../connectors/facebook.js";
+import { getInstagramOAuthUrl } from "../connectors/instagram.js";
+import { getTikTokOAuthUrl } from "../connectors/tiktok.js";
+import { generatePKCE } from "../connectors/pkce.js";
 
-const OAUTH_URLS: Record<string, (brandId: string) => string> = {
-  twitter: (brandId) =>
-    `https://twitter.com/i/oauth2/authorize?response_type=code&client_id=${process.env.TWITTER_CLIENT_ID}&redirect_uri=${process.env.API_URL || "http://localhost:3001"}/channels/callback/twitter&state=${brandId}&scope=tweet.read%20tweet.write%20users.read`,
-  linkedin: (brandId) =>
-    `https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=${process.env.LINKEDIN_CLIENT_ID}&redirect_uri=${process.env.API_URL || "http://localhost:3001"}/channels/callback/linkedin&state=${brandId}&scope=r_liteprofile%20w_member_social`,
-  instagram: (brandId) =>
-    `https://www.facebook.com/v18.0/dialog/oauth?response_type=code&client_id=${process.env.INSTAGRAM_CLIENT_ID}&redirect_uri=${process.env.API_URL || "http://localhost:3001"}/channels/callback/instagram&state=${brandId}&scope=instagram_basic%20instagram_content_publish%20instagram_manage_comments%20instagram_manage_insights`,
-  facebook: (brandId) =>
-    `https://www.facebook.com/v18.0/dialog/oauth?response_type=code&client_id=${process.env.FACEBOOK_CLIENT_ID}&redirect_uri=${process.env.API_URL || "http://localhost:3001"}/channels/callback/facebook&state=${brandId}&scope=pages_read_engagement%20pages_manage_posts%20publish_to_groups`,
-  tiktok: (brandId) =>
-    `https://www.tiktok.com/auth/authorize?response_type=code&client_key=${process.env.TIKTOK_CLIENT_KEY}&redirect_uri=${process.env.API_URL || "http://localhost:3001"}/channels/callback/tiktok&state=${brandId}&scope=user.info.basic%20video.publish`,
-};
+// Simple in-memory store for PKCE code_verifiers (state -> codeVerifier)
+// In production, use Redis or a database table
+const pkceStore = new Map<string, string>();
 
 export const channelsRoutes = async (server: FastifyInstance) => {
   // GET /channels
@@ -73,7 +70,168 @@ export const channelsRoutes = async (server: FastifyInstance) => {
     });
   });
 
-  // POST /channels/connect
+  // GET /channels/facebook/auth — redirect to Facebook OAuth
+  server.get("/facebook/auth", {
+    onRequest: [server.authenticate],
+  }, async (request, reply) => {
+    const { brand_id } = request.query as { brand_id?: string };
+
+    if (!brand_id) {
+      return reply.status(400).send({
+        error: { code: "validation_error", message: "Missing brand_id query parameter", request_id: request.id },
+      });
+    }
+
+    const [brand] = await db
+      .select()
+      .from(brands)
+      .where(and(eq(brands.id, brand_id), eq(brands.userId, request.userId!)))
+      .limit(1);
+
+    if (!brand) {
+      return reply.status(404).send({
+        error: { code: "resource_not_found", message: "Brand not found", request_id: request.id },
+      });
+    }
+
+    const state = `${brand_id}:${Date.now()}`;
+    const authorizationUrl = await getFacebookOAuthUrl(state);
+    const expiresAt = new Date(Date.now() + 15 * 60 * 1000).toISOString();
+
+    return reply.send({ authorization_url: authorizationUrl, state, expires_at: expiresAt });
+  });
+
+  // GET /channels/instagram/auth — redirect to Instagram (Facebook) OAuth
+  server.get("/instagram/auth", {
+    onRequest: [server.authenticate],
+  }, async (request, reply) => {
+    const { brand_id } = request.query as { brand_id?: string };
+
+    if (!brand_id) {
+      return reply.status(400).send({
+        error: { code: "validation_error", message: "Missing brand_id query parameter", request_id: request.id },
+      });
+    }
+
+    const [brand] = await db
+      .select()
+      .from(brands)
+      .where(and(eq(brands.id, brand_id), eq(brands.userId, request.userId!)))
+      .limit(1);
+
+    if (!brand) {
+      return reply.status(404).send({
+        error: { code: "resource_not_found", message: "Brand not found", request_id: request.id },
+      });
+    }
+
+    const state = `${brand_id}:${Date.now()}`;
+    const authorizationUrl = await getInstagramOAuthUrl(state);
+    const expiresAt = new Date(Date.now() + 15 * 60 * 1000).toISOString();
+
+    return reply.send({ authorization_url: authorizationUrl, state, expires_at: expiresAt });
+  });
+
+  // GET /channels/twitter/auth — redirect to Twitter OAuth with PKCE
+  server.get("/twitter/auth", {
+    onRequest: [server.authenticate],
+  }, async (request, reply) => {
+    const { brand_id } = request.query as { brand_id?: string };
+
+    if (!brand_id) {
+      return reply.status(400).send({
+        error: { code: "validation_error", message: "Missing brand_id query parameter", request_id: request.id },
+      });
+    }
+
+    const [brand] = await db
+      .select()
+      .from(brands)
+      .where(and(eq(brands.id, brand_id), eq(brands.userId, request.userId!)))
+      .limit(1);
+
+    if (!brand) {
+      return reply.status(404).send({
+        error: { code: "resource_not_found", message: "Brand not found", request_id: request.id },
+      });
+    }
+
+    const state = `${brand_id}:${Date.now()}`;
+    const { codeVerifier, codeChallenge } = generatePKCE();
+    pkceStore.set(state, codeVerifier);
+
+    const authorizationUrl = await getTwitterOAuthUrl(state, codeChallenge);
+    const expiresAt = new Date(Date.now() + 15 * 60 * 1000).toISOString();
+
+    return reply.send({ authorization_url: authorizationUrl, state, expires_at: expiresAt });
+  });
+
+  // GET /channels/linkedin/auth — redirect to LinkedIn OAuth with PKCE
+  server.get("/linkedin/auth", {
+    onRequest: [server.authenticate],
+  }, async (request, reply) => {
+    const { brand_id } = request.query as { brand_id?: string };
+
+    if (!brand_id) {
+      return reply.status(400).send({
+        error: { code: "validation_error", message: "Missing brand_id query parameter", request_id: request.id },
+      });
+    }
+
+    const [brand] = await db
+      .select()
+      .from(brands)
+      .where(and(eq(brands.id, brand_id), eq(brands.userId, request.userId!)))
+      .limit(1);
+
+    if (!brand) {
+      return reply.status(404).send({
+        error: { code: "resource_not_found", message: "Brand not found", request_id: request.id },
+      });
+    }
+
+    const state = `${brand_id}:${Date.now()}`;
+    const { codeVerifier, codeChallenge } = generatePKCE();
+    pkceStore.set(state, codeVerifier);
+
+    const authorizationUrl = await getLinkedInOAuthUrl(state, codeChallenge);
+    const expiresAt = new Date(Date.now() + 15 * 60 * 1000).toISOString();
+
+    return reply.send({ authorization_url: authorizationUrl, state, expires_at: expiresAt });
+  });
+
+  // GET /channels/tiktok/auth — redirect to TikTok OAuth
+  server.get("/tiktok/auth", {
+    onRequest: [server.authenticate],
+  }, async (request, reply) => {
+    const { brand_id } = request.query as { brand_id?: string };
+
+    if (!brand_id) {
+      return reply.status(400).send({
+        error: { code: "validation_error", message: "Missing brand_id query parameter", request_id: request.id },
+      });
+    }
+
+    const [brand] = await db
+      .select()
+      .from(brands)
+      .where(and(eq(brands.id, brand_id), eq(brands.userId, request.userId!)))
+      .limit(1);
+
+    if (!brand) {
+      return reply.status(404).send({
+        error: { code: "resource_not_found", message: "Brand not found", request_id: request.id },
+      });
+    }
+
+    const state = `${brand_id}:${Date.now()}`;
+    const authorizationUrl = await getTikTokOAuthUrl(state);
+    const expiresAt = new Date(Date.now() + 15 * 60 * 1000).toISOString();
+
+    return reply.send({ authorization_url: authorizationUrl, state, expires_at: expiresAt });
+  });
+
+  // POST /channels/connect — generic connect endpoint
   server.post("/connect", {
     onRequest: [server.authenticate],
     schema: { body: connectChannelSchema },
@@ -92,18 +250,45 @@ export const channelsRoutes = async (server: FastifyInstance) => {
       });
     }
 
-    const oauthUrl = OAUTH_URLS[platform];
-    if (!oauthUrl) {
-      return reply.status(400).send({
-        error: { code: "validation_error", message: `OAuth not supported for platform: ${platform}`, request_id: request.id },
-      });
+    const state = `${brand_id}:${Date.now()}`;
+
+    if (platform === "twitter") {
+      const { codeVerifier, codeChallenge } = generatePKCE();
+      pkceStore.set(state, codeVerifier);
+      const authorizationUrl = await getTwitterOAuthUrl(state, codeChallenge);
+      const expiresAt = new Date(Date.now() + 15 * 60 * 1000).toISOString();
+      return reply.send({ authorization_url: authorizationUrl, state, expires_at: expiresAt });
     }
 
-    const state = `${brand_id}:${Date.now()}`;
-    const authorizationUrl = oauthUrl(brand_id);
-    const expiresAt = new Date(Date.now() + 15 * 60 * 1000).toISOString();
+    if (platform === "linkedin") {
+      const { codeVerifier, codeChallenge } = generatePKCE();
+      pkceStore.set(state, codeVerifier);
+      const authorizationUrl = await getLinkedInOAuthUrl(state, codeChallenge);
+      const expiresAt = new Date(Date.now() + 15 * 60 * 1000).toISOString();
+      return reply.send({ authorization_url: authorizationUrl, state, expires_at: expiresAt });
+    }
 
-    return reply.send({ authorization_url: authorizationUrl, state, expires_at: expiresAt });
+    if (platform === "facebook") {
+      const authorizationUrl = await getFacebookOAuthUrl(state);
+      const expiresAt = new Date(Date.now() + 15 * 60 * 1000).toISOString();
+      return reply.send({ authorization_url: authorizationUrl, state, expires_at: expiresAt });
+    }
+
+    if (platform === "instagram") {
+      const authorizationUrl = await getInstagramOAuthUrl(state);
+      const expiresAt = new Date(Date.now() + 15 * 60 * 1000).toISOString();
+      return reply.send({ authorization_url: authorizationUrl, state, expires_at: expiresAt });
+    }
+
+    if (platform === "tiktok") {
+      const authorizationUrl = await getTikTokOAuthUrl(state);
+      const expiresAt = new Date(Date.now() + 15 * 60 * 1000).toISOString();
+      return reply.send({ authorization_url: authorizationUrl, state, expires_at: expiresAt });
+    }
+
+    return reply.status(400).send({
+      error: { code: "validation_error", message: `OAuth not supported for platform: ${platform}`, request_id: request.id },
+    });
   });
 
   // PATCH /channels/:id
@@ -138,8 +323,8 @@ export const channelsRoutes = async (server: FastifyInstance) => {
     });
   });
 
-  // POST /channels/:id/disconnect
-  server.post("/:id/disconnect", {
+  // DELETE /channels/:id/disconnect
+  server.delete("/:id/disconnect", {
     onRequest: [server.authenticate],
   }, async (request, reply) => {
     const { id } = request.params as { id: string };
@@ -152,3 +337,6 @@ export const channelsRoutes = async (server: FastifyInstance) => {
     return reply.send({ id: updated.id, status: updated.status });
   });
 };
+
+// Export for use by callback routes
+export { pkceStore };

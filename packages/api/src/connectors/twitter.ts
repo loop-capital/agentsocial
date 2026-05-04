@@ -1,3 +1,5 @@
+import crypto from "crypto";
+
 export interface PublishResult {
   platformPostId: string;
   platformPostUrl: string;
@@ -18,39 +20,62 @@ export interface PublishOptions {
   accessToken: string;
 }
 
+export interface TwitterProfile {
+  id: string;
+  username: string;
+  name: string;
+  follower_count: number;
+  profile_image_url: string;
+}
+
 export const twitterOAuthConfig = {
   clientId: process.env.TWITTER_CLIENT_ID || "",
   clientSecret: process.env.TWITTER_CLIENT_SECRET || "",
-  callbackUrl: process.env.TWITTER_CALLBACK_URL || "http://localhost:3001/api/v1/channels/callback/twitter",
+  callbackUrl: process.env.TWITTER_REDIRECT_URI || "http://localhost:3001/api/v1/channels/callback/twitter",
 };
 
-export async function getTwitterOAuthUrl(state: string): Promise<string> {
-  const params = new URLSearchParams({
+export async function getTwitterOAuthUrl(state: string, codeChallenge?: string): Promise<string> {
+  const params: Record<string, string> = {
     response_type: "code",
     client_id: twitterOAuthConfig.clientId,
     redirect_uri: twitterOAuthConfig.callbackUrl,
     scope: "tweet.read tweet.write users.read offline.access",
     state,
-  });
+  };
 
-  return `https://twitter.com/i/oauth2/authorize?${params.toString()}`;
+  if (codeChallenge) {
+    params.code_challenge = codeChallenge;
+    params.code_challenge_method = "S256";
+  }
+
+  const searchParams = new URLSearchParams(params);
+  return `https://twitter.com/i/oauth2/authorize?${searchParams.toString()}`;
 }
 
-export async function exchangeTwitterCode(code: string): Promise<{
+export async function exchangeTwitterCode(
+  code: string,
+  codeVerifier?: string
+): Promise<{
   accessToken: string;
   refreshToken: string;
   expiresIn: number;
 }> {
+  const bodyParams: Record<string, string> = {
+    code,
+    grant_type: "authorization_code",
+    client_id: twitterOAuthConfig.clientId,
+    client_secret: twitterOAuthConfig.clientSecret,
+    redirect_uri: twitterOAuthConfig.callbackUrl,
+  };
+
+  if (codeVerifier) {
+    bodyParams.code_verifier = codeVerifier;
+  }
+
   const response = await fetch("https://api.twitter.com/2/oauth2/token", {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: new URLSearchParams({
-      code,
-      grant_type: "authorization_code",
-      client_id: twitterOAuthConfig.clientId,
-      client_secret: twitterOAuthConfig.clientSecret,
-      redirect_uri: twitterOAuthConfig.callbackUrl,
-    }),
+    body: new URLSearchParams(bodyParams),
   });
 
   if (!response.ok) {
@@ -84,6 +109,34 @@ export async function refreshTwitterToken(refreshToken: string): Promise<{
   return response.json();
 }
 
+export async function fetchTwitterProfile(accessToken: string): Promise<TwitterProfile> {
+  const response = await fetch(
+    "https://api.twitter.com/2/users/me?user.fields=public_metrics,profile_image_url",
+    {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+      },
+    }
+  );
+
+  if (!response.ok) {
+    const text = await response.text();
+    throw new Error(`Twitter profile fetch error: ${response.statusText} — ${text}`);
+  }
+
+  const data = await response.json();
+  const user = data.data;
+
+  return {
+    id: user.id,
+    username: user.username,
+    name: user.name,
+    follower_count: user.public_metrics?.followers_count || 0,
+    profile_image_url: user.profile_image_url || "",
+  };
+}
+
 export async function publishToTwitter(
   content: string,
   options: PublishOptions
@@ -103,7 +156,7 @@ export async function publishToTwitter(
   const response = await fetch("https://api.twitter.com/2/tweets", {
     method: "POST",
     headers: {
-      "Authorization": `Bearer ${accessToken}`,
+      Authorization: `Bearer ${accessToken}`,
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
