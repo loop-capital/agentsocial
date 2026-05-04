@@ -17,39 +17,60 @@ export interface PublishOptions {
   accessToken: string;
 }
 
+export interface LinkedInProfile {
+  id: string;
+  vanity_name: string;
+  follower_count: number;
+}
+
 export const linkedinOAuthConfig = {
   clientId: process.env.LINKEDIN_CLIENT_ID || "",
   clientSecret: process.env.LINKEDIN_CLIENT_SECRET || "",
-  callbackUrl: process.env.LINKEDIN_CALLBACK_URL || "http://localhost:3001/api/v1/channels/callback/linkedin",
+  callbackUrl: process.env.LINKEDIN_REDIRECT_URI || "http://localhost:3001/api/v1/channels/callback/linkedin",
 };
 
-export async function getLinkedInOAuthUrl(state: string): Promise<string> {
-  const params = new URLSearchParams({
+export async function getLinkedInOAuthUrl(state: string, codeChallenge?: string): Promise<string> {
+  const params: Record<string, string> = {
     response_type: "code",
     client_id: linkedinOAuthConfig.clientId,
     redirect_uri: linkedinOAuthConfig.callbackUrl,
-    scope: "w_member_social r_liteprofile w_liteprofile openid email",
+    scope: "r_basicprofile r_organization_social w_organization_social r_liteprofile w_member_social",
     state,
-  });
+  };
 
-  return `https://www.linkedin.com/oauth/v2/authorization?${params.toString()}`;
+  if (codeChallenge) {
+    params.code_challenge = codeChallenge;
+    params.code_challenge_method = "S256";
+  }
+
+  const searchParams = new URLSearchParams(params);
+  return `https://www.linkedin.com/oauth/v2/authorization?${searchParams.toString()}`;
 }
 
-export async function exchangeLinkedInCode(code: string): Promise<{
+export async function exchangeLinkedInCode(
+  code: string,
+  codeVerifier?: string
+): Promise<{
   accessToken: string;
   refreshToken: string;
   expiresIn: number;
 }> {
+  const bodyParams: Record<string, string> = {
+    grant_type: "authorization_code",
+    code,
+    redirect_uri: linkedinOAuthConfig.callbackUrl,
+    client_id: linkedinOAuthConfig.clientId,
+    client_secret: linkedinOAuthConfig.clientSecret,
+  };
+
+  if (codeVerifier) {
+    bodyParams.code_verifier = codeVerifier;
+  }
+
   const response = await fetch("https://www.linkedin.com/oauth/v2/accessToken", {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: new URLSearchParams({
-      grant_type: "authorization_code",
-      code,
-      redirect_uri: linkedinOAuthConfig.callbackUrl,
-      client_id: linkedinOAuthConfig.clientId,
-      client_secret: linkedinOAuthConfig.clientSecret,
-    }),
+    body: new URLSearchParams(bodyParams),
   });
 
   if (!response.ok) {
@@ -83,6 +104,29 @@ export async function refreshLinkedInToken(refreshToken: string): Promise<{
   return response.json();
 }
 
+export async function fetchLinkedInProfile(accessToken: string): Promise<LinkedInProfile> {
+  const response = await fetch("https://api.linkedin.com/v2/me", {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      "Content-Type": "application/json",
+      "X-Restli-Protocol-Version": "2.0.0",
+    },
+  });
+
+  if (!response.ok) {
+    const text = await response.text();
+    throw new Error(`LinkedIn profile fetch error: ${response.statusText} — ${text}`);
+  }
+
+  const data = await response.json();
+
+  return {
+    id: data.id,
+    vanity_name: data.vanityName || data.localizedFirstName + " " + data.localizedLastName || "",
+    follower_count: 0, // LinkedIn /v2/me does not return follower count; would need a separate network call
+  };
+}
+
 export async function publishToLinkedIn(
   content: string,
   options: PublishOptions
@@ -102,7 +146,7 @@ export async function publishToLinkedIn(
   const response = await fetch("https://api.linkedin.com/v2/ugcPosts", {
     method: "POST",
     headers: {
-      "Authorization": `Bearer ${accessToken}`,
+      Authorization: `Bearer ${accessToken}`,
       "Content-Type": "application/json",
       "X-Restli-Protocol-Version": "2.0.0",
     },
