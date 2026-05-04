@@ -10,7 +10,7 @@ export const API_VERSIONS = {
   // linkedin: 'v1.0'
 } as const;
 
-export const SOCIAL_PLATFORMS = ['facebook', 'twitter', 'instagram', 'linkedin'] as const;
+export const SOCIAL_PLATFORMS = ['facebook', 'twitter', 'instagram', 'linkedin', 'tiktok'] as const;
 export type SocialPlatform = typeof SOCIAL_PLATFORMS[number];
 
 export const TASK_STATUSES = ['pending', 'assigned', 'in_progress', 'completed', 'failed'] as const;
