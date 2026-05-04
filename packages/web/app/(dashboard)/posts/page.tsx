@@ -16,13 +16,24 @@ import {
   Calendar,
   Loader2,
   AlertCircle,
+  Send,
+  CalendarOff,
 } from "lucide-react";
 import Link from "next/link";
-import { PostCard, PostCardData } from "@/components/ui/post-card";
+import { PostCard } from "@/components/ui/post-card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { StatusBadge } from "@/components/ui/status-badge";
-import { PlatformBadge } from "@/components/ui/platform-badge";
+import { PlatformBadge, PLATFORM_STYLES } from "@/components/ui/platform-badge";
 import { api } from "../../../lib/api";
+
+const CHANNEL_STATUS_COLORS: Record<string, string> = {
+  published: "#16A34A",
+  scheduled: "#D97706",
+  draft: "#6B7280",
+  failed: "#DC2626",
+  cancelled: "#DC2626",
+  pending: "#3B82F6",
+};
 
 type Tab = "all" | "drafts" | "scheduled" | "published" | "failed" | "cancelled";
 type ViewMode = "grid" | "list";
@@ -54,7 +65,7 @@ const TABS: { key: Tab; label: string }[] = [
   { key: "failed", label: "Failed" },
 ];
 
-function mapPostToCardData(post: Post): PostCardData {
+function mapPostToCardData(post: Post) {
   const platforms = post.channels?.map((c) => c.platform) || [];
   return {
     id: post.id,
@@ -65,6 +76,11 @@ function mapPostToCardData(post: Post): PostCardData {
     publishedAt: post.published_at,
     createdAt: post.created_at,
     engagement: null,
+    channels: post.channels?.map((c) => ({
+      channel_id: c.channel_id,
+      platform: c.platform,
+      status: c.status,
+    })),
   };
 }
 
@@ -79,6 +95,8 @@ export default function PostsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [publishId, setPublishId] = useState<string | null>(null);
+  const [cancelId, setCancelId] = useState<string | null>(null);
 
   const fetchPosts = useCallback(async () => {
     setLoading(true);
@@ -187,6 +205,30 @@ export default function PostsPage() {
 
   const handleAnalytics = () => {
     window.location.href = "/analytics";
+  };
+
+  const handlePublish = async (id: string) => {
+    setPublishId(id);
+    try {
+      await api.posts.publish(id);
+      fetchPosts();
+    } catch (err: any) {
+      alert(err?.message || "Failed to publish post");
+    } finally {
+      setPublishId(null);
+    }
+  };
+
+  const handleCancel = async (id: string) => {
+    setCancelId(id);
+    try {
+      await api.posts.cancel(id);
+      fetchPosts();
+    } catch (err: any) {
+      alert(err?.message || "Failed to cancel schedule");
+    } finally {
+      setCancelId(null);
+    }
   };
 
   const handleEdit = (id: string) => {
@@ -420,6 +462,8 @@ export default function PostsPage() {
                 onDelete={handleDelete}
                 onDuplicate={handleDuplicate}
                 onAnalytics={handleAnalytics}
+                onPublish={handlePublish}
+                onCancel={handleCancel}
               />
               {deleteId === post.id && (
                 <div style={{
@@ -460,7 +504,7 @@ export default function PostsPage() {
             </thead>
             <tbody>
               {filteredPosts.map((post) => (
-                <tr key={post.id} style={{ opacity: deleteId === post.id ? 0.5 : 1 }}>
+                <tr key={post.id} style={{ opacity: deleteId === post.id || publishId === post.id || cancelId === post.id ? 0.5 : 1 }}>
                   <td>
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }} onClick={() => toggleSelect(post.id)}>
                       {selectedIds.has(post.id) ? (
@@ -487,6 +531,42 @@ export default function PostsPage() {
                     <div style={{ display: "flex", gap: "0.25rem", flexWrap: "wrap" }}>
                       {post.platforms.map((p) => <PlatformBadge key={p} platform={p} size="sm" showLabel={false} />)}
                     </div>
+                    {post.channels && post.channels.length > 0 && (
+                      <div style={{ display: "flex", gap: "0.25rem", flexWrap: "wrap", marginTop: "0.375rem" }}>
+                        {post.channels.map((ch) => {
+                          const style = PLATFORM_STYLES[ch.platform.toLowerCase()];
+                          const statusColor = CHANNEL_STATUS_COLORS[ch.status.toLowerCase()] || "#6B7280";
+                          return (
+                            <div
+                              key={ch.channel_id}
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: "0.25rem",
+                                padding: "0.125rem 0.375rem",
+                                borderRadius: "var(--radius-sm)",
+                                background: style?.bg ?? "#F3F4F6",
+                                border: `1px solid ${style?.color ?? "#E5E7EB"}20`,
+                              }}
+                              title={`${ch.platform}: ${ch.status}`}
+                            >
+                              <span
+                                style={{
+                                  width: 6,
+                                  height: 6,
+                                  borderRadius: "50%",
+                                  backgroundColor: statusColor,
+                                  flexShrink: 0,
+                                }}
+                              />
+                              <span style={{ fontSize: "0.6875rem", fontWeight: 500, color: style?.color ?? "#6B7280" }}>
+                                {style?.label ?? ch.platform}
+                              </span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
                   </td>
                   <td>
                     <span style={{ fontSize: "0.875rem", color: "var(--text-muted)" }}>
@@ -503,6 +583,26 @@ export default function PostsPage() {
                   </td>
                   <td>
                     <div style={{ display: "flex", gap: "0.125rem" }}>
+                      {(post.status === "draft" || post.status === "scheduled") && (
+                        <button
+                          className="post-action-btn"
+                          onClick={() => handlePublish(post.id)}
+                          title="Publish Now"
+                          disabled={publishId === post.id}
+                        >
+                          {publishId === post.id ? <Loader2 size={13} className="spin" /> : <Send size={13} />}
+                        </button>
+                      )}
+                      {post.status === "scheduled" && (
+                        <button
+                          className="post-action-btn"
+                          onClick={() => handleCancel(post.id)}
+                          title="Cancel Schedule"
+                          disabled={cancelId === post.id}
+                        >
+                          {cancelId === post.id ? <Loader2 size={13} className="spin" /> : <CalendarOff size={13} />}
+                        </button>
+                      )}
                       <button className="post-action-btn" onClick={() => handleEdit(post.id)} title="Edit"><Edit size={13} /></button>
                       <button className="post-action-btn" onClick={() => handleDuplicate(post.id)} title="Duplicate"><Copy size={13} /></button>
                       <button className="post-action-btn" onClick={() => handleAnalytics()} title="Analytics"><BarChart2 size={13} /></button>
