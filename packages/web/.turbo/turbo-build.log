@@ -1,0 +1,41 @@
+
+> @agentsocial/web@0.1.0 build /home/jason/.openclaw/workspaces/agentsocial/packages/web
+> next build
+
+  ▲ Next.js 14.2.0
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully
+   Linting and checking validity of types ...
+
+   We detected TypeScript in your project and reconfigured your tsconfig.json file for you. Strict-mode is set to false by default.
+   The following suggested values were added to your tsconfig.json. These values can be changed to fit your project's needs:
+
+   	- allowJs was set to true
+
+   Collecting page data ...
+   Generating static pages (0/10) ...
+   Generating static pages (2/10) 
+   Generating static pages (4/10) 
+   Generating static pages (7/10) 
+ ✓ Generating static pages (10/10)
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                              Size     First Load JS
+┌ ○ /                                    175 B          94.1 kB
+├ ○ /_not-found                          875 B          88.1 kB
+├ ○ /analytics                           153 B          87.3 kB
+├ ○ /dashboard                           155 B          87.3 kB
+├ ○ /login                               154 B          87.3 kB
+├ ○ /posts                               155 B          87.3 kB
+├ ○ /register                            154 B          87.3 kB
+└ ○ /settings                            155 B          87.3 kB
++ First Load JS shared by all            87.2 kB
+  ├ chunks/71ec73ba-5fd05f4979f8a013.js  53.8 kB
+  ├ chunks/963-7823dc52edfe44a5.js       31.5 kB
+  └ other shared chunks (total)          1.89 kB
+
+
+○  (Static)  prerendered as static content
+

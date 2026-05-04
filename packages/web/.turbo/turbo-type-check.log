@@ -1,0 +1,4 @@
+
+> @agentsocial/web@0.1.0 type-check /home/jason/.openclaw/workspaces/agentsocial/packages/web
+> tsc --noEmit
+
