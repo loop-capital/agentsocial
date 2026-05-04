@@ -24,6 +24,8 @@ interface PostCardProps {
   onDelete?: (id: string) => void;
   onDuplicate?: (id: string) => void;
   onAnalytics?: (id: string) => void;
+  onPublish?: (id: string) => void;
+  onCancel?: (id: string) => void;
 }
 
 function formatDate(dateStr: string | null | undefined): string {
