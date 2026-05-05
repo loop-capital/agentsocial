@@ -27,7 +27,8 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
-    "allowJs": true
+    "allowJs": true,
+    "incremental": true
   },
   "include": [
     "next-env.d.ts",

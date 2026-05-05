@@ -114,10 +114,15 @@ export const api = {
         { method: "POST", body: JSON.stringify({ brand_id: brandId, platform }) }
       ),
 
+    oauthConnect: (platform: string, brandId: string) =>
+      request<{ authorization_url: string }>(
+        `/api/v1/channels/${platform}/auth?brand_id=${brandId}`
+      ),
+
     disconnect: (channelId: string) =>
       request<{ id: string; status: string }>(
         `/api/v1/channels/${channelId}/disconnect`,
-        { method: "POST" }
+        { method: "DELETE" }
       ),
   },
 
