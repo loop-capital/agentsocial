@@ -22,7 +22,9 @@ import { webhooksRoutes } from "./routes/webhooks.js";
 import { callbackRoutes } from "./routes/callbacks.js";
 import { syncRoutes } from "./routes/sync.js";
 import { browserAuthRoutes } from "./routes/browser-auth.js";
+import { competitorsRoutes } from "./routes/competitors.js";
 import { startWorkers, stopWorkers } from "./workers/index.js";
+import { pool } from "./db/index.js";
 
 const server = Fastify({
   logger: {
@@ -125,6 +127,7 @@ await server.register(webhooksRoutes, { prefix: "/api/v1/webhooks" });
 await server.register(callbackRoutes, { prefix: "/api/v1" });
 await server.register(syncRoutes, { prefix: "/api/v1/sync" });
 await server.register(browserAuthRoutes, { prefix: "/api/v1/channels" });
+await server.register(competitorsRoutes, { prefix: "/api/v1/competitors" });
 
 // ─── Global Error Handler ───────────────────────────────────────────────────
 
@@ -168,6 +171,67 @@ server.setErrorHandler((error, request, reply) => {
 
 const start = async () => {
   try {
+    // ── Run DB migrations (auto-create tables) ─────────────────────────────────
+    // Run async — don't block server startup if DB is slow/unreachable
+    const migrationPromise = (async () => {
+      try {
+        await pool.query(`
+          CREATE TABLE IF NOT EXISTS competitor_profiles (
+            id uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+            brand_id uuid NOT NULL,
+            platform text NOT NULL,
+            handle text NOT NULL,
+            display_name text,
+            avatar_url text,
+            bio text,
+            follower_count integer DEFAULT 0 NOT NULL,
+            following_count integer DEFAULT 0 NOT NULL,
+            post_count integer DEFAULT 0 NOT NULL,
+            engagement_rate integer,
+            profile_url text,
+            last_fetched_at timestamp with time zone,
+            active boolean DEFAULT true NOT NULL,
+            created_at timestamp with time zone DEFAULT now() NOT NULL
+          );
+        `);
+        try {
+          await pool.query(`ALTER TABLE competitor_profiles ADD CONSTRAINT fk_competitor_brand FOREIGN KEY (brand_id) REFERENCES brands(id) ON DELETE CASCADE;`);
+        } catch (_e: any) { /* already exists */ }
+
+        await pool.query(`
+          CREATE TABLE IF NOT EXISTS competitor_posts (
+            id uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+            profile_id uuid NOT NULL,
+            external_id text NOT NULL,
+            content text,
+            media_urls text[],
+            post_type text DEFAULT 'standard' NOT NULL,
+            published_at timestamp with time zone,
+            likes integer DEFAULT 0 NOT NULL,
+            comments integer DEFAULT 0 NOT NULL,
+            shares integer DEFAULT 0 NOT NULL,
+            views integer DEFAULT 0 NOT NULL,
+            engagement_rate integer,
+            hashtags text[],
+            mentions text[],
+            url text,
+            fetched_at timestamp with time zone DEFAULT now() NOT NULL,
+            created_at timestamp with time zone DEFAULT now() NOT NULL
+          );
+        `);
+        try {
+          await pool.query(`ALTER TABLE competitor_posts ADD CONSTRAINT fk_competitor_profile FOREIGN KEY (profile_id) REFERENCES competitor_profiles(id) ON DELETE CASCADE;`);
+        } catch (_e2: any) { /* already exists */ }
+
+        await pool.query(`CREATE INDEX IF NOT EXISTS competitor_profiles_brand_id_idx ON competitor_profiles(brand_id);`);
+        await pool.query(`CREATE INDEX IF NOT EXISTS competitor_posts_profile_id_idx ON competitor_posts(profile_id);`);
+
+        server.log.info("✅ Competitor tables ensured");
+      } catch (migErr: any) {
+        server.log.warn({ migErr: migErr.message }, "⚠️ Competitor migration skipped");
+      }
+    })();
+
     const port = parseInt(process.env.PORT || "3001", 10);
     const host = process.env.HOST || "0.0.0.0";
     await server.listen({ port, host });

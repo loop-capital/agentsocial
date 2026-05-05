@@ -10,6 +10,8 @@ const isRemote = connectionString.includes("supabase") || connectionString.inclu
 export const pool = new pg.Pool({ 
   connectionString,
   ...(isRemote ? { ssl: { rejectUnauthorized: false } } : {}),
+  connectionTimeoutMillis: 15000,
+  query_timeout: 30000,
 });
 
 export const db = drizzle(pool, { schema });
@@ -34,4 +36,6 @@ export const {
   dailyAnalytics,
   webhooks,
   exportJobs,
+  competitorProfiles,
+  competitorPosts,
 } = schema;

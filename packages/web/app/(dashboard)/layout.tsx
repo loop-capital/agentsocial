@@ -16,6 +16,7 @@ import {
   X,
   ChevronRight,
   Sparkles,
+  Eye,
 } from "lucide-react";
 import { useState } from "react";
 import CCEverywhereProvider from "../../src/components/adobe-express/CCEverywhereProvider";
@@ -25,6 +26,7 @@ const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/posts", label: "Posts", icon: FileText },
   { href: "/analytics", label: "Analytics", icon: BarChart2 },
+  { href: "/competitors", label: "Competitors", icon: Eye },
   { href: "/calendar", label: "Calendar", icon: Calendar },
   { href: "/create-express", label: "Adobe Express", icon: Sparkles },
   { href: "/settings", label: "Settings", icon: Settings },
