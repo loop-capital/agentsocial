@@ -1,8 +1,8 @@
 "use client";
 
-import { MoreHorizontal, Heart, MessageCircle, Share2, Eye, Edit, Trash2, Copy, BarChart2 } from "lucide-react";
+import { Heart, MessageCircle, Share2, Eye, Edit, Trash2, Copy, BarChart2, Send, CalendarOff, Loader2 } from "lucide-react";
 import { StatusBadge } from "./status-badge";
-import { PlatformBadge } from "./platform-badge";
+import { PlatformBadge, PLATFORM_STYLES } from "./platform-badge";
 import { useState } from "react";
 
 interface PostEngagement {
@@ -10,6 +10,12 @@ interface PostEngagement {
   comments: number;
   shares: number;
   impressions?: number;
+}
+
+interface ChannelStatus {
+  channel_id: string;
+  platform: string;
+  status: string;
 }
 
 export interface PostCardData {
@@ -22,6 +28,7 @@ export interface PostCardData {
   createdAt?: string | null;
   engagement?: PostEngagement;
   mediaThumbnail?: string;
+  channels?: ChannelStatus[];
 }
 
 interface PostCardProps {
@@ -31,6 +38,8 @@ interface PostCardProps {
   onDelete?: (id: string) => void;
   onDuplicate?: (id: string) => void;
   onAnalytics?: (id: string) => void;
+  onPublish?: (id: string) => void;
+  onCancel?: (id: string) => void;
 }
 
 function formatDate(dateStr: string | null | undefined): string {
@@ -54,6 +63,55 @@ function formatEngagement(n: number): string {
   return String(n);
 }
 
+const CHANNEL_STATUS_COLORS: Record<string, string> = {
+  published: "#16A34A",
+  scheduled: "#D97706",
+  draft: "#6B7280",
+  failed: "#DC2626",
+  cancelled: "#DC2626",
+  pending: "#3B82F6",
+};
+
+function ChannelStatusIcons({ channels }: { channels?: ChannelStatus[] }) {
+  if (!channels || channels.length === 0) return null;
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: "0.375rem", flexWrap: "wrap" }}>
+      {channels.map((ch) => {
+        const style = PLATFORM_STYLES[ch.platform.toLowerCase()];
+        const statusColor = CHANNEL_STATUS_COLORS[ch.status.toLowerCase()] || "#6B7280";
+        return (
+          <div
+            key={ch.channel_id}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "0.25rem",
+              padding: "0.125rem 0.375rem",
+              borderRadius: "var(--radius-sm)",
+              background: style?.bg ?? "#F3F4F6",
+              border: `1px solid ${style?.color ?? "#E5E7EB"}20`,
+            }}
+            title={`${ch.platform}: ${ch.status}`}
+          >
+            <span
+              style={{
+                width: 6,
+                height: 6,
+                borderRadius: "50%",
+                backgroundColor: statusColor,
+                flexShrink: 0,
+              }}
+            />
+            <span style={{ fontSize: "0.6875rem", fontWeight: 500, color: style?.color ?? "#6B7280" }}>
+              {style?.label ?? ch.platform}
+            </span>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 export function PostCard({
   post,
   viewMode = "card",
@@ -61,8 +119,11 @@ export function PostCard({
   onDelete,
   onDuplicate,
   onAnalytics,
+  onPublish,
+  onCancel,
 }: PostCardProps) {
-  const [menuOpen, setMenuOpen] = useState(false);
+  const [publishing, setPublishing] = useState(false);
+  const [cancelling, setCancelling] = useState(false);
   const displayDate = post.status === "scheduled"
     ? formatDate(post.scheduledAt)
     : formatDate(post.publishedAt);
@@ -87,6 +148,12 @@ export function PostCard({
           </div>
           <StatusBadge status={post.status} size="sm" />
         </div>
+
+        {post.channels && post.channels.length > 0 && (
+          <div style={{ marginTop: "-0.25rem" }}>
+            <ChannelStatusIcons channels={post.channels} />
+          </div>
+        )}
 
         <div className="post-card-footer">
           <span className="post-card-date">{displayDate}</span>
@@ -121,6 +188,34 @@ export function PostCard({
           )}
 
           <div className="post-card-actions">
+            {(post.status === "draft" || post.status === "scheduled") && onPublish && (
+              <button
+                className="post-action-btn"
+                onClick={() => {
+                  setPublishing(true);
+                  onPublish(post.id);
+                }}
+                aria-label="Publish now"
+                title="Publish Now"
+                disabled={publishing}
+              >
+                {publishing ? <Loader2 size={14} className="spin" /> : <Send size={14} />}
+              </button>
+            )}
+            {post.status === "scheduled" && onCancel && (
+              <button
+                className="post-action-btn"
+                onClick={() => {
+                  setCancelling(true);
+                  onCancel(post.id);
+                }}
+                aria-label="Cancel schedule"
+                title="Cancel Schedule"
+                disabled={cancelling}
+              >
+                {cancelling ? <Loader2 size={14} className="spin" /> : <CalendarOff size={14} />}
+              </button>
+            )}
             <button
               className="post-action-btn"
               onClick={() => onEdit?.(post.id)}
