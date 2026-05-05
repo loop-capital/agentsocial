@@ -263,6 +263,48 @@ export const exportJobs = pgTable("export_jobs", {
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
 });
 
+// ─── Competitor Profiles ─────────────────────────────────────────────────────
+
+export const competitorProfiles = pgTable("competitor_profiles", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  brandId: uuid("brand_id").notNull().references(() => brands.id, { onDelete: "cascade" }),
+  platform: text("platform").notNull(), // instagram, twitter, facebook, tiktok, linkedin
+  handle: text("handle").notNull(),
+  displayName: text("display_name"),
+  avatarUrl: text("avatar_url"),
+  bio: text("bio"),
+  followerCount: integer("follower_count").notNull().default(0),
+  followingCount: integer("following_count").notNull().default(0),
+  postCount: integer("post_count").notNull().default(0),
+  engagementRate: integer("engagement_rate"), // basis points (0-10000)
+  profileUrl: text("profile_url"),
+  lastFetchedAt: timestamp("last_fetched_at", { withTimezone: true }),
+  active: boolean("active").notNull().default(true),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+});
+
+// ─── Competitor Posts ────────────────────────────────────────────────────────
+
+export const competitorPosts = pgTable("competitor_posts", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  profileId: uuid("profile_id").notNull().references(() => competitorProfiles.id, { onDelete: "cascade" }),
+  externalId: text("external_id").notNull(), // platform-native post ID
+  content: text("content"),
+  mediaUrls: text("media_urls").array(),
+  postType: text("post_type").notNull().default("standard"), // standard, reel, story, thread, carousel
+  publishedAt: timestamp("published_at", { withTimezone: true }),
+  likes: integer("likes").notNull().default(0),
+  comments: integer("comments").notNull().default(0),
+  shares: integer("shares").notNull().default(0),
+  views: integer("views").notNull().default(0),
+  engagementRate: integer("engagement_rate"), // basis points
+  hashtags: text("hashtags").array(),
+  mentions: text("mentions").array(),
+  url: text("url"),
+  fetchedAt: timestamp("fetched_at", { withTimezone: true }).defaultNow().notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+});
+
 // ─── Relations ─────────────────────────────────────────────────────────────
 
 export const usersRelations = relations(users, ({ many }) => ({
@@ -343,4 +385,15 @@ export const webhooksRelations = relations(webhooks, ({ one }) => ({
 export const exportJobsRelations = relations(exportJobs, ({ one }) => ({
   user: one(users, { fields: [exportJobs.userId], references: [users.id] }),
   brand: one(brands, { fields: [exportJobs.brandId], references: [brands.id] }),
+}));
+
+// ─── Competitor Profile Relations ────────────────────────────────────────────
+
+export const competitorProfilesRelations = relations(competitorProfiles, ({ one, many }) => ({
+  brand: one(brands, { fields: [competitorProfiles.brandId], references: [brands.id] }),
+  posts: many(competitorPosts),
+}));
+
+export const competitorPostsRelations = relations(competitorPosts, ({ one }) => ({
+  profile: one(competitorProfiles, { fields: [competitorPosts.profileId], references: [competitorProfiles.id] }),
 }));
