@@ -1,0 +1,8 @@
+# Run branch check first
+python3 scripts/check-branch.py || exit 1
+
+# Run secret blocking
+python3 scripts/block-secrets.py || exit 1
+
+# Run lint-staged
+npx lint-staged
