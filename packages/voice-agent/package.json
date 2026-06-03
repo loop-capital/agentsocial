@@ -1,0 +1,27 @@
+{
+  "name": "@agentsocial/voice-agent",
+  "version": "1.0.0",
+  "description": "Voice AI agent platform for AgentSocial — PLEIJ Salon first customer",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "deploy:dograh": "REGISTRY=ghcr.io/dograh-hq ENABLE_TELEMETRY=false podman-compose up -d",
+    "stop:dograh": "podman-compose down",
+    "logs:dograh": "podman-compose logs -f api ui"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^17.4.2",
+    "express": "^4.21.0",
+    "square": "^44.1.0",
+    "twilio": "^6.0.2"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.19",
+    "@types/express": "^4.17.25",
+    "tsx": "^4.22.3",
+    "typescript": "^5.9.3"
+  }
+}

@@ -9,6 +9,16 @@ import { exchangeTikTokCode, getTikTokUserInfo } from "../connectors/tiktok.js";
 import { encryptToken } from "../connectors/token-store.js";
 import { pkceStore } from "./channels.js";
 
+declare global {
+  var __facebookPageCache: Map<string, {
+    brandId: string;
+    pages: Array<{ id: string; name: string; access_token: string }>;
+    longLivedToken: string;
+    expiresIn: number;
+    createdAt: number;
+  }>;
+}
+
 function parseState(state: string): string {
   return state.split(":")[0];
 }
@@ -211,7 +221,7 @@ export const callbackRoutes = async (server: FastifyInstance) => {
   });
 
   // ─── Facebook OAuth Callback ─────────────────────────────────────────────────
-  server.get("/channels/callback/facebook", async (request, reply) => {
+  server.get("/channels/facebook/callback", async (request, reply) => {
     const { code, state, error, error_description } = request.query as Record<string, string>;
 
     if (error) {
@@ -235,6 +245,10 @@ export const callbackRoutes = async (server: FastifyInstance) => {
       // 2. Exchange for long-lived token
       const longLived = await exchangeLongLivedToken(tokens.accessToken);
 
+      if (!longLived.accessToken) {
+        throw new Error("Long-lived token exchange returned no access_token");
+      }
+
       // 3. Get pages user manages
       const pages = await getFacebookPages(longLived.accessToken);
 
@@ -242,8 +256,14 @@ export const callbackRoutes = async (server: FastifyInstance) => {
         return reply.redirect(`${process.env.APP_URL}/settings?error=facebook_no_pages`);
       }
 
-      // 4. Store each page as a channel
-      for (const page of pages) {
+      // 4. If multiple pages, redirect to picker. If single page, auto-connect.
+      if (pages.length === 1) {
+        // Auto-connect single page
+        const page = pages[0];
+        if (!page.access_token) {
+          throw new Error(`Page "${page.name}" has no access_token`);
+        }
+
         const channelData = {
           brandId,
           platform: "facebook" as const,
@@ -252,7 +272,7 @@ export const callbackRoutes = async (server: FastifyInstance) => {
           status: "active" as const,
           followerCount: 0,
           accessTokenEncrypted: encryptToken(page.access_token),
-          refreshTokenEncrypted: encryptToken(longLived.accessToken), // store user LL token as refresh
+          refreshTokenEncrypted: encryptToken(longLived.accessToken),
           tokenExpiresAt: new Date(Date.now() + longLived.expiresIn * 1000),
           updatedAt: new Date(),
         };
@@ -276,9 +296,26 @@ export const callbackRoutes = async (server: FastifyInstance) => {
         } else {
           await db.insert(channels).values(channelData);
         }
+
+        return reply.redirect(`${process.env.APP_URL}/settings?connected=facebook&page=${encodeURIComponent(page.name)}`);
       }
 
-      return reply.redirect(`${process.env.APP_URL}/settings?connected=facebook`);
+      // Multiple pages — store in temp cache and redirect to picker
+      const tempKey = `fb_pages_${brandId}_${Date.now()}`;
+      // Use a simple in-memory store (replace with Redis in production)
+      if (!globalThis.__facebookPageCache) globalThis.__facebookPageCache = new Map();
+      globalThis.__facebookPageCache.set(tempKey, {
+        brandId,
+        pages: pages.map(p => ({ id: p.id, name: p.name, access_token: p.access_token })),
+        longLivedToken: longLived.accessToken,
+        expiresIn: longLived.expiresIn,
+        createdAt: Date.now(),
+      });
+
+      // Clean up old entries after 10 minutes
+      setTimeout(() => globalThis.__facebookPageCache?.delete(tempKey), 10 * 60 * 1000);
+
+      return reply.redirect(`${process.env.APP_URL}/settings?facebook_pages=${tempKey}`);
     } catch (err) {
       server.log.error(`[oauth/facebook] Callback error: ${err}`);
       return reply.redirect(`${process.env.APP_URL}/settings?error=facebook_failed`);
@@ -304,7 +341,10 @@ export const callbackRoutes = async (server: FastifyInstance) => {
     }
 
     try {
-      const tokens = await exchangeTikTokCode(code);
+    const codeVerifier = pkceStore.get(state);
+      const tokens = await exchangeTikTokCode(code, {
+        codeVerifier: codeVerifier || undefined,
+      });
 
       // Fetch TikTok user info for display name
       const userInfo = await getTikTokUserInfo(tokens.accessToken);
@@ -342,10 +382,99 @@ export const callbackRoutes = async (server: FastifyInstance) => {
         await db.insert(channels).values(channelData);
       }
 
+      pkceStore.delete(state);
       return reply.redirect(`${process.env.APP_URL}/settings?connected=tiktok`);
     } catch (err) {
       server.log.error(`[oauth/tiktok] Callback error: ${err}`);
       return reply.redirect(`${process.env.APP_URL}/settings?error=tiktok_failed`);
     }
+  });
+
+  // ─── Facebook Page Picker ─────────────────────────────────────────────────
+  // GET /channels/facebook/pages?key=tempKey — returns available pages
+  server.get("/channels/facebook/pages", async (request, reply) => {
+    const { key } = request.query as { key?: string };
+    if (!key) {
+      return reply.status(400).send({ error: "Missing key parameter" });
+    }
+
+    const cache = globalThis.__facebookPageCache;
+    if (!cache || !cache.has(key)) {
+      return reply.status(404).send({ error: "Page selection expired or invalid" });
+    }
+
+    const data = cache.get(key)!;
+    return reply.send({
+      brand_id: data.brandId,
+      pages: data.pages.map(p => ({ id: p.id, name: p.name })),
+    });
+  });
+
+  // POST /channels/facebook/connect-pages — connect selected pages
+  server.post("/channels/facebook/connect-pages", async (request, reply) => {
+    const { key, page_ids } = request.body as { key: string; page_ids: string[] };
+    
+    if (!key || !Array.isArray(page_ids) || page_ids.length === 0) {
+      return reply.status(400).send({ error: "Missing key or page_ids" });
+    }
+
+    const cache = globalThis.__facebookPageCache;
+    if (!cache || !cache.has(key)) {
+      return reply.status(404).send({ error: "Page selection expired or invalid" });
+    }
+
+    const data = cache.get(key)!;
+    const connected: Array<{ id: string; name: string }> = [];
+
+    for (const pageId of page_ids) {
+      const page = data.pages.find(p => p.id === pageId);
+      if (!page || !page.access_token) {
+        server.log.warn(`[oauth/facebook] Page ${pageId} not found or missing token`);
+        continue;
+      }
+
+      const channelData = {
+        brandId: data.brandId,
+        platform: "facebook" as const,
+        name: page.name,
+        accountId: page.id,
+        status: "active" as const,
+        followerCount: 0,
+        accessTokenEncrypted: encryptToken(page.access_token),
+        refreshTokenEncrypted: encryptToken(data.longLivedToken),
+        tokenExpiresAt: new Date(Date.now() + data.expiresIn * 1000),
+        updatedAt: new Date(),
+      };
+
+      const existing = await db
+        .select()
+        .from(channels)
+        .where(
+          and(
+            eq(channels.brandId, data.brandId),
+            eq(channels.platform, "facebook"),
+            eq(channels.accountId, page.id)
+          )
+        )
+        .limit(1);
+
+      if (existing.length > 0) {
+        await db.update(channels)
+          .set(channelData)
+          .where(eq(channels.id, existing[0].id));
+      } else {
+        await db.insert(channels).values(channelData);
+      }
+
+      connected.push({ id: page.id, name: page.name });
+    }
+
+    // Clean up cache
+    cache.delete(key);
+
+    return reply.send({
+      connected,
+      count: connected.length,
+    });
   });
 };

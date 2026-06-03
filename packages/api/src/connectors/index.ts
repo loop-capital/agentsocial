@@ -4,11 +4,30 @@ export { publishToLinkedIn, getLinkedInOAuthUrl, exchangeLinkedInCode, refreshLi
 export { generatePKCE } from "./pkce.js";
 export { publishToInstagram, getInstagramOAuthUrl, exchangeInstagramCode, refreshInstagramToken, getInstagramMetrics, instagramOAuthConfig, exchangeInstagramLongLivedToken, getInstagramFacebookPages, getInstagramBusinessAccountFromPage } from "./instagram.js";
 export { publishToFacebook, getFacebookOAuthUrl, exchangeFacebookCode, getFacebookPages, getInstagramBusinessAccount, exchangeLongLivedToken, facebookOAuthConfig } from "./facebook.js";
-export { publishToTikTok, getTikTokOAuthUrl, exchangeTikTokCode, tiktokOAuthConfig } from "./tiktok.js";
+export {
+  publishToTikTok,
+  getTikTokOAuthUrl,
+  exchangeTikTokCode,
+  refreshTikTokToken,
+  revokeTikTokToken,
+  getTikTokUserInfo,
+  queryCreatorInfo,
+  getPostStatus,
+  initVideoPublish,
+  uploadVideoChunk,
+  initPhotoPublish,
+  tiktokOAuthConfig,
+  setTikTokPkceStore,
+} from "./tiktok.js";
 export { encryptToken, decryptToken, maskToken } from "./token-store.js";
 
 export type { PublishResult, TwitterConfig, PublishOptions as TwitterPublishOptions, TwitterProfile } from "./twitter.js";
 export type { PublishResult as LinkedInPublishResult, LinkedInConfig, PublishOptions as LinkedInPublishOptions, LinkedInProfile } from "./linkedin.js";
 export type { PublishResult as InstagramPublishResult, InstagramConfig, PublishOptions as InstagramPublishOptions, InstagramBusinessAccount } from "./instagram.js";
 export type { PublishResult as FacebookPublishResult, FacebookConfig, PublishOptions as FacebookPublishOptions, FacebookPage } from "./facebook.js";
-export type { PublishResult as TikTokPublishResult, TikTokConfig, PublishOptions as TikTokPublishOptions } from "./tiktok.js";
+export type {
+  PublishResult as TikTokPublishResult,
+  TikTokConfig,
+  PublishOptions as TikTokPublishOptions,
+  PostStatus,
+} from "./tiktok.js";

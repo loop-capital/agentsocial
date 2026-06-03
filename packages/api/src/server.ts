@@ -23,6 +23,24 @@ import { callbackRoutes } from "./routes/callbacks.js";
 import { syncRoutes } from "./routes/sync.js";
 import { browserAuthRoutes } from "./routes/browser-auth.js";
 import { competitorsRoutes } from "./routes/competitors.js";
+import { billingRoutes } from "./routes/billing.js";
+import { billingTiersRoutes } from "./routes/billing-tiers.js";
+import { clipifyRoutes } from "./routes/clipify.js";
+import { gbpRoutes } from "./routes/gbp.js";
+import { googleOAuthRoutes } from "./routes/google-oauth.js";
+import { campaignRoutes } from "./routes/campaigns.js";
+import { twilioWebhookRoutes } from "./routes/twilio-webhooks.js";
+import { composioRoutes } from "./routes/composio.js";
+import { socialRoutes } from "./routes/social.js";
+import { geminiRoutes } from "./routes/gemini.js";
+import { generationRoutes } from "./routes/generation.js";
+import { reviewSentryRoutes } from "./routes/review-sentry.js";
+import { clientvetRoutes } from "./routes/clientvet.js";
+import { adManagementRoutes } from "./routes/ad-management.js";
+import { accountManagerRoutes } from "./routes/account-manager.js";
+import { profilesRoutes } from "./routes/profiles.js";
+import { landingPagesRoutes } from "./routes/landing-pages.js";
+import { subscriptionGuardPlugin } from "./plugins/subscription-guard.js";
 import { startWorkers, stopWorkers } from "./workers/index.js";
 import { pool } from "./db/index.js";
 
@@ -42,7 +60,7 @@ server.setSerializerCompiler(serializerCompiler);
 // ─── Plugins ─────────────────────────────────────────────────────────────────
 
 await server.register(cors, {
-  origin: process.env.APP_URL || "http://localhost:3000",
+  origin: [process.env.APP_URL || "http://localhost:3003", "http://localhost:3003", "http://localhost:3001"],
   credentials: true,
 });
 
@@ -76,6 +94,8 @@ await server.register(swagger, {
       { name: "Media", description: "Media uploads" },
       { name: "Analytics", description: "Analytics" },
       { name: "Webhooks", description: "Webhook management" },
+      { name: "Clipify", description: "Short-form video repurposing" },
+      { name: "Gemini", description: "Multimodal AI generation (text, image, video)" },
     ],
   },
 });
@@ -95,8 +115,28 @@ const PUBLIC_PREFIXES = [
   "/webhooks",
   "/browser-auth",
   "/channels/callback",
+  "/channels/facebook/callback",
+  "/channels/facebook/pages",
+  "/channels/facebook/connect-pages",
+  "/channels/instagram/callback",
+  "/billing/plans",
+  "/billing/tiers",
+  "/billing/webhook",
+  "/billing/init-plans",
+  "/billing/checkout",
   "/docs",
   "/legal",
+  "/landing-pages/",
+  "/profiles",
+  "/review-sentry/business/",
+  "/review-sentry/rate",
+  "/review-sentry/feedback",
+  "/review-sentry/sms/webhook",
+  "/review-sentry/templates",
+  "/review-sentry/opt-out/",
+  "/twilio/sms",
+  "/twilio/sms-status",
+  "/twilio/voice",
 ];
 
 server.addHook("onRequest", async (request, reply) => {
@@ -128,6 +168,24 @@ await server.register(callbackRoutes, { prefix: "/api/v1" });
 await server.register(syncRoutes, { prefix: "/api/v1/sync" });
 await server.register(browserAuthRoutes, { prefix: "/api/v1/channels" });
 await server.register(competitorsRoutes, { prefix: "/api/v1/competitors" });
+await server.register(billingRoutes, { prefix: "/api/v1/billing" });
+await server.register(billingTiersRoutes, { prefix: "/api/v1/billing" });
+await server.register(clipifyRoutes, { prefix: "/api/v1/clipify" });
+await server.register(gbpRoutes, { prefix: "/api/v1/gbp" });
+await server.register(googleOAuthRoutes);
+await server.register(campaignRoutes, { prefix: "/api/v1/campaigns" });
+await server.register(accountManagerRoutes, { prefix: "/api/v1/manager" });
+await server.register(profilesRoutes, { prefix: "/api/v1/profiles" });
+await server.register(landingPagesRoutes, { prefix: "/api/v1/landing-pages" });
+await server.register(twilioWebhookRoutes, { prefix: "/api/v1/twilio" });
+await server.register(composioRoutes, { prefix: "/api/v1/composio" });
+await server.register(socialRoutes, { prefix: "/api/v1/social" });
+await server.register(geminiRoutes, { prefix: "/api/v1/gemini" });
+  await server.register(generationRoutes, { prefix: "/api/v1/generate" });
+await server.register(reviewSentryRoutes, { prefix: "/api/v1/review-sentry" });
+await server.register(clientvetRoutes, { prefix: "/api/v1/clientvet" });
+await server.register(adManagementRoutes, { prefix: "/api/v1/ad-management" });
+await server.register(subscriptionGuardPlugin);
 
 // ─── Global Error Handler ───────────────────────────────────────────────────
 
@@ -229,6 +287,132 @@ const start = async () => {
         server.log.info("✅ Competitor tables ensured");
       } catch (migErr: any) {
         server.log.warn({ migErr: migErr.message }, "⚠️ Competitor migration skipped");
+      }
+
+      // Add subscription columns to brands table
+      try {
+        await pool.query(`ALTER TABLE brands ADD COLUMN IF NOT EXISTS "subscriptionStatus" text DEFAULT 'inactive';`);
+        await pool.query(`ALTER TABLE brands ADD COLUMN IF NOT EXISTS "subscriptionPlan" text DEFAULT 'free';`);
+        await pool.query(`ALTER TABLE brands ADD COLUMN IF NOT EXISTS "squareCustomerId" text;`);
+        await pool.query(`ALTER TABLE brands ADD COLUMN IF NOT EXISTS "squareSubscriptionId" text;`);
+        await pool.query(`ALTER TABLE brands ADD COLUMN IF NOT EXISTS "trialEndsAt" timestamp with time zone;`);
+        server.log.info("✅ Subscription columns ensured on brands");
+      } catch (subErr: any) {
+        server.log.warn({ subErr: subErr.message }, "⚠️ Subscription migration skipped");
+      }
+
+      // Add clipify tables
+      try {
+        await pool.query(`
+          DO $$
+          BEGIN
+            IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'clip_status') THEN
+              CREATE TYPE clip_status AS ENUM ('pending', 'transcribing', 'finding_moments', 'rendering', 'complete', 'failed');
+            END IF;
+          END $$;
+        `);
+        await pool.query(`
+          CREATE TABLE IF NOT EXISTS video_sources (
+            id uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+            brand_id uuid NOT NULL,
+            user_id uuid NOT NULL,
+            title text,
+            description text,
+            source_url text,
+            source_type text DEFAULT 'upload' NOT NULL,
+            local_path text,
+            duration_seconds integer,
+            transcript jsonb DEFAULT '{}',
+            status text DEFAULT 'pending' NOT NULL,
+            thumbnail_url text,
+            created_at timestamp with time zone DEFAULT now() NOT NULL,
+            updated_at timestamp with time zone DEFAULT now() NOT NULL
+          );
+        `);
+        try {
+          await pool.query(`ALTER TABLE video_sources ADD CONSTRAINT fk_video_source_brand FOREIGN KEY (brand_id) REFERENCES brands(id) ON DELETE CASCADE;`);
+        } catch (_e: any) { /* already exists */ }
+        await pool.query(`
+          CREATE TABLE IF NOT EXISTS clips (
+            id uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+            video_source_id uuid NOT NULL,
+            brand_id uuid NOT NULL,
+            title text,
+            description text,
+            start_seconds integer NOT NULL,
+            end_seconds integer NOT NULL,
+            duration_seconds integer NOT NULL,
+            format text DEFAULT '9:16' NOT NULL,
+            style text DEFAULT 'opus' NOT NULL,
+            reframe_mode text,
+            output_url text,
+            output_path text,
+            thumbnail_url text,
+            transcript jsonb DEFAULT '[]',
+            captions_url text,
+            why_funny text,
+            status text DEFAULT 'pending' NOT NULL,
+            render_progress integer DEFAULT 0,
+            error_message text,
+            scheduled_for timestamp with time zone,
+            published_to_channels jsonb DEFAULT '[]',
+            created_at timestamp with time zone DEFAULT now() NOT NULL,
+            updated_at timestamp with time zone DEFAULT now() NOT NULL
+          );
+        `);
+        try {
+          await pool.query(`ALTER TABLE clips ADD CONSTRAINT fk_clip_source FOREIGN KEY (video_source_id) REFERENCES video_sources(id) ON DELETE CASCADE;`);
+        } catch (_e2: any) { /* already exists */ }
+        try {
+          await pool.query(`ALTER TABLE clips ADD CONSTRAINT fk_clip_brand FOREIGN KEY (brand_id) REFERENCES brands(id) ON DELETE CASCADE;`);
+        } catch (_e3: any) { /* already exists */ }
+        await pool.query(`CREATE INDEX IF NOT EXISTS video_sources_brand_id_idx ON video_sources(brand_id);`);
+        await pool.query(`CREATE INDEX IF NOT EXISTS clips_video_source_id_idx ON clips(video_source_id);`);
+        await pool.query(`CREATE INDEX IF NOT EXISTS clips_brand_id_idx ON clips(brand_id);`);
+        server.log.info("✅ Clipify tables ensured");
+      } catch (clipErr: any) {
+        server.log.warn({ clipErr: clipErr.message }, "⚠️ Clipify migration skipped");
+      }
+
+      // Add Gemini jobs table
+      try {
+        await pool.query(`
+          DO $$
+          BEGIN
+            IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'gemini_job_status') THEN
+              CREATE TYPE gemini_job_status AS ENUM ('processing', 'complete', 'failed');
+            END IF;
+            IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'gemini_job_type') THEN
+              CREATE TYPE gemini_job_type AS ENUM ('text_generate', 'image_generate', 'video_generate', 'video_edit');
+            END IF;
+          END $$;
+        `);
+        await pool.query(`
+          CREATE TABLE IF NOT EXISTS gemini_jobs (
+            id uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+            brand_id uuid NOT NULL,
+            user_id uuid NOT NULL,
+            job_type gemini_job_type NOT NULL,
+            model text,
+            prompt text,
+            operation_name text,
+            config jsonb DEFAULT '{}',
+            result jsonb DEFAULT '{}',
+            status gemini_job_status NOT NULL DEFAULT 'processing',
+            created_at timestamp with time zone DEFAULT now() NOT NULL
+          );
+        `);
+        try {
+          await pool.query(`ALTER TABLE gemini_jobs ADD CONSTRAINT fk_gemini_job_brand FOREIGN KEY (brand_id) REFERENCES brands(id) ON DELETE CASCADE;`);
+        } catch (_e: any) { /* already exists */ }
+        try {
+          await pool.query(`ALTER TABLE gemini_jobs ADD CONSTRAINT fk_gemini_job_user FOREIGN KEY (user_id) REFERENCES users(id);`);
+        } catch (_e2: any) { /* already exists */ }
+        await pool.query(`CREATE INDEX IF NOT EXISTS gemini_jobs_brand_id_idx ON gemini_jobs(brand_id);`);
+        await pool.query(`CREATE INDEX IF NOT EXISTS gemini_jobs_status_idx ON gemini_jobs(status);`);
+        server.log.info("✅ Gemini jobs table ensured");
+      } catch (geminiErr: any) {
+        server.log.warn({ geminiErr: geminiErr.message }, "⚠️ Gemini migration skipped");
       }
     })();
 

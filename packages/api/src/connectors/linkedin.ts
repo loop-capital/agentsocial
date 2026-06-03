@@ -15,6 +15,7 @@ export interface PublishOptions {
   mediaIds?: string[];
   visibility?: "PUBLIC" | "CONNECTIONS_ONLY";
   accessToken: string;
+  authorUrn?: string; // urn:li:person:XXXX — must be fetched from /v2/me first
 }
 
 export interface LinkedInProfile {
@@ -29,12 +30,17 @@ export const linkedinOAuthConfig = {
   callbackUrl: process.env.LINKEDIN_REDIRECT_URI || "http://localhost:3001/api/v1/channels/callback/linkedin",
 };
 
+// Scopes: start with basic profile + openid for new apps.
+// Organization social scopes require Marketing Developer Platform approval.
+// Once approved, add r_organization_social w_organization_social back.
+const LINKEDIN_SCOPES = "r_liteprofile openid w_member_social";
+
 export async function getLinkedInOAuthUrl(state: string, codeChallenge?: string): Promise<string> {
   const params: Record<string, string> = {
     response_type: "code",
     client_id: linkedinOAuthConfig.clientId,
     redirect_uri: linkedinOAuthConfig.callbackUrl,
-    scope: "r_basicprofile r_organization_social w_organization_social r_liteprofile w_member_social",
+    scope: LINKEDIN_SCOPES,
     state,
   };
 
@@ -127,6 +133,16 @@ export async function fetchLinkedInProfile(accessToken: string): Promise<LinkedI
   };
 }
 
+/**
+ * Resolve the LinkedIn person URN needed for publishing.
+ * The author URN must be a real LinkedIn member ID, NOT a truncated access token.
+ * Call /v2/me first to get the member ID, then construct urn:li:person:{id}.
+ */
+export async function getLinkedInPersonUrn(accessToken: string): Promise<string> {
+  const profile = await fetchLinkedInProfile(accessToken);
+  return `urn:li:person:${profile.id}`;
+}
+
 export async function publishToLinkedIn(
   content: string,
   options: PublishOptions
@@ -142,6 +158,12 @@ export async function publishToLinkedIn(
     };
   }
 
+  // Resolve author URN — must use real LinkedIn person ID, not access token
+  let authorUrn = options.authorUrn;
+  if (!authorUrn) {
+    authorUrn = await getLinkedInPersonUrn(accessToken);
+  }
+
   // LinkedIn UGC Posts API
   const response = await fetch("https://api.linkedin.com/v2/ugcPosts", {
     method: "POST",
@@ -151,7 +173,7 @@ export async function publishToLinkedIn(
       "X-Restli-Protocol-Version": "2.0.0",
     },
     body: JSON.stringify({
-      author: `urn:li:person:${accessToken.slice(0, 8)}`,
+      author: authorUrn,
       lifecycleState: "PUBLISHED",
       specificContent: {
         "com.linkedin.ugc.ShareContent": {
@@ -188,14 +210,9 @@ export async function getLinkedInMetrics(postId: string, accessToken: string): P
     return { impressions: 0, likes: 0, comments: 0, shares: 0 };
   }
 
-  try {
-    const response = await fetch(
-      `https://api.linkedin.com/v2/networkUpdates/${postId}?count=1`,
-      { headers: { Authorization: `Bearer ${accessToken}` } }
-    );
-    if (!response.ok) return { impressions: 0, likes: 0, comments: 0, shares: 0 };
-    return { impressions: 0, likes: 0, comments: 0, shares: 0 };
-  } catch {
-    return { impressions: 0, likes: 0, comments: 0, shares: 0 };
-  }
+  // TODO: The /v2/networkUpdates endpoint is deprecated.
+  // Replace with LinkedIn Social Analytics API once Marketing Developer Platform access is approved.
+  // See: https://learn.microsoft.com/en-us/linkedin/marketing/community-management/shares-network-update-api
+  console.warn("[LinkedIn] Metrics API not yet implemented — requires Marketing Developer Platform approval");
+  return { impressions: 0, likes: 0, comments: 0, shares: 0 };
 }
