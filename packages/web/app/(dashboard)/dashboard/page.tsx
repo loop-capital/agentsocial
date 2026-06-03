@@ -13,6 +13,9 @@ import {
   Clock,
   ChevronRight,
   Loader2,
+  Star,
+  Shield,
+  DollarSign,
 } from "lucide-react";
 import {
   AreaChart,
@@ -235,6 +238,27 @@ export default function DashboardPage() {
           description="See upcoming posts"
           href="/calendar"
           accentColor="#10B981"
+        />
+        <QuickActionCard
+          icon={Star}
+          label="Review Sentry"
+          description="Manage reviews & catch fakes"
+          href="/review-sentry"
+          accentColor="#F59E0B"
+        />
+        <QuickActionCard
+          icon={Shield}
+          label="ClientVet"
+          description="Screen clients & prevent no-shows"
+          href="/clientvet"
+          accentColor="#EF4444"
+        />
+        <QuickActionCard
+          icon={DollarSign}
+          label="Ad Management"
+          description="Google & Meta ads for your salon"
+          href="/ad-management"
+          accentColor="#6366F1"
         />
       </div>
 

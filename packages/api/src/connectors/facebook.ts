@@ -39,12 +39,28 @@ export const facebookOAuthConfig = {
   callbackUrl: process.env.FACEBOOK_REDIRECT_URI || "http://localhost:3002/api/v1/channels/facebook/callback",
 };
 
+// Basic scopes (no App Review needed)
+const BASIC_SCOPES = [
+  "pages_show_list",
+  "pages_read_engagement",
+];
+
+// Advanced scopes (require App Review - not available until approved)
+const ADVANCED_SCOPES = [
+  "pages_manage_posts",
+  "pages_manage_metadata", 
+  "publish_to_groups",
+];
+
 export async function getFacebookOAuthUrl(state: string): Promise<string> {
+  // Use only basic scopes until App Review is approved
+  const scopes = BASIC_SCOPES.join(",");
+  
   const params = new URLSearchParams({
     response_type: "code",
     client_id: facebookOAuthConfig.clientId,
     redirect_uri: facebookOAuthConfig.callbackUrl,
-    scope: "pages_show_list,pages_read_engagement,pages_manage_posts,pages_manage_metadata,publish_to_groups",
+    scope: scopes,
     state,
   });
 
@@ -70,12 +86,14 @@ export async function exchangeFacebookCode(code: string): Promise<{
     }),
   });
 
+  const responseText = await response.text();
+  console.log("[facebook] Token exchange response:", responseText);
+  
   if (!response.ok) {
-    const error = await response.json();
-    throw new Error(`Facebook token exchange failed: ${JSON.stringify(error)}`);
+    throw new Error(`Facebook token exchange failed: ${responseText}`);
   }
 
-  const data = await response.json();
+  const data = JSON.parse(responseText);
   return {
     accessToken: data.access_token,
     refreshToken: data.refresh_token || "",
@@ -117,7 +135,7 @@ export async function exchangeLongLivedToken(shortLivedToken: string): Promise<{
  */
 export async function getFacebookPages(userAccessToken: string): Promise<FacebookPage[]> {
   const response = await fetch(
-    `https://graph.facebook.com/v18.0/me/accounts?fields=id,name,category,picture{url}&access_token=${userAccessToken}`
+    `https://graph.facebook.com/v18.0/me/accounts?fields=id,name,access_token,category,picture{url}&access_token=${userAccessToken}`
   );
 
   if (!response.ok) {

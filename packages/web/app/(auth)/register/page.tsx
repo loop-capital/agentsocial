@@ -57,7 +57,7 @@ export default function RegisterPage() {
           >
             Create your account
           </h1>
-          <p style={{ color: "#888" }}>Start managing your social media with AI</p>
+          <p style={{ color: "#888" }}>Start your 14-day free trial — no credit card required</p>
         </div>
 
         <div className="card">
@@ -119,8 +119,12 @@ export default function RegisterPage() {
               }}
               disabled={isLoading}
             >
-              {isLoading ? "Creating account…" : "Create Account"}
+              {isLoading ? "Creating account…" : "Start Free Trial"}
             </button>
+            <p style={{ textAlign: "center", color: "#666", marginTop: "0.75rem", fontSize: "0.75rem" }}>
+              Plans start at $49/mo after trial ·{" "}
+              <Link href="/pricing" style={{ color: "#2563eb" }}>See all plans</Link>
+            </p>
           </form>
         </div>
 

@@ -8,6 +8,48 @@
       "when": 1777148993121,
       "tag": "0000_curly_rocket_raccoon",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1777995267274,
+      "tag": "0001_special_redwing",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1778558370096,
+      "tag": "0002_sloppy_ultimo",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "5",
+      "when": 1779556510667,
+      "tag": "0003_fuzzy_daredevil",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "5",
+      "when": 1779567882268,
+      "tag": "0004_cheerful_thor_girl",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "5",
+      "when": 1779569493560,
+      "tag": "0005_brave_cobalt_man",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "5",
+      "when": 1779636715073,
+      "tag": "0006_happy_hannibal_king",
+      "breakpoints": true
     }
   ]
 }

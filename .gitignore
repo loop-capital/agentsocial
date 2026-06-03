@@ -11,4 +11,22 @@ dist/
 coverage//.agents/
 cloner-template/
 tools/website-builder-setup/
-web/
+.vercel
+web/my-app/
+web/spamsuit-app/
+.cleanup-trash-2026-05-24/
+.agents/skills/wp-wpcli-and-ops/opencli-rs
+# Build artifacts
+.next/
+dist/
+*.tsbuildinfo
+packages/web/.next/
+packages/shared/dist/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Trash
+.cleanup-trash-*/
