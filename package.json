@@ -1,0 +1,19 @@
+{
+  "name": "agentsocial",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Social content automation platform with integrated website builder",
+  "scripts": {
+    "dev": "turbo dev",
+    "build": "turbo build",
+    "start": "turbo start",
+    "lint": "turbo lint",
+    "type-check": "turbo type-check",
+    "db:push": "pnpm --filter @agentsocial/api db:push",
+    "db:generate": "pnpm --filter @agentsocial/api db:generate"
+  },
+  "devDependencies": {
+    "turbo": "^2.3.0"
+  },
+  "packageManager": "pnpm@9.15.0"
+}
