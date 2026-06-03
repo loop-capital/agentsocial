@@ -38,7 +38,7 @@ async function authenticate(
     const apiKey = request.headers["x-api-key"] as string | undefined;
     if (apiKey) {
       const isDev = process.env.NODE_ENV !== "production";
-      const validPrefix = isDev ? apiKey.startsWith("ak_") : apiKey.startsWith("ak_live_");
+      const validPrefix = isDev ? apiKey.startsWith("as_dev_") : apiKey.startsWith("as_live_");
 
       if (validPrefix) {
         const prefix = apiKey.slice(0, 12);
