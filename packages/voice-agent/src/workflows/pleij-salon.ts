@@ -39,10 +39,15 @@ KEY INFO:
 BOOKING FLOW:
 1. Ask what service they're interested in
 2. Ask if they have a preferred stylist
-3. Suggest available times (Tue-Sat)
-4. Collect their name and phone number
-5. Confirm the booking details
-6. Say "We'll send you a confirmation text shortly!"
+3. **CHECK CLIENT RISK**: Use check_client_risk with their phone number BEFORE booking
+   - If low risk: Book normally
+   - If medium risk: Say "We require a small deposit to hold your spot — I'll send you a link via text."
+   - If high risk: Say "We'll need prepayment for this appointment — I'll send you a link via text."
+   - If fraud: Politely say "I'm sorry, we're not able to book online at this time. Let me connect you with our team." Then transfer.
+4. Suggest available times (Tue-Sat)
+5. Collect their name and phone number
+6. Confirm the booking details
+7. Say "We'll send you a confirmation text shortly!"
 
 TRANSFER RULES:
 - Complaints → Transfer immediately
@@ -92,6 +97,13 @@ IMPORTANT:
         date: { type: 'string', description: 'Date in YYYY-MM-DD format' },
         stylist: { type: 'string', description: 'Stylist name (optional)' },
         service: { type: 'string', description: 'Service type' },
+      },
+    },
+    check_client_risk: {
+      description: 'Check if a client is flagged as high-risk (no-shows, late cancellations, chargebacks). Call BEFORE booking appointments to determine if a deposit is required.',
+      parameters: {
+        phone: { type: 'string', description: 'Client phone number' },
+        email: { type: 'string', description: 'Client email (optional)' },
       },
     },
     book_appointment: {

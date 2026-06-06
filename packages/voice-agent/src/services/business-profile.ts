@@ -227,10 +227,15 @@ ${formatFAQs(profile.faqs)}`);
   sections.push(`BOOKING FLOW:
 1. Ask what service they're interested in
 2. Ask if they have a preferred stylist
-3. Suggest available times (check_availability function)
-4. Collect their name and phone number
-5. Confirm booking details
-6. Say "We'll send you a confirmation text shortly!"`);
+3. CHECK CLIENT RISK: Use check_client_risk with their phone number BEFORE booking
+   - Low risk: Book normally
+   - Medium risk: Say "We require a small deposit to hold your spot — I'll send you a link via text."
+   - High risk: Say "We'll need prepayment for this appointment — I'll send you a link via text."
+   - Fraud: Say "I'm sorry, I can't book that online right now. Let me connect you with our team." Then transfer.
+4. Suggest available times (check_availability function)
+5. Collect their name and phone number
+6. Confirm booking details
+7. Say "We'll send you a confirmation text shortly!"`);
 
   // ── Transfer Rules ──
   sections.push(`TRANSFER RULES:
@@ -386,6 +391,18 @@ function formatTransferRules(rules: TransferRules): string {
 // ─── Voice Function Definitions ────────────────────────────────────
 
 export const VOICE_FUNCTIONS = [
+  {
+    name: 'check_client_risk',
+    description: 'Check if a client is flagged as high-risk (no-shows, late cancellations, chargebacks). Call BEFORE booking to determine if a deposit is required.',
+    parameters: {
+      type: 'object' as const,
+      properties: {
+        phone: { type: 'string', description: 'Client phone number' },
+        email: { type: 'string', description: 'Client email (optional)' },
+      },
+      required: ['phone'] as const,
+    },
+  },
   {
     name: 'check_availability',
     description: 'Check available appointment slots for a given date and optionally a specific stylist or service',

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { api } from "../../../lib/api";
 import {
   Shield,
   Send,
@@ -48,7 +49,6 @@ import {
 } from "lucide-react";
 import { StatCard } from "../../../components/ui/stat-card";
 import { EmptyState } from "../../../components/ui/empty-state";
-import { api } from "../../../lib/api";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -306,10 +306,12 @@ function CreateCampaignDialog({
   open,
   onClose,
   onCreated,
+  brandId,
 }: {
   open: boolean;
   onClose: () => void;
   onCreated: (campaign: Campaign) => void;
+  brandId: string;
 }) {
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
@@ -336,11 +338,11 @@ function CreateCampaignDialog({
     setCreating(true);
     setError(null);
     try {
-      const BRAND_ID = "00000000-0000-0000-0000-000000000000"; // TODO: wire auth
+      
       const campaign = await rsFetch<Campaign>("/api/v1/review-sentry/campaigns", {
         method: "POST",
         body: JSON.stringify({
-          brand_id: BRAND_ID,
+          brand_id: brandId,
           name: name.trim(),
           slug: slug.trim(),
           google_place_id: googlePlaceId.trim(),
@@ -485,10 +487,12 @@ function FlagReviewDialog({
   open,
   onClose,
   onFlagged,
+  brandId,
 }: {
   open: boolean;
   onClose: () => void;
   onFlagged: () => void;
+  brandId: string;
 }) {
   const [reviewUrl, setReviewUrl] = useState("");
   const [reviewAuthor, setReviewAuthor] = useState("");
@@ -504,11 +508,11 @@ function FlagReviewDialog({
     setSubmitting(true);
     setError(null);
     try {
-      const BRAND_ID = "00000000-0000-0000-0000-000000000000";
+      
       await rsFetch("/api/v1/review-sentry/removal/flag", {
         method: "POST",
         body: JSON.stringify({
-          brand_id: BRAND_ID,
+          brand_id: brandId,
           review_url: reviewUrl,
           review_text: reviewText || undefined,
           review_author: reviewAuthor || undefined,
@@ -1781,7 +1785,7 @@ function ScheduleRecurringForm({
 
 // ─── Review Ring Detector ─────────────────────────────────────────────────
 
-function ReviewRingDetector() {
+function ReviewRingDetector({ brandId }: { brandId: string }) {
   const [input, setInput] = useState("");
   const [analyzing, setAnalyzing] = useState(false);
   const [result, setResult] = useState<RingAnalysisResult | null>(null);
@@ -1789,7 +1793,7 @@ function ReviewRingDetector() {
   const [flagging, setFlagging] = useState<string | null>(null);
   const [flagged, setFlagged] = useState<Set<string>>(new Set());
 
-  const BRAND_ID = "00000000-0000-0000-0000-000000000000";
+  
 
   const handleAnalyze = async () => {
     if (!input.trim()) return;
@@ -1838,7 +1842,7 @@ function ReviewRingDetector() {
       await rsFetch("/api/v1/review-sentry/removal/flag", {
         method: "POST",
         body: JSON.stringify({
-          brand_id: BRAND_ID,
+          brand_id: brandId,
           review_url: review.reviewUrl || "",
           review_text: review.reviewText,
           review_author: review.reviewerName,
@@ -2143,7 +2147,7 @@ function ReviewRingDetector() {
 
 // ─── Auto-Dispute Generator ─────────────────────────────────────────────────
 
-function AutoDisputeGenerator() {
+function AutoDisputeGenerator({ brandId }: { brandId: string }) {
   const [removalCases, setRemovalCases] = useState<RemovalCase[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeCase, setActiveCase] = useState<string | null>(null);
@@ -2169,12 +2173,12 @@ function AutoDisputeGenerator() {
   const [evidenceDesc, setEvidenceDesc] = useState("");
   const [addingEvidence, setAddingEvidence] = useState(false);
 
-  const BRAND_ID = "00000000-0000-0000-0000-000000000000";
+  
 
   const loadCases = useCallback(async () => {
     setLoading(true);
     try {
-      const data = await rsFetch<RemovalCase[]>("/api/v1/review-sentry/removal/cases?brand_id=" + BRAND_ID);
+      const data = await rsFetch<RemovalCase[]>("/api/v1/review-sentry/removal/cases?brand_id=" + brandId);
       setRemovalCases(Array.isArray(data) ? data : []);
     } catch {
       setRemovalCases([]);
@@ -2203,7 +2207,7 @@ function AutoDisputeGenerator() {
       await rsFetch("/api/v1/review-sentry/removal/flag", {
         method: "POST",
         body: JSON.stringify({
-          brand_id: BRAND_ID,
+          brand_id: brandId,
           review_url: newReviewUrl,
           review_text: newReviewText || undefined,
           review_author: newReviewerName || undefined,
@@ -2683,6 +2687,8 @@ Sincerely,
 
 export default function ReviewSentryPage() {
   // ─── State ────────────────────────────────────────────────────────────────────
+  const [brandId, setBrandId] = useState("");
+  const [brandLoading, setBrandLoading] = useState(true);
   const [dashboard, setDashboard] = useState<DashboardData | null>(null);
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [removalCases, setRemovalCases] = useState<RemovalCase[]>([]);
@@ -2693,8 +2699,40 @@ export default function ReviewSentryPage() {
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [showFlagDialog, setShowFlagDialog] = useState(false);
 
-  // Hardcoded brand ID — will be wired to auth later
-  const BRAND_ID = "00000000-0000-0000-0000-000000000000";
+  // ─── Load Brand ──────────────────────────────────────────────────────────────
+  useEffect(() => {
+    (async () => {
+      try {
+        const brandsRes = await api.brands.list();
+        const userBrands = brandsRes.data || [];
+        if (userBrands.length > 0) {
+          setBrandId(userBrands[0].id);
+        }
+      } catch (err) {
+        console.error("[ReviewSentry] Failed to load brands:", err);
+      } finally {
+        setBrandLoading(false);
+      }
+    })();
+  }, []);
+
+  if (brandLoading) {
+    return (
+      <div className="p-6 flex items-center justify-center min-h-[400px]">
+        <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
+      </div>
+    );
+  }
+
+  if (!brandId) {
+    return (
+      <div className="p-6 text-center">
+        <h2 className="text-lg font-semibold text-gray-900">No Brand Found</h2>
+        <p className="text-gray-500 mt-1">Please create a brand in Settings before using Review Sentry.</p>
+      </div>
+    );
+  }
+  
 
   // ─── Data Fetching ──────────────────────────────────────────────────────────
 
@@ -2703,8 +2741,8 @@ export default function ReviewSentryPage() {
     setError(null);
     try {
       const [dashData, removalData, templatesData] = await Promise.allSettled([
-        rsFetch<DashboardData>(`/api/v1/review-sentry/dashboard/${BRAND_ID}`),
-        rsFetch<RemovalCase[]>("/api/v1/review-sentry/removal/cases?brand_id=" + BRAND_ID),
+        rsFetch<DashboardData>(`/api/v1/review-sentry/dashboard/${brandId}`),
+        rsFetch<RemovalCase[]>("/api/v1/review-sentry/removal/cases?brand_id=" + brandId),
         rsFetch<{ templates: SMSTemplate[] }>("/api/v1/review-sentry/templates"),
       ]);
 
@@ -2725,7 +2763,7 @@ export default function ReviewSentryPage() {
     } finally {
       setLoading(false);
     }
-  }, [BRAND_ID]);
+  }, [brandId]);
 
   // Load campaigns separately (they may not exist yet)
   const loadCampaigns = useCallback(async () => {
@@ -2751,7 +2789,7 @@ export default function ReviewSentryPage() {
 
   const handleReviewFlagged = () => {
     // Reload removal cases
-    rsFetch<RemovalCase[]>("/api/v1/review-sentry/removal/cases?brand_id=" + BRAND_ID)
+    rsFetch<RemovalCase[]>("/api/v1/review-sentry/removal/cases?brand_id=" + brandId)
       .then((data) => setRemovalCases(Array.isArray(data) ? data : []))
       .catch(() => {});
   };
@@ -3034,7 +3072,7 @@ export default function ReviewSentryPage() {
 
       {/* ─── Feedback Tab ──────────────────────────────────────────────────────── */}
       {activeTab === "feedback" && (
-        <FeedbackTab dashboard={dashboard} brandId={BRAND_ID} />
+        <FeedbackTab dashboard={dashboard} brandId={brandId} />
       )}
 
       {/* ─── SMS Campaigns Tab ──────────────────────────────────────────────── */}
@@ -3086,22 +3124,24 @@ export default function ReviewSentryPage() {
       )}
 
       {/* ─── Ring Detector Tab ─────────────────────────────────────────────── */}
-      {activeTab === "ringDetector" && <ReviewRingDetector />}
+      {activeTab === "ringDetector" && <ReviewRingDetector brandId={brandId} />}
 
       {/* ─── Auto-Dispute Generator Tab ───────────────────────────────────────── */}
-      {activeTab === "autoDispute" && <AutoDisputeGenerator />}
+      {activeTab === "autoDispute" && <AutoDisputeGenerator brandId={brandId} />}
 
       {/* Dialogs */}
       <CreateCampaignDialog
         open={showCreateDialog}
         onClose={() => setShowCreateDialog(false)}
         onCreated={handleCampaignCreated}
+        brandId={brandId}
       />
 
       <FlagReviewDialog
         open={showFlagDialog}
         onClose={() => setShowFlagDialog(false)}
         onFlagged={handleReviewFlagged}
+        brandId={brandId}
       />
     </div>
   );

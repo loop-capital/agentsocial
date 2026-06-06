@@ -24,11 +24,11 @@ import {
   Settings2,
   Users,
 } from "lucide-react";
+import { api } from "../../../lib/api";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
-const BRAND_ID = "00000000-0000-0000-0000-000000000000"; // TODO: from auth context
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -176,7 +176,7 @@ function EmptyState({ icon: Icon, title, description }: { icon: React.ElementTyp
 
 // ─── Client Lookup Section ────────────────────────────────────────────────────
 
-function ClientLookup() {
+function ClientLookup({ brandId }: { brandId: string }) {
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(false);
   const [assessment, setAssessment] = useState<RiskAssessment | null>(null);
@@ -204,7 +204,7 @@ function ClientLookup() {
 
     try {
       // Lookup client profile
-      const lookupRes = await fetch(`${API_URL}/api/v1/clientvet/clients/${encodeURIComponent(query.trim())}?brandId=${BRAND_ID}`);
+      const lookupRes = await fetch(`${API_URL}/api/v1/clientvet/clients/${encodeURIComponent(query.trim())}?brandId=${brandId}`);
       let client: ClientFlag | null = null;
       if (lookupRes.ok) {
         const data = await lookupRes.json();
@@ -213,7 +213,7 @@ function ClientLookup() {
       }
 
       // Also run booking check
-      const body: Record<string, string | number> = { brandId: BRAND_ID, serviceAmountCents: 10000 };
+      const body: Record<string, string | number> = { brandId: brandId, serviceAmountCents: 10000 };
       if (query.includes("@")) {
         body.email = query.trim();
       } else {
@@ -272,7 +272,7 @@ function ClientLookup() {
 
   const loadNotes = async (clientFlagId: string) => {
     try {
-      const res = await fetch(`${API_URL}/api/v1/clientvet/clients/${clientFlagId}/notes?brandId=${BRAND_ID}`);
+      const res = await fetch(`${API_URL}/api/v1/clientvet/clients/${clientFlagId}/notes?brandId=${brandId}`);
       if (res.ok) {
         const data = await res.json();
         setNotes(data.notes || []);
@@ -284,7 +284,7 @@ function ClientLookup() {
 
   const loadFlagHistory = async (clientFlagId: string) => {
     try {
-      const res = await fetch(`${API_URL}/api/v1/clientvet/clients/${clientFlagId}/flags?brandId=${BRAND_ID}`);
+      const res = await fetch(`${API_URL}/api/v1/clientvet/clients/${clientFlagId}/flags?brandId=${brandId}`);
       if (res.ok) {
         const data = await res.json();
         setFlagHistory(data.flags || data || []);
@@ -325,7 +325,7 @@ function ClientLookup() {
   const addNote = async () => {
     if (!assessment?.clientFlagId || !newNote.trim()) return;
     try {
-      const res = await fetch(`${API_URL}/api/v1/clientvet/clients/${assessment.clientFlagId}/notes?brandId=${BRAND_ID}`, {
+      const res = await fetch(`${API_URL}/api/v1/clientvet/clients/${assessment.clientFlagId}/notes?brandId=${brandId}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ note: newNote }),
@@ -668,7 +668,7 @@ function ClientLookup() {
 
 // ─── Flagged Clients Table ────────────────────────────────────────────────────
 
-function FlaggedClientsTable() {
+function FlaggedClientsTable({ brandId }: { brandId: string }) {
   const [clients, setClients] = useState<ClientFlag[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
@@ -683,7 +683,7 @@ function FlaggedClientsTable() {
     setLoading(true);
     try {
       const params = new URLSearchParams({
-        brandId: BRAND_ID,
+        brandId: brandId,
         page: String(page),
         limit: String(limit),
       });
@@ -855,7 +855,7 @@ function FlaggedClientsTable() {
 
 // ─── Booking Check Section ────────────────────────────────────────────────────
 
-function BookingCheck() {
+function BookingCheck({ brandId }: { brandId: string }) {
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(false);
   const [assessment, setAssessment] = useState<RiskAssessment | null>(null);
@@ -867,7 +867,7 @@ function BookingCheck() {
     setError(null);
 
     try {
-      const body: Record<string, string | number> = { brandId: BRAND_ID, serviceAmountCents: 10000 };
+      const body: Record<string, string | number> = { brandId: brandId, serviceAmountCents: 10000 };
       if (query.includes("@")) {
         body.email = query.trim();
       } else {
@@ -1003,7 +1003,7 @@ function BookingCheck() {
 
 // ─── Deposit Policy Settings ──────────────────────────────────────────────────
 
-function DepositPolicySettings() {
+function DepositPolicySettings({ brandId }: { brandId: string }) {
   const [policies, setPolicies] = useState<DepositPolicy[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -1020,7 +1020,7 @@ function DepositPolicySettings() {
   const fetchPolicies = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${API_URL}/api/v1/clientvet/deposits/${BRAND_ID}`);
+      const res = await fetch(`${API_URL}/api/v1/clientvet/deposits/${brandId}`);
       if (res.ok) {
         const data = await res.json();
         setPolicies(data.policies || data || defaultPolicies);
@@ -1051,7 +1051,7 @@ function DepositPolicySettings() {
     setError(null);
     setSuccessMessage(null);
     try {
-      const res = await fetch(`${API_URL}/api/v1/clientvet/deposits/${BRAND_ID}`, {
+      const res = await fetch(`${API_URL}/api/v1/clientvet/deposits/${brandId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ policies }),
@@ -1181,6 +1181,42 @@ function DepositPolicySettings() {
 
 export default function ClientVetPage() {
   const [activeTab, setActiveTab] = useState<"lookup" | "clients" | "booking" | "deposits">("lookup");
+  const [brandId, setBrandId] = useState<string>("");
+  const [brandLoading, setBrandLoading] = useState(true);
+
+  // Load brand from auth context
+  useEffect(() => {
+    (async () => {
+      try {
+        const brandsRes = await api.brands.list();
+        const userBrands = brandsRes.data || [];
+        if (userBrands.length > 0) {
+          setBrandId(userBrands[0].id);
+        }
+      } catch (err) {
+        console.error("[ClientVet] Failed to load brands:", err);
+      } finally {
+        setBrandLoading(false);
+      }
+    })();
+  }, []);
+
+  if (brandLoading) {
+    return (
+      <div className="p-6 flex items-center justify-center min-h-[400px]">
+        <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
+      </div>
+    );
+  }
+
+  if (!brandId) {
+    return (
+      <div className="p-6 text-center">
+        <h2 className="text-lg font-semibold text-gray-900">No Brand Found</h2>
+        <p className="text-gray-500 mt-1">Please create a brand in Settings before using ClientVet.</p>
+      </div>
+    );
+  }
 
   const tabs = [
     { id: "lookup" as const, label: "Client Lookup", icon: Search },
@@ -1220,10 +1256,10 @@ export default function ClientVetPage() {
       </div>
 
       {/* Tab Content */}
-      {activeTab === "lookup" && <ClientLookup />}
-      {activeTab === "clients" && <FlaggedClientsTable />}
-      {activeTab === "booking" && <BookingCheck />}
-      {activeTab === "deposits" && <DepositPolicySettings />}
+      {activeTab === "lookup" && <ClientLookup brandId={brandId} />}
+      {activeTab === "clients" && <FlaggedClientsTable brandId={brandId} />}
+      {activeTab === "booking" && <BookingCheck brandId={brandId} />}
+      {activeTab === "deposits" && <DepositPolicySettings brandId={brandId} />}
     </div>
   );
 }
