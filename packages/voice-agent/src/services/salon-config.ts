@@ -6,7 +6,7 @@
 export const SALON_CONFIG = {
   id: 'pleij-salon',
   name: 'PLEIJ Salon',
-  phone: '+1614XXXXXXX', // Replace with actual number
+  phone: '+16146651751', // PLEIJ Twilio number
   address: '4170 N High St, Columbus, OH 43214',
   website: 'https://pleijsalon.com',
   
