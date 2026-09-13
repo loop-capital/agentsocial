@@ -1,14 +1,15 @@
 node_modules/
 dist/
 .turbo/
-.env
-.env.local
-.env.*.local
+**/.env
+**/.env.local
+**/.env.*.local
 *.log
 .DS_Store
 .next/
 .cache/
-coverage//.agents/
+coverage/
+.agents/
 cloner-template/
 tools/website-builder-setup/
 .vercel
@@ -23,10 +24,20 @@ dist/
 packages/web/.next/
 packages/shared/dist/
 
-# Environment files
+# Environment files (nested too — a bare .env/.env.local pattern does NOT
+# match packages/*/.env; found packages/api/.env about to be swept into a
+# commit by this gap on 2026-09-13)
 .env
 .env.local
 .env.*.local
+**/.env
+**/.env.local
+**/.env.*.local
+
+# Python virtualenvs (found .venv-leads/, 520MB, untracked, never belonged
+# in git at all)
+.venv*/
+venv/
 
 # Trash
 .cleanup-trash-*/
