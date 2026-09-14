@@ -1,0 +1,238 @@
+{
+  "site_name": "stripe.com",
+  "url": "https://stripe.com",
+  "extracted_at": "2026-04-29T14:46:48Z",
+  "brand_name": "Stripe Com",
+  "brand_colors": [],
+  "brand_fonts": [],
+  "colors": {
+    "primary": [],
+    "secondary": [],
+    "accent": [],
+    "background": [],
+    "foreground": [],
+    "border": [],
+    "muted": []
+  },
+  "typography": {
+    "families": {
+      "heading": [
+        "system-ui"
+      ],
+      "body": [
+        "system-ui"
+      ],
+      "mono": [
+        "ui-monospace",
+        "SFMono-Regular",
+        "monospace"
+      ]
+    },
+    "sizes": [],
+    "weights": [],
+    "line_heights": []
+  },
+  "spacing": {
+    "padding": [],
+    "margin": [],
+    "gap": []
+  },
+  "borders": {
+    "radii": []
+  },
+  "shadows": {
+    "values": []
+  },
+  "button_styles": [
+    {
+      "tag": "button",
+      "classes": "hds-button hds-navigation-menu__trigger hds-button--transparent",
+      "text": "Products"
+    },
+    {
+      "tag": "button",
+      "classes": "hds-button hds-navigation-menu__trigger hds-button--transparent",
+      "text": "Solutions"
+    },
+    {
+      "tag": "button",
+      "classes": "hds-button hds-navigation-menu__trigger hds-button--transparent",
+      "text": "Developers"
+    },
+    {
+      "tag": "button",
+      "classes": "hds-button hds-navigation-menu__trigger hds-button--transparent",
+      "text": "Resources"
+    },
+    {
+      "tag": "a",
+      "classes": "hds-button hds-navigation-menu__trigger hds-button--transparent",
+      "text": "Pricing"
+    },
+    {
+      "tag": "a",
+      "classes": "hds-button hds-navigation-menu__trigger hds-button--transparent",
+      "text": "Sign in"
+    },
+    {
+      "tag": "a",
+      "classes": "hds-button hds-button--primary",
+      "text": "Start now"
+    },
+    {
+      "tag": "a",
+      "classes": "hds-button hds-button--secondary-on-quiet",
+      "text": "Contact sales"
+    },
+    {
+      "tag": "button",
+      "classes": "hds-button navigation-back-button hds-button--transparent",
+      "text": "Back"
+    },
+    {
+      "tag": "button",
+      "classes": "hds-ui-button hds-navigation-menu__trigger navigation-hamburger-button hds-ui-button--quiet",
+      "text": ""
+    },
+    {
+      "tag": "a",
+      "classes": "hds-button navigation-cta-button navigation-item__sign-in hds-button--secondary-on-quiet",
+      "text": "Sign inSign in"
+    },
+    {
+      "tag": "a",
+      "classes": "hds-button navigation-cta-button navigation-item__contact-sales hds-button--primary",
+      "text": "Contact sales"
+    },
+    {
+      "tag": "a",
+      "classes": "hds-button hds-button--primary",
+      "text": "Get started"
+    },
+    {
+      "tag": "a",
+      "classes": "hds-button hero-section__button--google hds-button--secondary",
+      "text": "Sign up with Google"
+    },
+    {
+      "tag": "a",
+      "classes": "hds-button sessions-section__cta-button hds-button--primary",
+      "text": "Watch keynote"
+    },
+    {
+      "tag": "a",
+      "classes": "hds-link stats-menu__stat-description__link hds-link--secondary",
+      "text": "historical uptime"
+    },
+    {
+      "tag": "a",
+      "classes": "hds-button hds-button--primary",
+      "text": "Stripe for enterprises"
+    },
+    {
+      "tag": "button",
+      "classes": "customer-stories__customer-button",
+      "text": "Hertz unifies commerce with Stripe."
+    },
+    {
+      "tag": "a",
+      "classes": "hds-button customer-story-button customer-story-button--open hds-button--secondary-on-quiet hds-button--compact",
+      "text": "Read the story"
+    },
+    {
+      "tag": "a",
+      "classes": "hds-button hds-button--secondary",
+      "text": "Read the story"
+    }
+  ],
+  "card_styles": [
+    {
+      "tag": "button",
+      "classes": "modular-solutions-bento-card modular-solutions-bento__card-payments"
+    },
+    {
+      "tag": "div",
+      "classes": "modular-solutions-bento-card__dialog-entry"
+    },
+    {
+      "tag": "div",
+      "classes": "modular-solutions-bento-card__dialog-entry-wrapper"
+    },
+    {
+      "tag": "div",
+      "classes": "modular-solutions-bento-card__text"
+    },
+    {
+      "tag": "h3",
+      "classes": "hds-heading modular-solutions-bento-card__title hds-heading--md"
+    },
+    {
+      "tag": "div",
+      "classes": "modular-solutions-bento-card__border"
+    },
+    {
+      "tag": "div",
+      "classes": "modular-solutions-bento-card__border-color"
+    },
+    {
+      "tag": "div",
+      "classes": "modular-solutions-bento-card__border-color-gradient"
+    },
+    {
+      "tag": "div",
+      "classes": "modular-solutions-bento-card__inner"
+    },
+    {
+      "tag": "div",
+      "classes": "modular-solutions-bento-card__content"
+    },
+    {
+      "tag": "div",
+      "classes": "modular-solutions-bento-card__content-inner"
+    },
+    {
+      "tag": "div",
+      "classes": "modular-solutions-bento-card__graphic"
+    },
+    {
+      "tag": "div",
+      "classes": "modular-solutions-bento-card__background"
+    },
+    {
+      "tag": "button",
+      "classes": "modular-solutions-bento-card modular-solutions-bento__card-billing"
+    },
+    {
+      "tag": "div",
+      "classes": "modular-solutions-bento-card__dialog-entry"
+    },
+    {
+      "tag": "div",
+      "classes": "modular-solutions-bento-card__dialog-entry-wrapper"
+    },
+    {
+      "tag": "div",
+      "classes": "modular-solutions-bento-card__text"
+    },
+    {
+      "tag": "h3",
+      "classes": "hds-heading modular-solutions-bento-card__title hds-heading--md"
+    },
+    {
+      "tag": "div",
+      "classes": "modular-solutions-bento-card__border"
+    },
+    {
+      "tag": "div",
+      "classes": "modular-solutions-bento-card__border-color"
+    }
+  ],
+  "input_styles": [],
+  "layout_patterns": [],
+  "motion_patterns": [],
+  "style_tags": [
+    "flat-design",
+    "mixed-radii"
+  ],
+  "design_philosophy": "Modern professional web design"
+}

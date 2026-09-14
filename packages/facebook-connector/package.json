@@ -1,0 +1,21 @@
+{
+  "name": "@agentsocial/facebook-connector",
+  "version": "0.1.0",
+  "description": "Facebook Connector for AgentSocial - Graph API Integration",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch"
+  },
+  "dependencies": {
+    "@agentsocial/shared": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^20.12.7",
+    "typescript": "^5.4.5"
+  }
+}

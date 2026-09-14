@@ -1,0 +1,182 @@
+{
+  "site_name": "figma.com",
+  "url": "https://figma.com",
+  "extracted_at": "2026-04-29T14:46:48Z",
+  "brand_name": "Figma Com",
+  "brand_colors": [],
+  "brand_fonts": [],
+  "colors": {
+    "primary": [
+      {
+        "name": "f-primary-btn-bg-color",
+        "value": "#000000"
+      },
+      {
+        "name": "f-primary-btn-text-color",
+        "value": "#FFFFFF"
+      },
+      {
+        "name": "f-primary-transparent-color",
+        "value": "rgba(0, 0, 0, 0.16)"
+      }
+    ],
+    "secondary": [
+      {
+        "name": "f-list-header-color",
+        "value": "rgba(255, 255, 255, 0.6)"
+      },
+      {
+        "name": "f-link-color",
+        "value": "var(--f-text-color, #000000)"
+      },
+      {
+        "name": "inline_0",
+        "value": "rgba(0, 0, 0, 0.08)"
+      }
+    ],
+    "accent": [
+      {
+        "name": "f-text-secondary-color",
+        "value": "rgba(0, 0, 0, 0.65)"
+      }
+    ],
+    "background": [
+      {
+        "name": "f-bg-color",
+        "value": "#C7F8FB"
+      },
+      {
+        "name": "f-icon-bg-color",
+        "value": "rgba(255, 255, 255, 0.24)"
+      },
+      {
+        "name": "f-badge-bg-color",
+        "value": "rgba(0, 0, 0, 0.08)"
+      },
+      {
+        "name": "bg-color",
+        "value": "#FFFFFF"
+      },
+      {
+        "name": "f-form-input-bg-color",
+        "value": "rgba(0, 0, 0, 0.08)"
+      },
+      {
+        "name": "f-form-select-hover-bg-color",
+        "value": "rgba(0, 0, 0, 0.16)"
+      },
+      {
+        "name": "f-form-error-bg-color",
+        "value": "#972121"
+      },
+      {
+        "name": "f-lego-bg-color",
+        "value": "var(--f-bg-color, #FFFFFF)"
+      },
+      {
+        "name": "f-emphasis-btn-bg-color",
+        "value": "#000000"
+      }
+    ],
+    "foreground": [
+      {
+        "name": "f-cursor-text",
+        "value": "text"
+      },
+      {
+        "name": "f-text-color",
+        "value": "#000000"
+      },
+      {
+        "name": "f-badge-text-color",
+        "value": "#000000"
+      },
+      {
+        "name": "text-color",
+        "value": "#000000"
+      },
+      {
+        "name": "f-form-placeholder-text-color",
+        "value": "rgba(0, 0, 0, 0.5)"
+      },
+      {
+        "name": "f-form-error-text-color",
+        "value": "#FFFFFF"
+      },
+      {
+        "name": "f-lego-fg-color",
+        "value": "var(--f-text-color, #000000)"
+      },
+      {
+        "name": "f-emphasis-btn-text-color",
+        "value": "#FFFFFF"
+      },
+      {
+        "name": "carousel-parent-text-color",
+        "value": "#FFFFFF"
+      }
+    ],
+    "border": [],
+    "muted": []
+  },
+  "typography": {
+    "families": {
+      "heading": [
+        "system-ui"
+      ],
+      "body": [
+        "system-ui"
+      ],
+      "mono": [
+        "ui-monospace",
+        "SFMono-Regular",
+        "monospace"
+      ]
+    },
+    "sizes": [],
+    "weights": [],
+    "line_heights": []
+  },
+  "spacing": {
+    "padding": [],
+    "margin": [],
+    "gap": []
+  },
+  "borders": {
+    "radii": []
+  },
+  "shadows": {
+    "values": []
+  },
+  "button_styles": [],
+  "card_styles": [],
+  "input_styles": [],
+  "layout_patterns": [],
+  "motion_patterns": [
+    "-webkit-transform 250ms",
+    "transform 250ms",
+    "all 200ms ease",
+    "all 200ms ease",
+    "background 0.4s cubic-bezier(.8,0,.2,1)",
+    "background 0.4s cubic-bezier(.8,0,.2,1)",
+    "-webkit-transform 250ms,opacity 250ms",
+    "transform 250ms,opacity 250ms",
+    "-webkit-transform 250ms,opacity 250ms",
+    "transform 250ms,opacity 250ms",
+    "-webkit-transform 250ms,opacity 250ms",
+    "transform 250ms,opacity 250ms",
+    "-webkit-transform 250ms,opacity 250ms",
+    "transform 250ms,opacity 250ms",
+    "-webkit-transform 250ms,opacity 250ms",
+    "animation-6j0toc",
+    "animation-jpvf7s",
+    "animation-zsk7zs",
+    "animation-yh21v4"
+  ],
+  "style_tags": [
+    "flat-design",
+    "mixed-radii",
+    "subtle-motion"
+  ],
+  "design_philosophy": "Modern professional web design"
+}

@@ -1,0 +1,24 @@
+/*
+Theme Name: H-Code Child
+Theme URI: https://wp.getuplook.com
+Author: AgentSocial
+Description: Child theme for H-Code - adds short description to special product section, newsletter centering.
+Template: h-code
+Version: 1.1.0
+Text Domain: h-code-child
+*/
+
+/* Carousel pagination dots - match PLEIJ spacing */
+.exclusive-style .owl-dot,
+.exclusive-style .owl-carousel button.owl-dot {
+    padding: 6px 8px !important;
+}
+
+/* Newsletter centering - email field + sign up button */
+.shop-newsletter .mc4wp-form-fields { text-align: center !important; }
+.shop-newsletter .mc4wp-form-fields p { text-align: center !important; }
+.shop-newsletter .mc4wp-form-fields p:last-child { text-align: center !important; }
+.shop-newsletter .mc4wp-form input[type="email"] { display: block !important; margin: 0 auto !important; text-align: center !important; }
+.shop-newsletter .mc4wp-form input[type="submit"],
+.shop-newsletter .mc4wp-form button[type="submit"] { display: inline-block !important; margin: 15px auto 0 !important; float: none !important; }
+.shop-newsletter .mc4wp-form label { display: block; text-align: center; }

@@ -1,0 +1,366 @@
+{
+  "site_name": "notion.so",
+  "url": "https://notion.so",
+  "extracted_at": "2026-04-29T14:46:48Z",
+  "brand_name": "Notion So",
+  "brand_colors": [],
+  "brand_fonts": [],
+  "colors": {
+    "primary": [],
+    "secondary": [
+      {
+        "name": "inline_0",
+        "value": "var(--color-orange-400)"
+      },
+      {
+        "name": "inline_1",
+        "value": "#ffb110"
+      },
+      {
+        "name": "inline_2",
+        "value": "#ff8a33"
+      },
+      {
+        "name": "inline_3",
+        "value": "var(--color-red-400)"
+      },
+      {
+        "name": "inline_4",
+        "value": "var(--color-gray-800)"
+      },
+      {
+        "name": "inline_5",
+        "value": "#ad6ded"
+      },
+      {
+        "name": "inline_6",
+        "value": "var(--color-pink-400)"
+      },
+      {
+        "name": "inline_7",
+        "value": "var(--color-purple-400)"
+      },
+      {
+        "name": "inline_9",
+        "value": "var(--color-teal-400)"
+      },
+      {
+        "name": "inline_10",
+        "value": "#f64932"
+      },
+      {
+        "name": "inline_11",
+        "value": "var(--color-black)"
+      },
+      {
+        "name": "inline_12",
+        "value": "var(--color-brown-400)"
+      },
+      {
+        "name": "inline_14",
+        "value": "var(--color-yellow-400)"
+      },
+      {
+        "name": "inline_15",
+        "value": "#2a9d99"
+      },
+      {
+        "name": "inline_16",
+        "value": "var(--color-blue-400)"
+      },
+      {
+        "name": "inline_17",
+        "value": "#1aae39"
+      },
+      {
+        "name": "inline_18",
+        "value": "#ff83dd"
+      },
+      {
+        "name": "inline_19",
+        "value": "#097fe8"
+      }
+    ],
+    "accent": [],
+    "background": [],
+    "foreground": [],
+    "border": [],
+    "muted": []
+  },
+  "typography": {
+    "families": {
+      "heading": [
+        "system-ui"
+      ],
+      "body": [
+        "system-ui"
+      ],
+      "mono": [
+        "ui-monospace",
+        "SFMono-Regular",
+        "monospace"
+      ]
+    },
+    "sizes": [],
+    "weights": [],
+    "line_heights": []
+  },
+  "spacing": {
+    "padding": [],
+    "margin": [],
+    "gap": []
+  },
+  "borders": {
+    "radii": [
+      "var(--border-radius-round)",
+      "var(--border-radius-200)"
+    ]
+  },
+  "shadows": {
+    "values": []
+  },
+  "button_styles": [
+    {
+      "tag": "a",
+      "classes": "semanticTypography_semanticTypography__mWJkv linkText_linkText__527kz linkText_colorVariantPrimary__h6Nef linkText_hasArrow__2BwWV",
+      "text": "See what\u2019s new\u2192"
+    },
+    {
+      "tag": "a",
+      "classes": "semanticTypography_semanticTypography__mWJkv linkText_linkText__527kz linkText_colorVariantPrimary__h6Nef linkText_hasArrow__2BwWV",
+      "text": "Notion App\u2192"
+    },
+    {
+      "tag": "a",
+      "classes": "button_button__atjat button_buttonVariantPrimary__mUFQZ button_buttonSizeM__NexGD",
+      "text": "Get Notion free"
+    },
+    {
+      "tag": "a",
+      "classes": "semanticTypography_semanticTypography__mWJkv semanticTypography_variantInteractionButtonMedium__HCJEu button_button__bge_I HeroCTA_cta__hOE_c button_primary__k0d3I button_medium__VXS2i",
+      "text": "Get Notion free"
+    },
+    {
+      "tag": "a",
+      "classes": "semanticTypography_semanticTypography__mWJkv semanticTypography_variantInteractionButtonMedium__HCJEu button_button__bge_I HeroCTA_cta__hOE_c button_secondary__0_CV3 button_medium__VXS2i",
+      "text": "Request a demo"
+    },
+    {
+      "tag": "a",
+      "classes": "semanticTypography_semanticTypography__mWJkv semanticTypography_variantInteractionButtonMedium__HCJEu button_button__bge_I logoWallMarquee_logoWallMarqueeItem__Y3_iz logoWallMarquee_logoWallMarqueeItemDot__tx_vZ button_ghost__npAbk button_medium__VXS2i",
+      "text": ""
+    },
+    {
+      "tag": "a",
+      "classes": "semanticTypography_semanticTypography__mWJkv semanticTypography_variantInteractionButtonMedium__HCJEu button_button__bge_I logoWallMarquee_logoWallMarqueeItem__Y3_iz logoWallMarquee_logoWallMarqueeItemDot__tx_vZ button_ghost__npAbk button_medium__VXS2i",
+      "text": ""
+    },
+    {
+      "tag": "a",
+      "classes": "semanticTypography_semanticTypography__mWJkv semanticTypography_variantInteractionButtonMedium__HCJEu button_button__bge_I logoWallMarquee_logoWallMarqueeItem__Y3_iz logoWallMarquee_logoWallMarqueeItemDot__tx_vZ button_ghost__npAbk button_medium__VXS2i",
+      "text": ""
+    },
+    {
+      "tag": "a",
+      "classes": "semanticTypography_semanticTypography__mWJkv semanticTypography_variantInteractionButtonMedium__HCJEu button_button__bge_I logoWallMarquee_logoWallMarqueeItem__Y3_iz logoWallMarquee_logoWallMarqueeItemDot__tx_vZ button_ghost__npAbk button_medium__VXS2i",
+      "text": ""
+    },
+    {
+      "tag": "a",
+      "classes": "semanticTypography_semanticTypography__mWJkv semanticTypography_variantInteractionButtonMedium__HCJEu button_button__bge_I logoWallMarquee_logoWallMarqueeItem__Y3_iz logoWallMarquee_logoWallMarqueeItemDot__tx_vZ button_ghost__npAbk button_medium__VXS2i",
+      "text": ""
+    },
+    {
+      "tag": "a",
+      "classes": "semanticTypography_semanticTypography__mWJkv semanticTypography_variantInteractionButtonMedium__HCJEu button_button__bge_I logoWallMarquee_logoWallMarqueeItem__Y3_iz logoWallMarquee_logoWallMarqueeItemDot__tx_vZ button_ghost__npAbk button_medium__VXS2i",
+      "text": ""
+    },
+    {
+      "tag": "a",
+      "classes": "semanticTypography_semanticTypography__mWJkv semanticTypography_variantInteractionButtonMedium__HCJEu button_button__bge_I logoWallMarquee_logoWallMarqueeItem__Y3_iz logoWallMarquee_logoWallMarqueeItemDot__tx_vZ button_ghost__npAbk button_medium__VXS2i",
+      "text": ""
+    },
+    {
+      "tag": "a",
+      "classes": "semanticTypography_semanticTypography__mWJkv semanticTypography_variantInteractionButtonMedium__HCJEu button_button__bge_I logoWallMarquee_logoWallMarqueeItem__Y3_iz logoWallMarquee_logoWallMarqueeItemDot__tx_vZ button_ghost__npAbk button_medium__VXS2i",
+      "text": ""
+    },
+    {
+      "tag": "a",
+      "classes": "semanticTypography_semanticTypography__mWJkv semanticTypography_variantInteractionButtonMedium__HCJEu button_button__bge_I logoWallMarquee_logoWallMarqueeItem__Y3_iz logoWallMarquee_logoWallMarqueeItemDot__tx_vZ button_ghost__npAbk button_medium__VXS2i",
+      "text": ""
+    },
+    {
+      "tag": "button",
+      "classes": "flex items-center justify-center actionButton_actionButton__wgfeI actionButton_primary__kHcxb actionButton_circle__5pYaw bentoCarouselSlides_arrowButton__QE6gs bentoCarouselSlides_arrowButtonNext___wxyp",
+      "text": ""
+    },
+    {
+      "tag": "button",
+      "classes": "flex items-center justify-center actionButton_actionButton__wgfeI actionButton_alpha__8Bq7Q actionButton_circle__5pYaw bentoCarouselPlayPause_playPauseButton__bm0dz",
+      "text": ""
+    },
+    {
+      "tag": "a",
+      "classes": "cardCompact_cardCompactAnchor___7vu2",
+      "text": ""
+    },
+    {
+      "tag": "a",
+      "classes": "cardCompact_cardCompactAnchor___7vu2",
+      "text": ""
+    },
+    {
+      "tag": "a",
+      "classes": "cardCompact_cardCompactAnchor___7vu2",
+      "text": ""
+    },
+    {
+      "tag": "a",
+      "classes": "cardCompact_cardCompactAnchor___7vu2",
+      "text": ""
+    }
+  ],
+  "card_styles": [
+    {
+      "tag": "h2",
+      "classes": "semanticTypography_semanticTypography__mWJkv semanticTypography_variantCardTitle__nqcQy bento_bentoTitle__ndE4v"
+    },
+    {
+      "tag": "span",
+      "classes": "semanticTypography_semanticTypography__mWJkv semanticTypography_variantCardTitleSummary__lvrMk"
+    },
+    {
+      "tag": "p",
+      "classes": "semanticTypography_semanticTypography__mWJkv semanticTypography_variantCardBodySummary__7ucTw bentoCarouselHeader_accordionBody__3Z7CQ bentoCarouselHeader_accordionBodyExpanded__NrX_B"
+    },
+    {
+      "tag": "span",
+      "classes": "semanticTypography_semanticTypography__mWJkv semanticTypography_variantCardTitleSummary__lvrMk"
+    },
+    {
+      "tag": "p",
+      "classes": "semanticTypography_semanticTypography__mWJkv semanticTypography_variantCardBodySummary__7ucTw bentoCarouselHeader_accordionBody__3Z7CQ"
+    },
+    {
+      "tag": "span",
+      "classes": "semanticTypography_semanticTypography__mWJkv semanticTypography_variantCardTitleSummary__lvrMk"
+    },
+    {
+      "tag": "p",
+      "classes": "semanticTypography_semanticTypography__mWJkv semanticTypography_variantCardBodySummary__7ucTw bentoCarouselHeader_accordionBody__3Z7CQ"
+    },
+    {
+      "tag": "span",
+      "classes": "semanticTypography_semanticTypography__mWJkv semanticTypography_variantCardTitleSummary__lvrMk"
+    },
+    {
+      "tag": "p",
+      "classes": "semanticTypography_semanticTypography__mWJkv semanticTypography_variantCardBodySummary__7ucTw bentoCarouselHeader_accordionBody__3Z7CQ"
+    },
+    {
+      "tag": "div",
+      "classes": "semanticTypography_semanticTypography__mWJkv semanticTypography_variantCardTitleSummary__lvrMk"
+    },
+    {
+      "tag": "div",
+      "classes": "semanticTypography_semanticTypography__mWJkv semanticTypography_variantCardBodySummary__7ucTw"
+    },
+    {
+      "tag": "div",
+      "classes": "flex flex-row items-center lg:items-start justify-start flex-nowrap lg:flex-wrap inline-full gap-16 cardCompact_cardCompact__W2i4I"
+    },
+    {
+      "tag": "a",
+      "classes": "cardCompact_cardCompactAnchor___7vu2"
+    },
+    {
+      "tag": "h3",
+      "classes": "semanticTypography_semanticTypography__mWJkv semanticTypography_variantCardTitleSummary__lvrMk cardCompact_cardCompactTitle__zZaHK"
+    },
+    {
+      "tag": "span",
+      "classes": "arrow_arrow___6mKn arrow_arrowFlipRtl__ur0Ug cardCompact_cardCompactTitleArrow__tWhco"
+    },
+    {
+      "tag": "div",
+      "classes": "flex flex-row items-center lg:items-start justify-start flex-nowrap lg:flex-wrap inline-full gap-16 cardCompact_cardCompact__W2i4I"
+    },
+    {
+      "tag": "a",
+      "classes": "cardCompact_cardCompactAnchor___7vu2"
+    },
+    {
+      "tag": "h3",
+      "classes": "semanticTypography_semanticTypography__mWJkv semanticTypography_variantCardTitleSummary__lvrMk cardCompact_cardCompactTitle__zZaHK"
+    },
+    {
+      "tag": "span",
+      "classes": "arrow_arrow___6mKn arrow_arrowFlipRtl__ur0Ug cardCompact_cardCompactTitleArrow__tWhco"
+    },
+    {
+      "tag": "div",
+      "classes": "flex flex-row items-center lg:items-start justify-start flex-nowrap lg:flex-wrap inline-full gap-16 cardCompact_cardCompact__W2i4I"
+    }
+  ],
+  "input_styles": [
+    {
+      "type": "checkbox",
+      "placeholder": "",
+      "classes": ""
+    },
+    {
+      "type": "checkbox",
+      "placeholder": "",
+      "classes": ""
+    },
+    {
+      "type": "checkbox",
+      "placeholder": "",
+      "classes": ""
+    },
+    {
+      "type": "checkbox",
+      "placeholder": "",
+      "classes": ""
+    },
+    {
+      "type": "checkbox",
+      "placeholder": "",
+      "classes": ""
+    },
+    {
+      "type": "checkbox",
+      "placeholder": "",
+      "classes": ""
+    },
+    {
+      "type": "checkbox",
+      "placeholder": "",
+      "classes": ""
+    },
+    {
+      "type": "checkbox",
+      "placeholder": "",
+      "classes": ""
+    },
+    {
+      "type": "checkbox",
+      "placeholder": "",
+      "classes": ""
+    },
+    {
+      "type": "checkbox",
+      "placeholder": "",
+      "classes": ""
+    }
+  ],
+  "layout_patterns": [],
+  "motion_patterns": [],
+  "style_tags": [
+    "dark-mode-first",
+    "flat-design",
+    "mixed-radii"
+  ],
+  "design_philosophy": "Modern professional web design"
+}

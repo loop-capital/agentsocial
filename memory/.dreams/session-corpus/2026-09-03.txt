@@ -1,0 +1,2 @@
+[agentsocial-ceo/sessions/agentsocial-ceo/5f8215ca-d26c-4bf3-90de-0887f43e03bd.jsonl#L6] Assistant: Running the bi-weekly graphify refresh task.
+[agentsocial-ceo/sessions/agentsocial-ceo/5f8215ca-d26c-4bf3-90de-0887f43e03bd.jsonl#L8] Assistant: Graphify refresh complete. Results: - **Nodes:** 2,294 - **Edges:** 2,976 - **Communities:** 413 Extracted from 726 files. Graph updated in `graphify-out/graph.json` and `GRAPH_REPORT.md`.

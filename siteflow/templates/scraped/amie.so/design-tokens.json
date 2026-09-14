@@ -1,0 +1,54 @@
+{
+  "site_name": "amie.so",
+  "url": "https://amie.so",
+  "scraped_at": "2026-04-29T14:44:44Z",
+  "colors": {
+    "inline_0": "transparent"
+  },
+  "fonts": [],
+  "font_sizes": [],
+  "font_weights": [],
+  "line_heights": [],
+  "padding_values": [],
+  "margin_values": [],
+  "gap_values": [],
+  "border_radii": [],
+  "shadows": [],
+  "breakpoints": [],
+  "buttons": [
+    {
+      "tag": "a",
+      "classes": "group text-secondary flex select-none items-center text-sm px-2.5 py-1.5 h-8 transition-colors font-medium leading-none outline-none hover:bg-black/5 rounded-lg",
+      "text": "Login"
+    },
+    {
+      "tag": "a",
+      "classes": "text-sm sm:text-md md:text-base text-secondary font-semibold shadow-natural px-7 py-3 rounded-xl bg-white tracking-[-0.0125em] flex items-center gap-2",
+      "text": "Request a demo"
+    },
+    {
+      "tag": "a",
+      "classes": "shadow-none gap-1.5 backdrop-blur flex items-center justify-center w-fit text-secondary text-xs rounded-full font-medium",
+      "text": "Feb 16:private meeting notes, apple reminders sync"
+    }
+  ],
+  "cards": [],
+  "inputs": [],
+  "nav_patterns": [
+    {
+      "links_count": 4,
+      "links": [
+        "/",
+        "/pricing",
+        "https://calendar.amie.so/login",
+        "https://calendar.amie.so/login"
+      ]
+    }
+  ],
+  "transitions": [],
+  "animations": [],
+  "meta_description": "Turn meeting notes into automated workflows. Handle meetings, summaries, todos and emails (soon) with your AI personal assistant.",
+  "og_image": "/images/meta.png",
+  "favicon": "https://amie.so/2024/images/favicons/default.png",
+  "page_title": "Amie - AI Note Taker"
+}

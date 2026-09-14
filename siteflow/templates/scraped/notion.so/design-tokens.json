@@ -1,0 +1,314 @@
+{
+  "site_name": "notion.so",
+  "url": "https://notion.so",
+  "scraped_at": "2026-04-29T14:44:36Z",
+  "colors": {
+    "inline_0": "var(--color-orange-400)",
+    "inline_1": "#ffb110",
+    "inline_2": "#ff8a33",
+    "inline_3": "var(--color-red-400)",
+    "inline_4": "var(--color-gray-800)",
+    "inline_5": "#ad6ded",
+    "inline_6": "var(--color-pink-400)",
+    "inline_7": "var(--color-purple-400)",
+    "inline_8": "transparent",
+    "inline_9": "var(--color-teal-400)",
+    "inline_10": "#f64932",
+    "inline_11": "var(--color-black)",
+    "inline_12": "var(--color-brown-400)",
+    "inline_13": "inherit",
+    "inline_14": "var(--color-yellow-400)",
+    "inline_15": "#2a9d99",
+    "inline_16": "var(--color-blue-400)",
+    "inline_17": "#1aae39",
+    "inline_18": "#ff83dd",
+    "inline_19": "#097fe8"
+  },
+  "fonts": [],
+  "font_sizes": [],
+  "font_weights": [],
+  "line_heights": [],
+  "padding_values": [],
+  "margin_values": [],
+  "gap_values": [],
+  "border_radii": [
+    "var(--border-radius-round)",
+    "var(--border-radius-200)"
+  ],
+  "shadows": [],
+  "breakpoints": [],
+  "buttons": [
+    {
+      "tag": "a",
+      "classes": "semanticTypography_semanticTypography__mWJkv linkText_linkText__527kz linkText_colorVariantPrimary__h6Nef linkText_hasArrow__2BwWV",
+      "text": "See what\u2019s new\u2192"
+    },
+    {
+      "tag": "a",
+      "classes": "semanticTypography_semanticTypography__mWJkv linkText_linkText__527kz linkText_colorVariantPrimary__h6Nef linkText_hasArrow__2BwWV",
+      "text": "Notion App\u2192"
+    },
+    {
+      "tag": "a",
+      "classes": "button_button__atjat button_buttonVariantPrimary__mUFQZ button_buttonSizeM__NexGD",
+      "text": "Get Notion free"
+    },
+    {
+      "tag": "a",
+      "classes": "semanticTypography_semanticTypography__mWJkv semanticTypography_variantInteractionButtonMedium__HCJEu button_button__bge_I HeroCTA_cta__hOE_c button_primary__k0d3I button_medium__VXS2i",
+      "text": "Get Notion free"
+    },
+    {
+      "tag": "a",
+      "classes": "semanticTypography_semanticTypography__mWJkv semanticTypography_variantInteractionButtonMedium__HCJEu button_button__bge_I HeroCTA_cta__hOE_c button_secondary__0_CV3 button_medium__VXS2i",
+      "text": "Request a demo"
+    },
+    {
+      "tag": "a",
+      "classes": "semanticTypography_semanticTypography__mWJkv semanticTypography_variantInteractionButtonMedium__HCJEu button_button__bge_I logoWallMarquee_logoWallMarqueeItem__Y3_iz logoWallMarquee_logoWallMarqueeItemDot__tx_vZ button_ghost__npAbk button_medium__VXS2i",
+      "text": ""
+    },
+    {
+      "tag": "a",
+      "classes": "semanticTypography_semanticTypography__mWJkv semanticTypography_variantInteractionButtonMedium__HCJEu button_button__bge_I logoWallMarquee_logoWallMarqueeItem__Y3_iz logoWallMarquee_logoWallMarqueeItemDot__tx_vZ button_ghost__npAbk button_medium__VXS2i",
+      "text": ""
+    },
+    {
+      "tag": "a",
+      "classes": "semanticTypography_semanticTypography__mWJkv semanticTypography_variantInteractionButtonMedium__HCJEu button_button__bge_I logoWallMarquee_logoWallMarqueeItem__Y3_iz logoWallMarquee_logoWallMarqueeItemDot__tx_vZ button_ghost__npAbk button_medium__VXS2i",
+      "text": ""
+    },
+    {
+      "tag": "a",
+      "classes": "semanticTypography_semanticTypography__mWJkv semanticTypography_variantInteractionButtonMedium__HCJEu button_button__bge_I logoWallMarquee_logoWallMarqueeItem__Y3_iz logoWallMarquee_logoWallMarqueeItemDot__tx_vZ button_ghost__npAbk button_medium__VXS2i",
+      "text": ""
+    },
+    {
+      "tag": "a",
+      "classes": "semanticTypography_semanticTypography__mWJkv semanticTypography_variantInteractionButtonMedium__HCJEu button_button__bge_I logoWallMarquee_logoWallMarqueeItem__Y3_iz logoWallMarquee_logoWallMarqueeItemDot__tx_vZ button_ghost__npAbk button_medium__VXS2i",
+      "text": ""
+    },
+    {
+      "tag": "a",
+      "classes": "semanticTypography_semanticTypography__mWJkv semanticTypography_variantInteractionButtonMedium__HCJEu button_button__bge_I logoWallMarquee_logoWallMarqueeItem__Y3_iz logoWallMarquee_logoWallMarqueeItemDot__tx_vZ button_ghost__npAbk button_medium__VXS2i",
+      "text": ""
+    },
+    {
+      "tag": "a",
+      "classes": "semanticTypography_semanticTypography__mWJkv semanticTypography_variantInteractionButtonMedium__HCJEu button_button__bge_I logoWallMarquee_logoWallMarqueeItem__Y3_iz logoWallMarquee_logoWallMarqueeItemDot__tx_vZ button_ghost__npAbk button_medium__VXS2i",
+      "text": ""
+    },
+    {
+      "tag": "a",
+      "classes": "semanticTypography_semanticTypography__mWJkv semanticTypography_variantInteractionButtonMedium__HCJEu button_button__bge_I logoWallMarquee_logoWallMarqueeItem__Y3_iz logoWallMarquee_logoWallMarqueeItemDot__tx_vZ button_ghost__npAbk button_medium__VXS2i",
+      "text": ""
+    },
+    {
+      "tag": "a",
+      "classes": "semanticTypography_semanticTypography__mWJkv semanticTypography_variantInteractionButtonMedium__HCJEu button_button__bge_I logoWallMarquee_logoWallMarqueeItem__Y3_iz logoWallMarquee_logoWallMarqueeItemDot__tx_vZ button_ghost__npAbk button_medium__VXS2i",
+      "text": ""
+    },
+    {
+      "tag": "button",
+      "classes": "flex items-center justify-center actionButton_actionButton__wgfeI actionButton_primary__kHcxb actionButton_circle__5pYaw bentoCarouselSlides_arrowButton__QE6gs bentoCarouselSlides_arrowButtonNext___wxyp",
+      "text": ""
+    },
+    {
+      "tag": "button",
+      "classes": "flex items-center justify-center actionButton_actionButton__wgfeI actionButton_alpha__8Bq7Q actionButton_circle__5pYaw bentoCarouselPlayPause_playPauseButton__bm0dz",
+      "text": ""
+    },
+    {
+      "tag": "a",
+      "classes": "cardCompact_cardCompactAnchor___7vu2",
+      "text": ""
+    },
+    {
+      "tag": "a",
+      "classes": "cardCompact_cardCompactAnchor___7vu2",
+      "text": ""
+    },
+    {
+      "tag": "a",
+      "classes": "cardCompact_cardCompactAnchor___7vu2",
+      "text": ""
+    },
+    {
+      "tag": "a",
+      "classes": "cardCompact_cardCompactAnchor___7vu2",
+      "text": ""
+    }
+  ],
+  "cards": [
+    {
+      "tag": "h2",
+      "classes": "semanticTypography_semanticTypography__mWJkv semanticTypography_variantCardTitle__nqcQy bento_bentoTitle__ndE4v"
+    },
+    {
+      "tag": "span",
+      "classes": "semanticTypography_semanticTypography__mWJkv semanticTypography_variantCardTitleSummary__lvrMk"
+    },
+    {
+      "tag": "p",
+      "classes": "semanticTypography_semanticTypography__mWJkv semanticTypography_variantCardBodySummary__7ucTw bentoCarouselHeader_accordionBody__3Z7CQ bentoCarouselHeader_accordionBodyExpanded__NrX_B"
+    },
+    {
+      "tag": "span",
+      "classes": "semanticTypography_semanticTypography__mWJkv semanticTypography_variantCardTitleSummary__lvrMk"
+    },
+    {
+      "tag": "p",
+      "classes": "semanticTypography_semanticTypography__mWJkv semanticTypography_variantCardBodySummary__7ucTw bentoCarouselHeader_accordionBody__3Z7CQ"
+    },
+    {
+      "tag": "span",
+      "classes": "semanticTypography_semanticTypography__mWJkv semanticTypography_variantCardTitleSummary__lvrMk"
+    },
+    {
+      "tag": "p",
+      "classes": "semanticTypography_semanticTypography__mWJkv semanticTypography_variantCardBodySummary__7ucTw bentoCarouselHeader_accordionBody__3Z7CQ"
+    },
+    {
+      "tag": "span",
+      "classes": "semanticTypography_semanticTypography__mWJkv semanticTypography_variantCardTitleSummary__lvrMk"
+    },
+    {
+      "tag": "p",
+      "classes": "semanticTypography_semanticTypography__mWJkv semanticTypography_variantCardBodySummary__7ucTw bentoCarouselHeader_accordionBody__3Z7CQ"
+    },
+    {
+      "tag": "div",
+      "classes": "semanticTypography_semanticTypography__mWJkv semanticTypography_variantCardTitleSummary__lvrMk"
+    },
+    {
+      "tag": "div",
+      "classes": "semanticTypography_semanticTypography__mWJkv semanticTypography_variantCardBodySummary__7ucTw"
+    },
+    {
+      "tag": "div",
+      "classes": "flex flex-row items-center lg:items-start justify-start flex-nowrap lg:flex-wrap inline-full gap-16 cardCompact_cardCompact__W2i4I"
+    },
+    {
+      "tag": "a",
+      "classes": "cardCompact_cardCompactAnchor___7vu2"
+    },
+    {
+      "tag": "h3",
+      "classes": "semanticTypography_semanticTypography__mWJkv semanticTypography_variantCardTitleSummary__lvrMk cardCompact_cardCompactTitle__zZaHK"
+    },
+    {
+      "tag": "span",
+      "classes": "arrow_arrow___6mKn arrow_arrowFlipRtl__ur0Ug cardCompact_cardCompactTitleArrow__tWhco"
+    },
+    {
+      "tag": "div",
+      "classes": "flex flex-row items-center lg:items-start justify-start flex-nowrap lg:flex-wrap inline-full gap-16 cardCompact_cardCompact__W2i4I"
+    },
+    {
+      "tag": "a",
+      "classes": "cardCompact_cardCompactAnchor___7vu2"
+    },
+    {
+      "tag": "h3",
+      "classes": "semanticTypography_semanticTypography__mWJkv semanticTypography_variantCardTitleSummary__lvrMk cardCompact_cardCompactTitle__zZaHK"
+    },
+    {
+      "tag": "span",
+      "classes": "arrow_arrow___6mKn arrow_arrowFlipRtl__ur0Ug cardCompact_cardCompactTitleArrow__tWhco"
+    },
+    {
+      "tag": "div",
+      "classes": "flex flex-row items-center lg:items-start justify-start flex-nowrap lg:flex-wrap inline-full gap-16 cardCompact_cardCompact__W2i4I"
+    }
+  ],
+  "inputs": [
+    {
+      "type": "checkbox",
+      "placeholder": "",
+      "classes": ""
+    },
+    {
+      "type": "checkbox",
+      "placeholder": "",
+      "classes": ""
+    },
+    {
+      "type": "checkbox",
+      "placeholder": "",
+      "classes": ""
+    },
+    {
+      "type": "checkbox",
+      "placeholder": "",
+      "classes": ""
+    },
+    {
+      "type": "checkbox",
+      "placeholder": "",
+      "classes": ""
+    },
+    {
+      "type": "checkbox",
+      "placeholder": "",
+      "classes": ""
+    },
+    {
+      "type": "checkbox",
+      "placeholder": "",
+      "classes": ""
+    },
+    {
+      "type": "checkbox",
+      "placeholder": "",
+      "classes": ""
+    },
+    {
+      "type": "checkbox",
+      "placeholder": "",
+      "classes": ""
+    },
+    {
+      "type": "checkbox",
+      "placeholder": "",
+      "classes": ""
+    }
+  ],
+  "nav_patterns": [
+    {
+      "links_count": 47,
+      "links": [
+        "/product",
+        "/product",
+        "/product/calendar",
+        "/product/mail",
+        "/product/ai",
+        "/product/agents",
+        "/product/ai-meeting-notes",
+        "/product/enterprise-search",
+        "/product/wikis",
+        "/product/docs"
+      ]
+    },
+    {
+      "links_count": 28,
+      "links": [
+        "/product",
+        "https://www.instagram.com/notionhq/",
+        "https://twitter.com/NotionHQ",
+        "https://www.linkedin.com/company/notionhq/",
+        "https://www.facebook.com/NotionHQ/",
+        "https://www.youtube.com/channel/UCoSvlWS5XcwaSzIcbuJ-Ysg",
+        "/about",
+        "/careers",
+        "/security",
+        "https://www.notion-status.com"
+      ]
+    }
+  ],
+  "transitions": [],
+  "animations": [],
+  "meta_description": "Build Custom Agents, search across all your apps, and automate busywork. The AI workspace where teams get more done, faster.",
+  "og_image": "https://www.notion.com/front-static/meta/custom-agents-og.png",
+  "favicon": "https://notion.so/front-static/favicon.ico",
+  "page_title": "The AI workspace that works for you. | Notion"
+}

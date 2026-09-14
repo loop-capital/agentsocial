@@ -1,0 +1,326 @@
+# AgentSocial Cloud — Ansible Provisioning Playbook
+# Sets up a fresh Hetzner VPS for a new client
+#
+# Usage:
+#   ansible-playbook -i inventory.yml provision.yml \
+#     -e "client_domain=pleij.clawstudio.co" \
+#     -e "client_name=pleij" \
+#     -e "env_file=.env.pleij"
+
+---
+- name: Provision AgentSocial Cloud Instance
+  hosts: all
+  become: true
+  vars:
+    app_dir: /opt/agentsocial
+    docker_compose_path: /opt/agentsocial/docker-compose.cloud.yml
+    caddyfile_path: /opt/agentsocial/Caddyfile
+    env_file: "{{ env_file | default('.env.example') }}"
+    
+  tasks:
+    # ─── System Setup ─────────────────────────────────────────
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+        cache_valid_time: 3600
+
+    - name: Install required packages
+      apt:
+        name:
+          - curl
+          - git
+          - nginx
+          - ufw
+          - certbot
+          - python3-certbot-nginx
+          - apt-transport-https
+          - ca-certificates
+          - gnupg
+          - lsb-release
+          - htop
+          - tmux
+          - fail2ban
+        state: present
+
+    - name: Set hostname to client domain
+      hostname:
+        name: "{{ client_name }}"
+
+    - name: Set timezone to US/Eastern
+      timezone:
+        name: America/New_York
+
+    # ─── Firewall ──────────────────────────────────────────────
+    - name: Configure UFW defaults
+      ufw:
+        policy: deny
+        direction: incoming
+
+    - name: Allow SSH
+      ufw:
+        rule: allow
+        port: "22"
+        proto: tcp
+
+    - name: Allow HTTP
+      ufw:
+        rule: allow
+        port: "80"
+        proto: tcp
+
+    - name: Allow HTTPS
+      ufw:
+        rule: allow
+        port: "443"
+        proto: tcp
+
+    - name: Enable UFW
+      ufw:
+        state: enabled
+
+    # ─── Fail2ban ──────────────────────────────────────────────
+    - name: Configure fail2ban
+      copy:
+        dest: /etc/fail2ban/jail.local
+        content: |
+          [DEFAULT]
+          bantime = 3600
+          findtime = 600
+          maxretry = 5
+          
+          [sshd]
+          enabled = true
+          port = ssh
+          filter = sshd
+          logpath = /var/log/auth.log
+          maxretry = 3
+
+    - name: Enable fail2ban
+      service:
+        name: fail2ban
+        state: started
+        enabled: yes
+
+    # ─── Docker ────────────────────────────────────────────────
+    - name: Add Docker GPG key
+      apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        state: present
+
+    - name: Add Docker repository
+      apt_repository:
+        repo: "deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable"
+        state: present
+
+    - name: Install Docker
+      apt:
+        name:
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+          - docker-compose-plugin
+        state: present
+        update_cache: yes
+
+    - name: Add deploy user to docker group
+      user:
+        name: "{{ ansible_user }}"
+        groups: docker
+        append: yes
+
+    - name: Enable Docker
+      service:
+        name: docker
+        state: started
+        enabled: yes
+
+    # ─── Swap (for 4GB VPS) ───────────────────────────────────
+    - name: Create swap file
+      command: fallocate -l 2G /swapfile
+      args:
+        creates: /swapfile
+
+    - name: Set swap permissions
+      file:
+        path: /swapfile
+        mode: "0600"
+
+    - name: Enable swap
+      command: "{{ item }}"
+      with_items:
+        - mkswap /swapfile
+        - swapon /swapfile
+      when: ansible_swaptotal_mb < 1
+
+    - name: Make swap persistent
+      lineinfile:
+        path: /etc/fstab
+        line: "/swapfile none swap sw 0 0"
+        state: present
+
+    # ─── Application ───────────────────────────────────────────
+    - name: Create app directory
+      file:
+        path: "{{ app_dir }}"
+        state: directory
+        mode: "0755"
+
+    - name: Clone AgentSocial repo
+      git:
+        repo: "https://github.com/{{ git_repo | default('agentsocial/agentsocial') }}.git"
+        dest: "{{ app_dir }}"
+        version: "{{ git_branch | default('main') }}"
+        force: yes
+      when: git_repo is defined
+
+    - name: Copy docker-compose file
+      copy:
+        src: docker-compose.cloud.yml
+        dest: "{{ docker_compose_path }}"
+        mode: "0644"
+
+    - name: Copy Caddyfile
+      copy:
+        src: Caddyfile
+        dest: "{{ caddyfile_path }}"
+        mode: "0644"
+
+    - name: Copy environment file
+      copy:
+        src: "{{ env_file }}"
+        dest: "{{ app_dir }}/.env"
+        mode: "0600"
+
+    - name: Generate .env from template if no custom file
+      template:
+        src: env.j2
+        dest: "{{ app_dir }}/.env"
+        mode: "0600"
+      when: env_file == ".env.example"
+
+    - name: Create Dograh database
+      command: >
+        docker exec postgres psql -U {{ postgres_user | default('agentsocial') }}
+        -c "CREATE DATABASE dograh;"
+      ignore_errors: yes
+
+    # ─── Start Services ────────────────────────────────────────
+    - name: Pull Docker images
+      command: docker compose -f {{ docker_compose_path }} pull
+      args:
+        chdir: "{{ app_dir }}"
+
+    - name: Start all services
+      command: docker compose -f {{ docker_compose_path }} up -d
+      args:
+        chdir: "{{ app_dir }}"
+
+    - name: Wait for API to be healthy
+      uri:
+        url: "http://localhost:3001/health"
+        status_code: 200
+      retries: 10
+      delay: 10
+
+    - name: Wait for Dograh to be healthy
+      uri:
+        url: "http://localhost:8000/api/v1/health"
+        status_code: 200
+      retries: 10
+      delay: 10
+
+    # ─── Monitoring ─────────────────────────────────────────────
+    - name: Install Watchtower for auto-updates
+      command: >
+        docker run -d --name watchtower
+        --restart unless-stopped
+        -v /var/run/docker.sock:/var/run/docker.sock
+        containrrr/watchtower
+        --interval 43200
+        --cleanup
+
+    - name: Create health check script
+      copy:
+        dest: /opt/agentsocial/healthcheck.sh
+        mode: "0755"
+        content: |
+          #!/bin/bash
+          # AgentSocial Cloud — Health Check
+          ALERT_EMAIL="${ALERT_EMAIL:-}"
+          
+          check_service() {
+              local name=$1
+              local url=$2
+              local status=$(curl -s -o /dev/null -w "%{http_code}" "$url" 2>/dev/null)
+              if [ "$status" != "200" ]; then
+                  echo "FAIL: $name returned $status"
+                  if [ -n "$ALERT_EMAIL" ]; then
+                      echo "$name health check failed (HTTP $status) on $(hostname)" | mail -s "ALERT: $name down" "$ALERT_EMAIL"
+                  fi
+                  return 1
+              else
+                  echo "OK: $name"
+                  return 0
+              fi
+          }
+          
+          FAILED=0
+          check_service "API" "http://localhost:3001/health" || FAILED=$((FAILED+1))
+          check_service "Dograh" "http://localhost:8000/api/v1/health" || FAILED=$((FAILED+1))
+          check_service "Caddy" "http://localhost:80/health" || FAILED=$((FAILED+1))
+          
+          exit $FAILED
+
+    - name: Set up health check cron
+      cron:
+        name: "agentsocial healthcheck"
+        minute: "*/5"
+        job: "/opt/agentsocial/healthcheck.sh >> /var/log/agentsocial-health.log 2>&1"
+
+    - name: Create backup script
+      copy:
+        dest: /opt/agentsocial/backup.sh
+        mode: "0755"
+        content: |
+          #!/bin/bash
+          # AgentSocial Cloud — Daily Backup
+          BACKUP_DIR="/opt/agentsocial/backups"
+          TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+          RETENTION_DAYS=7
+          
+          mkdir -p "$BACKUP_DIR"
+          
+          # PostgreSQL dump
+          docker exec postgres pg_dump -U {{ postgres_user | default('agentsocial') }} {{ postgres_db | default('agentsocial') }} > "$BACKUP_DIR/db_agentsocial_$TIMESTAMP.sql"
+          docker exec postgres pg_dump -U {{ postgres_user | default('agentsocial') }} dograh > "$BACKUP_DIR/db_dograh_$TIMESTAMP.sql"
+          
+          # Compress
+          gzip "$BACKUP_DIR/db_agentsocial_$TIMESTAMP.sql"
+          gzip "$BACKUP_DIR/db_dograh_$TIMESTAMP.sql"
+          
+          # Clean old backups
+          find "$BACKUP_DIR" -name "*.sql.gz" -mtime +$RETENTION_DAYS -delete
+          
+          echo "Backup completed: $TIMESTAMP"
+
+    - name: Set up daily backup cron
+      cron:
+        name: "agentsocial daily backup"
+        hour: "3"
+        minute: "0"
+        job: "/opt/agentsocial/backup.sh >> /var/log/agentsocial-backup.log 2>&1"
+
+    # ─── Done ───────────────────────────────────────────────────
+    - name: Print success message
+      debug:
+        msg: |
+          ╔══════════════════════════════════════════════╗
+          ║  AgentSocial Cloud — Provisioned!            ║
+          ╠══════════════════════════════════════════════╣
+          ║  Domain:   {{ client_domain }}               ║
+          ║  API:      https://{{ client_domain }}/api   ║
+          ║  App:      https://{{ client_domain }}/app    ║
+          ║  Voice:    https://{{ client_domain }}/voice  ║
+          ║  Backups:  Daily at 3 AM ET                  ║
+          ║  Health:   Every 5 minutes                   ║
+          ╚══════════════════════════════════════════════╝

@@ -1,0 +1,193 @@
+{
+  "site_name": "raycast.com",
+  "url": "https://raycast.com",
+  "scraped_at": "2026-04-29T14:44:39Z",
+  "colors": {
+    "inline_0": "linear-gradient(138deg, rgba(32, 35, 91, 0.70) 22.00%, rgba(7, 9, 33, 0.70) 82.00%)",
+    "inline_1": "radial-gradient(94.21% 78.40% at 50.00% 29.91%, rgba(39, 61, 180, 0.70), rgba(15, 9, 38, 0.40))",
+    "inline_2": "radial-gradient(84.60% 73.49% at 50.00% 26.51%, rgba(4, 63, 150, 0.70), rgba(6, 18, 37, 0.25))",
+    "inline_3": "215, 42, 42",
+    "inline_4": "radial-gradient(30.00% 40.00% at 52.00% 36.91%, rgba(13, 110, 48, 1.00), rgba(8, 53, 24, 1.00))",
+    "inline_5": "radial-gradient(181.77% 70.19% at 50.00% 38.11%, rgba(3, 91, 155, 0.70), rgba(0, 69, 150, 0.03))",
+    "inline_6": "radial-gradient(126.42% 76.60% at 50.00% 32.26%, rgba(84, 95, 102, 0.70), rgba(0, 36, 69, 0.13))",
+    "inline_7": "radial-gradient(99.74% 100.00% at 50.00% 0.00%, rgba(74, 21, 75, 0.70), rgba(29, 5, 29, 0.42))",
+    "inline_8": "radial-gradient(86.88% 75.47% at 50.00% 24.53%, rgba(82, 48, 145, 0.70), rgba(26, 11, 51, 0.14))",
+    "inline_9": "radial-gradient(94.21% 78.40% at 50.00% 29.91%, rgba(43, 94, 180, 0.70), rgba(13, 16, 35, 0.42))",
+    "inline_10": "radial-gradient(94.21% 78.40% at 50.00% 29.91%, rgba(4, 63, 150, 0.70), rgba(5, 9, 29, 0.42))",
+    "inline_11": "radial-gradient(90.35% 49.25% at 50.00% 59.06%, rgba(2, 61, 114, 0.70), rgba(5, 11, 28, 0.42))",
+    "inline_12": "radial-gradient(94.21% 78.40% at 50.00% 29.91%, rgba(4, 62, 150, 0.70), rgba(16, 0, 43, 0.16))",
+    "inline_13": "transparent",
+    "inline_14": "radial-gradient(84.35% 70.19% at 50.00% 38.11%, rgba(2, 96, 101, 0.57), rgba(5, 136, 178, 0.06))"
+  },
+  "fonts": [],
+  "font_sizes": [
+    "32px",
+    "23.75px",
+    "16px",
+    "24px"
+  ],
+  "font_weights": [],
+  "line_heights": [],
+  "padding_values": [],
+  "margin_values": [],
+  "gap_values": [],
+  "border_radii": [],
+  "shadows": [
+    "0px 1px 0px 0px rgba(255, 255, 255, 0.10) inset, 0px 0px 20px 3px rgba(7, 13, 79, 0.10) , 0px 0px 40px 20px rgba(85, 0, 98, 0.10) , 0 0 0 1px rgba(255, 255, 255, 0.06) inset",
+    "0px 1px 0px 0px rgba(255, 255, 255, 0.10) inset, 0px 0px 20px 3px rgba(46, 212, 105, 0.05) , 0px 0px 40px 20px rgba(46, 212, 105, 0.05) , 0 0 0 1px rgba(255, 255, 255, 0.06) inset",
+    "0px 1px 0px 0px rgba(255, 255, 255, 0.10) inset, 0px 30px 50px 0px rgba(0, 0, 0, 0.40) , 0px 4px 24px 0px rgba(3, 15, 129, 0.09) , 0 0 0 1px rgba(255, 255, 255, 0.06) inset",
+    "0px 1px 0px 0px rgba(255, 255, 255, 0.10) inset, 0px 30px 50px 0px rgba(0, 0, 0, 0.40) , 0px 4px 24px 0px rgba(3, 23, 129, 0.09) , 0 0 0 1px rgba(255, 255, 255, 0.06) inset",
+    "0px 1px 0px 0px rgba(255, 255, 255, 0.10) inset, 0px 30px 50px 0px rgba(0, 0, 0, 0.40) , 0px 4px 24px 0px rgba(51, 3, 129, 0.09) , 0 0 0 1px rgba(255, 255, 255, 0.06) inset",
+    "0px 1px 0px 0px rgba(255, 255, 255, 0.10) inset, 0px 30px 50px 0px rgba(0, 0, 0, 0.40) , 0px 4px 24px 0px rgba(3, 122, 129, 0.09) , 0 0 0 1px rgba(255, 255, 255, 0.06) inset",
+    "0px 1px 0px 0px rgba(255, 255, 255, 0.10) inset, 0px 30px 50px 0px rgba(0, 0, 0, 0.40) , 0px 4px 24px 0px rgba(3, 30, 129, 0.09) , 0 0 0 1px rgba(255, 255, 255, 0.06) inset",
+    "0px 30px 50px 0px rgba(0, 0, 0, 0.40) , 0px 1px 0px 0px rgba(255, 255, 255, 0.10) inset, 0px 4px 24px 0px rgba(3, 15, 129, 0.09) , 0 0 0 1px rgba(255, 255, 255, 0.06) inset",
+    "0px 1px 0px 0px rgba(255, 255, 255, 0.10) inset, 0px 0px 20px 3px rgba(7, 13, 79, 0.10) , 0px 0px 40px 20px rgba(7, 40, 79, 0.10) , 0 0 0 1px rgba(255, 255, 255, 0.06) inset",
+    "0px 30px 50px 0px rgba(0, 0, 0, 0.50) , 0px 1px 0px 0px rgba(255, 255, 255, 0.10) inset, 0px 0px 20px 3px rgba(79, 7, 59, 0.10) , 0px 0px 40px 20px rgba(85, 0, 98, 0.10) , 0 0 0 1px rgba(255, 255, 255, 0.06) inset",
+    "0px 30px 50px 0px rgba(0, 0, 0, 0.50) , 0px 1px 0px 0px rgba(255, 255, 255, 0.10) inset, 0px 0px 20px 3px rgba(7, 13, 79, 0.10) , 0px 0px 40px 20px rgba(85, 0, 98, 0.10) , 0 0 0 1px rgba(255, 255, 255, 0.06) inset",
+    "0px 1px 0px 0px rgba(255, 255, 255, 0.10) inset, 0px 0px 20px 3px rgba(7, 13, 79, 0.05) , 0px 0px 40px 20px rgba(7, 13, 79, 0.05) , 0 0 0 1px rgba(255, 255, 255, 0.06) inset"
+  ],
+  "breakpoints": [],
+  "buttons": [
+    {
+      "tag": "a",
+      "classes": "Button_button__JJiqJ Button_light__KdYEB Navbar_downloadButton__yQ3j6",
+      "text": "Download"
+    },
+    {
+      "tag": "a",
+      "classes": "Button_button__JJiqJ Button_light__KdYEB",
+      "text": "Log in"
+    },
+    {
+      "tag": "a",
+      "classes": "Button_button__JJiqJ Button_light__KdYEB",
+      "text": "Download for Mac"
+    },
+    {
+      "tag": "a",
+      "classes": "Button_button__JJiqJ Button_light__KdYEB",
+      "text": "Download for Windows (beta)"
+    },
+    {
+      "tag": "a",
+      "classes": "Button_button__JJiqJ Button_light__KdYEB GetYourTimeBack_downloadButton__aaxb1",
+      "text": "Download"
+    },
+    {
+      "tag": "button",
+      "classes": "Button_button__JJiqJ Button_light__KdYEB SnippetsShowcase_sendButton__QXTUE",
+      "text": "Send"
+    },
+    {
+      "tag": "a",
+      "classes": "Button_button__JJiqJ Button_light__KdYEB",
+      "text": "Download for Mac"
+    },
+    {
+      "tag": "a",
+      "classes": "Button_button__JJiqJ Button_light__KdYEB",
+      "text": "Download for Windows (beta)"
+    }
+  ],
+  "cards": [
+    {
+      "tag": "div",
+      "classes": "ExtensionHighlight_extensionCardWrapper__BE6OW"
+    },
+    {
+      "tag": "a",
+      "classes": "ExtensionCard_link__Uj5vM"
+    },
+    {
+      "tag": "div",
+      "classes": "ExtensionCard_card__g21uG"
+    },
+    {
+      "tag": "div",
+      "classes": "ExtensionCard_headerContainer__48wVu"
+    },
+    {
+      "tag": "div",
+      "classes": "ExtensionCard_header__Mx3up"
+    },
+    {
+      "tag": "img",
+      "classes": "ExtensionCard_icon__514rr"
+    },
+    {
+      "tag": "div",
+      "classes": "ExtensionCard_title__qWIv2"
+    },
+    {
+      "tag": "span",
+      "classes": "ExtensionCard_action__Os3w0"
+    },
+    {
+      "tag": "p",
+      "classes": "ExtensionCard_description__z_Oaf"
+    },
+    {
+      "tag": "div",
+      "classes": "ExtensionCard_divider__hPrH4"
+    },
+    {
+      "tag": "img",
+      "classes": "ExtensionCard_image__amxYw"
+    },
+    {
+      "tag": "div",
+      "classes": "ExtensionHighlight_extensionCardWrapper__BE6OW"
+    },
+    {
+      "tag": "a",
+      "classes": "ExtensionCard_link__Uj5vM"
+    },
+    {
+      "tag": "div",
+      "classes": "ExtensionCard_card__g21uG"
+    },
+    {
+      "tag": "div",
+      "classes": "ExtensionCard_headerContainer__48wVu"
+    },
+    {
+      "tag": "div",
+      "classes": "ExtensionCard_header__Mx3up"
+    },
+    {
+      "tag": "img",
+      "classes": "ExtensionCard_icon__514rr"
+    },
+    {
+      "tag": "div",
+      "classes": "ExtensionCard_title__qWIv2"
+    },
+    {
+      "tag": "span",
+      "classes": "ExtensionCard_action__Os3w0"
+    },
+    {
+      "tag": "p",
+      "classes": "ExtensionCard_description__z_Oaf"
+    }
+  ],
+  "inputs": [
+    {
+      "type": "input",
+      "placeholder": "",
+      "classes": "Input_input__trG8n"
+    },
+    {
+      "type": "submit",
+      "placeholder": "",
+      "classes": "Submit_submit__Qst6_"
+    }
+  ],
+  "nav_patterns": [],
+  "transitions": [],
+  "animations": [],
+  "meta_description": "A collection of powerful productivity tools all within an extendable launcher.",
+  "og_image": "https://www.raycast.com/opengraph-image-pwu6ef.png?7385e23163a01717",
+  "favicon": "https://raycast.com/favicon-production.png",
+  "page_title": "Raycast - Your shortcut to everything"
+}

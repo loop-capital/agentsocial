@@ -1,0 +1,72 @@
+{
+  "site_name": "amie.so",
+  "url": "https://amie.so",
+  "extracted_at": "2026-04-29T14:46:48Z",
+  "brand_name": "Amie So",
+  "brand_colors": [],
+  "brand_fonts": [],
+  "colors": {
+    "primary": [],
+    "secondary": [],
+    "accent": [],
+    "background": [],
+    "foreground": [],
+    "border": [],
+    "muted": []
+  },
+  "typography": {
+    "families": {
+      "heading": [
+        "system-ui"
+      ],
+      "body": [
+        "system-ui"
+      ],
+      "mono": [
+        "ui-monospace",
+        "SFMono-Regular",
+        "monospace"
+      ]
+    },
+    "sizes": [],
+    "weights": [],
+    "line_heights": []
+  },
+  "spacing": {
+    "padding": [],
+    "margin": [],
+    "gap": []
+  },
+  "borders": {
+    "radii": []
+  },
+  "shadows": {
+    "values": []
+  },
+  "button_styles": [
+    {
+      "tag": "a",
+      "classes": "group text-secondary flex select-none items-center text-sm px-2.5 py-1.5 h-8 transition-colors font-medium leading-none outline-none hover:bg-black/5 rounded-lg",
+      "text": "Login"
+    },
+    {
+      "tag": "a",
+      "classes": "text-sm sm:text-md md:text-base text-secondary font-semibold shadow-natural px-7 py-3 rounded-xl bg-white tracking-[-0.0125em] flex items-center gap-2",
+      "text": "Request a demo"
+    },
+    {
+      "tag": "a",
+      "classes": "shadow-none gap-1.5 backdrop-blur flex items-center justify-center w-fit text-secondary text-xs rounded-full font-medium",
+      "text": "Feb 16:private meeting notes, apple reminders sync"
+    }
+  ],
+  "card_styles": [],
+  "input_styles": [],
+  "layout_patterns": [],
+  "motion_patterns": [],
+  "style_tags": [
+    "flat-design",
+    "mixed-radii"
+  ],
+  "design_philosophy": "Modern professional web design"
+}

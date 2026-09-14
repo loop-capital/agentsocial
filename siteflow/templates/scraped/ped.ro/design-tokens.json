@@ -1,0 +1,39 @@
+{
+  "site_name": "ped.ro",
+  "url": "https://ped.ro",
+  "scraped_at": "2026-04-29T14:44:46Z",
+  "colors": {
+    "color-page-background": "var(--gray-1)",
+    "inline_0": "black",
+    "inline_1": "white",
+    "inline_2": "rgba(255, 255, 255, var(--text-opacity, 1))"
+  },
+  "fonts": [
+    "var(--font-editorial-new)"
+  ],
+  "font_sizes": [],
+  "font_weights": [],
+  "line_heights": [],
+  "padding_values": [],
+  "margin_values": [],
+  "gap_values": [],
+  "border_radii": [],
+  "shadows": [],
+  "breakpoints": [],
+  "buttons": [
+    {
+      "tag": "button",
+      "classes": "rt-reset home-video-button",
+      "text": "content creation"
+    }
+  ],
+  "cards": [],
+  "inputs": [],
+  "nav_patterns": [],
+  "transitions": [],
+  "animations": [],
+  "meta_description": "Code, content, and other things.",
+  "og_image": "https://ped.ro/opengraph-image.jpg?415d826f5aed124b",
+  "favicon": "https://ped.ro/favicon.ico",
+  "page_title": "Pedro Duarte's Personal Website"
+}

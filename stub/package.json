@@ -1,0 +1,12 @@
+{
+  "name": "agentsocial-stub",
+  "version": "0.1.0",
+  "description": "AgentSocial Railway deployment stub",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}

@@ -1,0 +1,5 @@
+- [ ] Post A2A launch announcement to Moltbook
+- [ ] Post X thread about A2A Hub
+- [ ] Submit Show HN post
+- [ ] Execute business acquisition email campaign
+- [ ] Update TaskLinkrJobs social bios

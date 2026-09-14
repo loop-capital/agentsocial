@@ -1,0 +1,22 @@
+{
+  "mcpServers": {
+    "zernio": {
+      "url": "https://mcp.zernio.com/mcp",
+      "headers": {
+        "Authorization": "Bearer sk_f0aa1b16996916e14597c228d18ba401683d6973d42d292b32b050b74f692ac6"
+      }
+    },
+    "composio": {
+      "baseUrl": "https://connect.composio.dev/mcp",
+      "headers": {
+        "x-api-key": "ak_ZUfdxz0JJm2EEJMqtCYx"
+    }
+    },
+    "agentsocial-generation": {
+      "command": "npx",
+      "args": ["tsx", "packages/api/src/mcp/generation-mcp-server.ts"],
+      "cwd": "/home/jason/.openclaw/workspaces/agentsocial"
+    }
+  },
+  "imports": []
+}

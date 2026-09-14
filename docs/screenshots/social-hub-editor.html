@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AgentSocial - Social Hub with Adobe Express Editor</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f8fafc; }
+.navbar { background: #1e293b; color: white; padding: 12px 24px; display: flex; align-items: center; justify-content: space-between; }
+.navbar .logo { font-size: 20px; font-weight: 700; }
+.navbar .logo span { color: #14b8a6; }
+.navbar .nav-links { display: flex; gap: 20px; }
+.navbar .nav-links a { color: #94a3b8; text-decoration: none; font-size: 14px; }
+.navbar .nav-links a.active { color: white; }
+.navbar .user { display: flex; align-items: center; gap: 8px; }
+.navbar .user-avatar { width: 32px; height: 32px; border-radius: 50%; background: #14b8a6; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600; }
+.main { display: flex; min-height: calc(100vh - 56px); }
+.sidebar { width: 220px; background: white; border-right: 1px solid #e2e8f0; padding: 16px 0; }
+.sidebar a { display: flex; align-items: center; gap: 10px; padding: 10px 20px; color: #64748b; text-decoration: none; font-size: 14px; }
+.sidebar a.active { background: #f0fdfa; color: #0d9488; border-right: 3px solid #14b8a6; }
+.sidebar a .icon { width: 20px; height: 20px; }
+.content { flex: 1; padding: 24px; }
+.content h1 { font-size: 24px; font-weight: 700; color: #1e293b; margin-bottom: 20px; }
+.stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+.stat-card { background: white; border-radius: 12px; padding: 20px; border: 1px solid #e2e8f0; }
+.stat-card .label { font-size: 13px; color: #64748b; }
+.stat-card .value { font-size: 28px; font-weight: 700; color: #1e293b; margin-top: 4px; }
+.editor-area { background: white; border-radius: 12px; border: 1px solid #e2e8f0; overflow: hidden; }
+.editor-header { background: linear-gradient(135deg, #0d9488, #14b8a6); color: white; padding: 16px 20px; display: flex; align-items: center; justify-content: space-between; }
+.editor-header h2 { font-size: 16px; font-weight: 600; }
+.editor-header .adobe-badge { background: rgba(255,255,255,0.2); padding: 4px 12px; border-radius: 20px; font-size: 12px; }
+.editor-body { padding: 20px; min-height: 400px; display: flex; gap: 20px; }
+.editor-sidebar { width: 200px; }
+.editor-sidebar h3 { font-size: 13px; font-weight: 600; color: #64748b; text-transform: uppercase; margin-bottom: 12px; }
+.tool-btn { display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 8px; border: 1px solid #e2e8f0; margin-bottom: 8px; cursor: pointer; font-size: 13px; color: #475569; background: white; width: 100%; }
+.tool-btn:hover { background: #f0fdfa; border-color: #14b8a6; }
+.tool-btn .tool-icon { width: 24px; height: 24px; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+.canvas-area { flex: 1; background: #f1f5f9; border-radius: 8px; display: flex; align-items: center; justify-content: center; position: relative; }
+.canvas-preview { width: 320px; height: 320px; background: linear-gradient(135deg, #fce7f3, #dbeafe); border-radius: 16px; display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+.canvas-preview .preview-img { font-size: 48px; margin-bottom: 12px; }
+.canvas-preview .preview-text { font-size: 18px; font-weight: 700; color: #1e293b; }
+.canvas-preview .preview-sub { font-size: 13px; color: #64748b; margin-top: 4px; }
+.floating-btn { position: absolute; bottom: 16px; right: 16px; background: #14b8a6; color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; box-shadow: 0 2px 8px rgba(20,184,166,0.3); }
+.floating-btn:hover { background: #0d9488; }
+.badge { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600; }
+.badge-green { background: #dcfce7; color: #166534; }
+.badge-blue { background: #dbeafe; color: #1e40af; }
+.badge-yellow { background: #fef3c7; color: #92400e; }
+</style>
+</head>
+<body>
+<div class="navbar">
+  <div class="logo">Agent<span>Social</span></div>
+  <div class="nav-links">
+    <a href="#">Dashboard</a>
+    <a href="#" class="active">Social Hub</a>
+    <a href="#">Analytics</a>
+    <a href="#">Settings</a>
+  </div>
+  <div class="user">
+    <div class="user-avatar">JP</div>
+    <span style="font-size:13px">Jason</span>
+  </div>
+</div>
+<div class="main">
+  <div class="sidebar">
+    <a href="#" class="active">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+      Social Hub
+    </a>
+    <a href="#">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+      Create Post
+    </a>
+    <a href="#">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      Calendar
+    </a>
+    <a href="#">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      Accounts
+    </a>
+    <a href="#">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+      Content Editor
+    </a>
+    <a href="#">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+      Websites
+    </a>
+    <a href="#">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      GBP Manager
+    </a>
+  </div>
+  <div class="content">
+    <h1>Social Hub</h1>
+    <div class="stats">
+      <div class="stat-card">
+        <div class="label">Connected Accounts</div>
+        <div class="value">4</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Scheduled Posts</div>
+        <div class="value">12</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Published</div>
+        <div class="value">87</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Avg Engagement</div>
+        <div class="value">4.2%</div>
+      </div>
+    </div>
+    <div class="editor-area">
+      <div class="editor-header">
+        <h2>✨ Image Editor — Powered by Adobe Express</h2>
+        <div class="adobe-badge">Adobe Express Embed SDK v4</div>
+      </div>
+      <div class="editor-body">
+        <div class="editor-sidebar">
+          <h3>Tools</h3>
+          <button class="tool-btn">
+            <span class="tool-icon" style="background:#dbeafe;color:#1e40af">✂️</span>
+            Crop & Resize
+          </button>
+          <button class="tool-btn">
+            <span class="tool-icon" style="background:#fce7f3;color:#9d174d">🎨</span>
+            Filters & Effects
+          </button>
+          <button class="tool-btn">
+            <span class="tool-icon" style="background:#fef3c7;color:#92400e">📝</span>
+            Add Text
+          </button>
+          <button class="tool-btn">
+            <span class="tool-icon" style="background:#dcfce7;color:#166534">🤖</span>
+            AI Generate
+          </button>
+          <button class="tool-btn">
+            <span class="tool-icon" style="background:#e0e7ff;color:#3730a3">📋</span>
+            Templates
+          </button>
+          <button class="tool-btn">
+            <span class="tool-icon" style="background:#fee2e2;color:#991b1b">😀</span>
+            Stickers
+          </button>
+          <h3 style="margin-top:16px">Export</h3>
+          <button class="tool-btn">
+            <span class="tool-icon" style="background:#f1f5f9;color:#475569">📥</span>
+            Download PNG
+          </button>
+          <button class="tool-btn">
+            <span class="tool-icon" style="background:#f1f5f9;color:#475569">📥</span>
+            Download JPG
+          </button>
+          <button class="tool-btn">
+            <span class="tool-icon" style="background:#f1f5f9;color:#475569">📤</span>
+            Post to Social
+          </button>
+        </div>
+        <div class="canvas-area">
+          <div class="canvas-preview">
+            <div class="preview-img">💇‍♀️</div>
+            <div class="preview-text">PLEIJ Salon</div>
+            <div class="preview-sub">Summer Collection 2026</div>
+            <div style="margin-top:12px;display:flex;gap:6px">
+              <span class="badge badge-green">Instagram</span>
+              <span class="badge badge-blue">Facebook</span>
+              <span class="badge badge-yellow">TikTok</span>
+            </div>
+          </div>
+          <button class="floating-btn">Open in Adobe Express →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

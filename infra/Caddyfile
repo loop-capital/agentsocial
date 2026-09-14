@@ -1,0 +1,59 @@
+# AgentSocial Cloud — Caddy Reverse Proxy
+# Auto-HTTPS via Let's Encrypt for CLIENT_DOMAIN
+
+{$CLIENT_DOMAIN} {
+    # AgentSocial Web (Next.js)
+    handle /app/* {
+        uri strip_prefix /app
+        reverse_proxy web:3000
+    }
+
+    # AgentSocial API
+    handle /api/v1/* {
+        reverse_proxy api:3001
+    }
+
+    # Dograh Voice Agent UI
+    handle /voice/* {
+        uri strip_prefix /voice
+        rewrite /voice{uri}
+        reverse_proxy dograh-ui:3010
+    }
+
+    # Dograh Voice Agent API
+    handle /voice-api/* {
+        uri strip_prefix /voice-api
+        reverse_proxy dograh-api:8000
+    }
+
+    # MinIO (voice audio files)
+    handle /voice-audio/* {
+        uri strip_prefix /voice-audio
+        reverse_proxy minio:9000
+    }
+
+    # Health check
+    handle /health {
+        respond "OK" 200
+    }
+
+    # Default → Landing page
+    handle {
+        reverse_proxy web:3000
+    }
+
+    # Security headers
+    header {
+        X-Content-Type-Options nosniff
+        X-Frame-Options DENY
+        X-XSS-Protection "1; mode=block"
+        Referrer-Policy strict-origin-when-cross-origin
+        Strict-Transport-Security "max-age=31536000; includeSubDomains"
+    }
+
+    # Logging
+    log {
+        output file /var/log/caddy/access.log
+        format console
+    }
+}

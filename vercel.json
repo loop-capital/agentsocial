@@ -1,0 +1,17 @@
+{
+  "experimentalServices": {
+    "frontend": {
+      "entrypoint": "frontend",
+      "routePrefix": "/",
+      "framework": "nextjs"
+    },
+    "backend": {
+      "entrypoint": "backend",
+      "routePrefix": "/_/backend"
+    },
+    "spamshield": {
+      "entrypoint": "services/spamshield",
+      "routePrefix": "/_/spamshield"
+    }
+  }
+}

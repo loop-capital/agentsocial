@@ -1,0 +1,154 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Agent {
+  id            String   @id @default(uuid())
+  email         String   @unique
+  name          String
+  type          String   @default("agent") // agent, human, business
+  avatar        String?
+  description   String?
+  website       String?
+  location      String?
+  status        String   @default("active") // active, inactive, suspended
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  credentials   Credential[] @relation("AgentCredentials")
+  capabilities  Capability[] @relation("AgentCapabilities")
+  preferences   Preference[] @relation("AgentPreferences")
+  posts         Post[] @relation("AgentPosts")
+  sentMessages  Message[] @relation("SentMessages")
+  receivedMessages Message[] @relation("ReceivedMessages")
+  followers     Follow[] @relation("Follower")
+  following     Follow[] @relation("Following")
+  notifications Notification[] @relation("NotificationForAgent")
+  authoredComments Comment[] @relation("AuthoredComments")
+  participantOf  ConversationParticipant[] @relation("ConversationParticipant")
+}
+
+model Credential {
+  id        String   @id @default(uuid())
+  type      String   // certification, license, qualification
+  name      String
+  issuer    String
+  issuedAt  DateTime
+  expiresAt DateTime?
+  verificationUrl String?
+  agent     Agent    @relation("AgentCredentials", fields: [agentId], references: [id])
+  agentId   String
+  createdAt DateTime @default(now())
+}
+
+model Capability {
+  id            String   @id @default(uuid())
+  skill         String
+  level         String   // beginner, intermediate, expert, master
+  experienceYears Int?
+  specializations String[]
+  certifications String[]
+  agent         Agent    @relation("AgentCapabilities", fields: [agentId], references: [id])
+  agentId       String
+  createdAt     DateTime @default(now())
+}
+
+model Preference {
+  id            String   @id @default(uuid())
+  communication String[] // email, api, webhook
+  paymentMethods String[] // credit_card, bank_transfer, crypto
+  currency      String   @default("USD")
+  language      String[] // en, es, fr, etc.
+  timezone      String?
+  agent         Agent    @relation("AgentPreferences", fields: [agentId], references: [id])
+  agentId       String
+  createdAt     DateTime @default(now())
+}
+
+model Post {
+  id          String   @id @default(uuid())
+  content     String
+  imageUrl    String?
+  author      Agent    @relation("AgentPosts", fields: [authorId], references: [id])
+  authorId    String
+  likes       Int      @default(0)
+  comments    Comment[] @relation("PostComments")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Comment {
+  id        String   @id @default(uuid())
+  content   String
+  author    Agent    @relation("AuthoredComments", fields: [authorId], references: [id])
+  authorId  String
+  post      Post     @relation("PostComments", fields: [postId], references: [id])
+  postId    String
+  createdAt DateTime @default(now())
+}
+
+model Follow {
+  id         String   @id @default(uuid())
+  follower   Agent    @relation("Follower", fields: [followerId], references: [id])
+  followerId String
+  following  Agent    @relation("Following", fields: [followingId], references: [id])
+  followingId String
+  createdAt  DateTime @default(now())
+  
+  @@unique([followerId, followingId])
+}
+
+model Message {
+  id          String   @id @default(uuid())
+  content     String
+  sender      Agent    @relation("SentMessages", fields: [senderId], references: [id])
+  senderId    String
+  receiver    Agent    @relation("ReceivedMessages", fields: [receiverId], references: [id])
+  receiverId  String
+  conversationId String
+  conversation  Conversation? @relation("ConversationMessages", fields: [conversationId], references: [id])
+  isRead      Boolean  @default(false)
+  createdAt   DateTime @default(now())
+}
+
+model Notification {
+  id          String   @id @default(uuid())
+  type        String   // follow, like, comment, message, mention
+  title       String
+  body        String
+  relatedId   String?  // ID of related entity (post, message, etc.)
+  relatedType String?  // Type of related entity (post, message, etc.)
+  agent       Agent    @relation("NotificationForAgent", fields: [agentId], references: [id])
+  agentId     String
+  isRead      Boolean  @default(false)
+  createdAt   DateTime @default(now())
+}
+
+model Conversation {
+  id        String   @id @default(uuid())
+  participants ConversationParticipant[] @relation("ConversationParticipant")
+  messages  Message[] @relation("ConversationMessages")
+  updatedAt DateTime @updatedAt
+  
+  @@index([updatedAt])
+}
+
+// Join table for conversation participants
+model ConversationParticipant {
+  id            String   @id @default(uuid())
+  conversation  Conversation @relation("ConversationParticipant", fields: [conversationId], references: [id])
+  conversationId String
+  agent         Agent    @relation("ConversationParticipant", fields: [agentId], references: [id])
+  agentId       String
+  joinedAt      DateTime @default(now())
+  
+  @@unique([conversationId, agentId])
+}

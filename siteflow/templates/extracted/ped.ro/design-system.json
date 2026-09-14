@@ -1,0 +1,80 @@
+{
+  "site_name": "ped.ro",
+  "url": "https://ped.ro",
+  "extracted_at": "2026-04-29T14:46:48Z",
+  "brand_name": "Ped Ro",
+  "brand_colors": [],
+  "brand_fonts": [],
+  "colors": {
+    "primary": [],
+    "secondary": [
+      {
+        "name": "inline_0",
+        "value": "black"
+      },
+      {
+        "name": "inline_1",
+        "value": "white"
+      },
+      {
+        "name": "inline_2",
+        "value": "rgba(255, 255, 255, var(--text-opacity, 1))"
+      }
+    ],
+    "accent": [],
+    "background": [
+      {
+        "name": "color-page-background",
+        "value": "var(--gray-1)"
+      }
+    ],
+    "foreground": [],
+    "border": [],
+    "muted": []
+  },
+  "typography": {
+    "families": {
+      "heading": [
+        "var(--font-editorial-new)"
+      ],
+      "body": [
+        "var(--font-editorial-new)"
+      ],
+      "mono": [
+        "ui-monospace",
+        "SFMono-Regular",
+        "monospace"
+      ]
+    },
+    "sizes": [],
+    "weights": [],
+    "line_heights": []
+  },
+  "spacing": {
+    "padding": [],
+    "margin": [],
+    "gap": []
+  },
+  "borders": {
+    "radii": []
+  },
+  "shadows": {
+    "values": []
+  },
+  "button_styles": [
+    {
+      "tag": "button",
+      "classes": "rt-reset home-video-button",
+      "text": "content creation"
+    }
+  ],
+  "card_styles": [],
+  "input_styles": [],
+  "layout_patterns": [],
+  "motion_patterns": [],
+  "style_tags": [
+    "flat-design",
+    "mixed-radii"
+  ],
+  "design_philosophy": "Modern professional web design"
+}

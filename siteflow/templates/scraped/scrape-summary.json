@@ -1,0 +1,1210 @@
+{
+  "scraped_at": "2026-04-29T14:44:48Z",
+  "total_sites": 10,
+  "successful": 7,
+  "failed": 3,
+  "sites": [
+    {
+      "site_name": "stripe.com",
+      "url": "https://stripe.com",
+      "scraped_at": "2026-04-29T14:44:27Z",
+      "colors": {},
+      "fonts": [],
+      "font_sizes": [],
+      "font_weights": [],
+      "line_heights": [],
+      "padding_values": [],
+      "margin_values": [],
+      "gap_values": [],
+      "border_radii": [],
+      "shadows": [],
+      "breakpoints": [],
+      "buttons": [
+        {
+          "tag": "button",
+          "classes": "hds-button hds-navigation-menu__trigger hds-button--transparent",
+          "text": "Products"
+        },
+        {
+          "tag": "button",
+          "classes": "hds-button hds-navigation-menu__trigger hds-button--transparent",
+          "text": "Solutions"
+        },
+        {
+          "tag": "button",
+          "classes": "hds-button hds-navigation-menu__trigger hds-button--transparent",
+          "text": "Developers"
+        },
+        {
+          "tag": "button",
+          "classes": "hds-button hds-navigation-menu__trigger hds-button--transparent",
+          "text": "Resources"
+        },
+        {
+          "tag": "a",
+          "classes": "hds-button hds-navigation-menu__trigger hds-button--transparent",
+          "text": "Pricing"
+        },
+        {
+          "tag": "a",
+          "classes": "hds-button hds-navigation-menu__trigger hds-button--transparent",
+          "text": "Sign in"
+        },
+        {
+          "tag": "a",
+          "classes": "hds-button hds-button--primary",
+          "text": "Start now"
+        },
+        {
+          "tag": "a",
+          "classes": "hds-button hds-button--secondary-on-quiet",
+          "text": "Contact sales"
+        },
+        {
+          "tag": "button",
+          "classes": "hds-button navigation-back-button hds-button--transparent",
+          "text": "Back"
+        },
+        {
+          "tag": "button",
+          "classes": "hds-ui-button hds-navigation-menu__trigger navigation-hamburger-button hds-ui-button--quiet",
+          "text": ""
+        },
+        {
+          "tag": "a",
+          "classes": "hds-button navigation-cta-button navigation-item__sign-in hds-button--secondary-on-quiet",
+          "text": "Sign inSign in"
+        },
+        {
+          "tag": "a",
+          "classes": "hds-button navigation-cta-button navigation-item__contact-sales hds-button--primary",
+          "text": "Contact sales"
+        },
+        {
+          "tag": "a",
+          "classes": "hds-button hds-button--primary",
+          "text": "Get started"
+        },
+        {
+          "tag": "a",
+          "classes": "hds-button hero-section__button--google hds-button--secondary",
+          "text": "Sign up with Google"
+        },
+        {
+          "tag": "a",
+          "classes": "hds-button sessions-section__cta-button hds-button--primary",
+          "text": "Watch keynote"
+        },
+        {
+          "tag": "a",
+          "classes": "hds-link stats-menu__stat-description__link hds-link--secondary",
+          "text": "historical uptime"
+        },
+        {
+          "tag": "a",
+          "classes": "hds-button hds-button--primary",
+          "text": "Stripe for enterprises"
+        },
+        {
+          "tag": "button",
+          "classes": "customer-stories__customer-button",
+          "text": "Hertz unifies commerce with Stripe."
+        },
+        {
+          "tag": "a",
+          "classes": "hds-button customer-story-button customer-story-button--open hds-button--secondary-on-quiet hds-button--compact",
+          "text": "Read the story"
+        },
+        {
+          "tag": "a",
+          "classes": "hds-button hds-button--secondary",
+          "text": "Read the story"
+        }
+      ],
+      "cards": [
+        {
+          "tag": "button",
+          "classes": "modular-solutions-bento-card modular-solutions-bento__card-payments"
+        },
+        {
+          "tag": "div",
+          "classes": "modular-solutions-bento-card__dialog-entry"
+        },
+        {
+          "tag": "div",
+          "classes": "modular-solutions-bento-card__dialog-entry-wrapper"
+        },
+        {
+          "tag": "div",
+          "classes": "modular-solutions-bento-card__text"
+        },
+        {
+          "tag": "h3",
+          "classes": "hds-heading modular-solutions-bento-card__title hds-heading--md"
+        },
+        {
+          "tag": "div",
+          "classes": "modular-solutions-bento-card__border"
+        },
+        {
+          "tag": "div",
+          "classes": "modular-solutions-bento-card__border-color"
+        },
+        {
+          "tag": "div",
+          "classes": "modular-solutions-bento-card__border-color-gradient"
+        },
+        {
+          "tag": "div",
+          "classes": "modular-solutions-bento-card__inner"
+        },
+        {
+          "tag": "div",
+          "classes": "modular-solutions-bento-card__content"
+        },
+        {
+          "tag": "div",
+          "classes": "modular-solutions-bento-card__content-inner"
+        },
+        {
+          "tag": "div",
+          "classes": "modular-solutions-bento-card__graphic"
+        },
+        {
+          "tag": "div",
+          "classes": "modular-solutions-bento-card__background"
+        },
+        {
+          "tag": "button",
+          "classes": "modular-solutions-bento-card modular-solutions-bento__card-billing"
+        },
+        {
+          "tag": "div",
+          "classes": "modular-solutions-bento-card__dialog-entry"
+        },
+        {
+          "tag": "div",
+          "classes": "modular-solutions-bento-card__dialog-entry-wrapper"
+        },
+        {
+          "tag": "div",
+          "classes": "modular-solutions-bento-card__text"
+        },
+        {
+          "tag": "h3",
+          "classes": "hds-heading modular-solutions-bento-card__title hds-heading--md"
+        },
+        {
+          "tag": "div",
+          "classes": "modular-solutions-bento-card__border"
+        },
+        {
+          "tag": "div",
+          "classes": "modular-solutions-bento-card__border-color"
+        }
+      ],
+      "inputs": [],
+      "nav_patterns": [
+        {
+          "links_count": 7,
+          "links": [
+            "/",
+            "/pricing",
+            "https://dashboard.stripe.com/login",
+            "https://dashboard.stripe.com/register",
+            "/contact/sales",
+            "https://dashboard.stripe.com/login",
+            "/contact/sales"
+          ]
+        }
+      ],
+      "transitions": [],
+      "animations": [],
+      "meta_description": "Stripe is a financial services platform that helps all types of businesses accept payments, build flexible billing models, and manage money movement.",
+      "og_image": "https://images.stripeassets.com/fzn2n1nzq965/XtX984S1GJVsVOXFC7kMu/01988281e867728dfb09aa7793a6e3b9/Stripe.jpg?q=80",
+      "favicon": "https://images.stripeassets.com/fzn2n1nzq965/1hgcBNd12BfT9VLgbId7By/01d91920114b124fb4cf6d448f9f06eb/favicon.svg",
+      "page_title": "Stripe | Financial Infrastructure to Grow Your Revenue"
+    },
+    {
+      "site_name": "framer.com",
+      "url": "https://framer.com",
+      "scraped_at": "2026-04-29T14:44:30Z",
+      "colors": {
+        "google-font-color-sixtyfourconvergence": "none",
+        "text-decoration": "var(--framer-link-current-text-decoration-style,var(--framer-link-text-decoration-style,var(--framer-text-decoration-style,solid)))var(--framer-link-current-text-decoration,var(--framer-link-text-decoration,var(--framer-text-decoration,none)))var(--framer-link-current-text-decoration-color,var(--framer-link-text-decoration-color,var(--framer-text-decoration-color,currentcolor)))var(--framer-link-current-text-decoration-thickness,var(--framer-link-text-decoration-thickness,var(--framer-text-decoration-thickness,auto)))",
+        "text-decoration-skip-ink": "var(--framer-link-current-text-decoration-skip-ink,var(--framer-link-text-decoration-skip-ink,var(--framer-text-decoration-skip-ink)))",
+        "text-underline-offset": "var(--framer-link-current-text-decoration-offset,var(--framer-link-text-decoration-offset,var(--framer-text-decoration-offset)))}[data-framer-component-type=RichTextContainer]{outline:none",
+        "text-color": "var(--framer-link-current-text-color,var(--framer-link-text-color,var(--framer-text-color)))",
+        "text-transform": "var(--framer-link-current-text-transform,var(--framer-link-text-transform,var(--framer-text-transform)))",
+        "selection-color": "#09f",
+        "framer-link-text-color": "var(--token-f5637926-8ee6-41cb-a320-ec3462d62cd5,#fff6)",
+        "framer-link-text-decoration": "none}.framer-MkG82[data-border=true]:after,.framer-MkG82 [data-border=true]:after{content:\"\"",
+        "framer-text-wrap-override": "balance",
+        "framer-text-alignment": "left",
+        "framer-text-color": "var(--token-8f5eb515-7a13-452b-a4ab-f35e2208a3f3,#fff9)",
+        "framer-text-decoration": "none",
+        "framer-text-stroke-color": "initial",
+        "framer-text-stroke-width": "initial",
+        "framer-text-transform": "none}.framer-A2gZB[data-border=true]:after,.framer-A2gZB [data-border=true]:after{content:\"\"",
+        "framer-text-decoration-style": "none",
+        "framer-text-decoration-color": "none",
+        "framer-text-decoration-thickness": "none",
+        "framer-text-decoration-skip-ink": "none",
+        "framer-text-decoration-offset": "none",
+        "framer-text-background-color": "initial",
+        "framer-text-background-radius": "initial",
+        "framer-text-background-corner-shape": "initial",
+        "framer-text-background-padding": "initial}ol.framer-text{--list-style-type:decimal}ul.framer-text,ol.framer-text{padding-inline-start:0",
+        "framer-link-current-text-color": "var(--token-26e3cb56-8447-4a64-9b7d-37f16a9909d4,#fff)",
+        "framer-link-current-text-decoration": "none",
+        "framer-link-hover-text-color": "#fff9",
+        "framer-link-hover-text-decoration": "none",
+        "border-bottom-width": "1px",
+        "border-color": "var(--token-c534b380-e14e-4ddc-9802-ad88d1f94f8e,#ffffff1a)",
+        "border-left-width": "1px",
+        "border-right-width": "1px",
+        "border-style": "solid",
+        "border-top-width": "1px",
+        "framer-text-wrap": "balance}.framer-jn2RV[data-border=true]:after,.framer-jn2RV [data-border=true]:after{content:\"\"",
+        "text-truncation-display-inline-for-safari-16": "inline",
+        "text-truncation-display-none-for-safari-16": "none",
+        "text-truncation-line-break-for-safari-16": "\"\\a \"",
+        "inline_0": "var(--extracted-tcooor, var(--token-8f5eb515-7a13-452b-a4ab-f35e2208a3f3, rgba(255, 255, 255, 0.6)))",
+        "inline_1": "rgb(140, 140, 140)",
+        "inline_2": "var(--extracted-r6o4lv, var(--token-26e3cb56-8447-4a64-9b7d-37f16a9909d4, rgb(255, 255, 255)))",
+        "inline_3": "rgb(255, 255, 255)",
+        "inline_4": "none",
+        "inline_5": "var(--extracted-a0htzi, var(--variable-reference-u7EixmfP1-M8z52uvts))",
+        "inline_6": "rgb(36, 36, 36)",
+        "inline_7": "rgba(255, 255, 255, 0.4)",
+        "inline_8": "var(--extracted-r6o4lv, var(--token-6d6f97c3-5f4a-41b8-a7b9-eff3df1acd75, rgb(0, 153, 255)))",
+        "inline_9": "rgba(255, 255, 255, 0)",
+        "inline_10": "var(--extracted-r6o4lv, var(--variable-reference-u7EixmfP1-M8z52uvts))",
+        "inline_11": "var(--extracted-r6o4lv, var(--token-0903d63a-94ee-49f4-896e-eb837e1f22c9, rgb(153, 153, 153)))",
+        "inline_12": "rgba(255, 255, 255, 0.05)",
+        "inline_13": "var(--token-958e2cd1-b113-4aa3-9235-7a2b959c8feb, rgb(0, 0, 0))",
+        "inline_14": "var(--extracted-a0htzi, rgb(255, 255, 255))",
+        "inline_15": "rgba(0, 187, 136, 0.1)",
+        "inline_16": "transparent",
+        "inline_17": "var(--extracted-r6o4lv, rgb(0, 187, 136))",
+        "inline_18": "var(--extracted-r6o4lv, var(--variable-reference-xdxfhd9wh-fpJV3zp1q))",
+        "inline_19": "rgb(23, 23, 23)",
+        "inline_20": "var(--token-4a5ab9b5-071f-4390-82c0-81f9558f671f, rgb(255, 255, 255))",
+        "inline_21": "var(--extracted-r6o4lv, var(--token-8f5eb515-7a13-452b-a4ab-f35e2208a3f3, rgba(255, 255, 255, 0.6)))",
+        "inline_22": "rgb(18, 18, 18)",
+        "inline_23": "rgb(8, 8, 8)",
+        "inline_24": "var(--extracted-1lwpl3i, var(--token-26e3cb56-8447-4a64-9b7d-37f16a9909d4, rgb(255, 255, 255)))",
+        "inline_25": "rgba(0, 0, 0, 0.8)",
+        "inline_26": "radial-gradient(100% 100% at 0% 0%, var(--token-26e3cb56-8447-4a64-9b7d-37f16a9909d4, rgb(255, 255, 255)) 0%, rgb(0, 0, 0) 100%)",
+        "inline_27": "white",
+        "inline_28": "rgba(0, 0, 0, 0)",
+        "inline_29": "var(--extracted-tcooor, var(--token-26e3cb56-8447-4a64-9b7d-37f16a9909d4, rgb(255, 255, 255)))",
+        "inline_30": "rgb(0, 0, 0)",
+        "inline_31": "rgb(34, 34, 34)",
+        "inline_32": "rgba(0, 0, 0, 0.7)",
+        "inline_33": "rgb(153, 153, 153)",
+        "inline_34": "var(--extracted-r6o4lv, rgba(255, 255, 255, 0.8))",
+        "inline_35": "var(--extracted-r6o4lv, var(--token-6fff741a-90b6-438e-9423-1f7c07944681, rgb(17, 17, 17)))",
+        "inline_36": "rgba(255, 255, 255, 0.08)",
+        "inline_37": "var(--token-8f5eb515-7a13-452b-a4ab-f35e2208a3f3, rgba(255, 255, 255, 0.6))",
+        "inline_38": "rgb(0, 153, 255)",
+        "inline_39": "var(--token-eb0d9e00-7216-491c-99d5-7c1c2f3d0dbe, rgb(0, 85, 255))",
+        "inline_40": "var(--token-26e3cb56-8447-4a64-9b7d-37f16a9909d4, rgb(255, 255, 255))",
+        "inline_41": "rgb(32, 32, 32)",
+        "inline_42": "inherit",
+        "inline_43": "var(--token-5e0b3b72-9a97-43f8-96f2-85d741f3d8ca, rgb(31, 31, 31))",
+        "inline_44": "rgba(255, 255, 255, 0.1)",
+        "inline_45": "rgb(238, 238, 238)",
+        "inline_46": "var(--extracted-tcooor, rgb(255, 255, 255))",
+        "inline_47": "var(--token-5964e09d-3671-4c80-a557-31c1772b6c22, rgb(153, 153, 153))",
+        "inline_48": "linear-gradient(180deg, rgba(5, 255, 159, 0) 0%, rgba(0, 0, 0, 0.06) 100%)",
+        "inline_49": "var(--extracted-r6o4lv, var(--token-958e2cd1-b113-4aa3-9235-7a2b959c8feb, rgb(0, 0, 0)))",
+        "inline_50": "rgba(0, 153, 255, 0.15)",
+        "inline_51": "rgba(255, 255, 255, 0.15)",
+        "inline_52": "var(--token-c534b380-e14e-4ddc-9802-ad88d1f94f8e, rgba(255, 255, 255, 0.1))",
+        "inline_53": "rgb(26, 26, 26)",
+        "inline_54": "var(--extracted-r6o4lv, rgb(102, 102, 102))",
+        "inline_55": "rgb(102, 102, 102)",
+        "inline_56": "rgb(51, 51, 51)",
+        "inline_57": "rgba(255, 255, 255, 0.6)",
+        "inline_58": "rgba(255, 255, 255, 0.2)",
+        "inline_59": "var(--token-5e2a9781-f258-43f3-ae02-0a76276a5519, rgb(8, 8, 8))",
+        "inline_60": "var(--token-bd71055c-0a2c-4476-8cc9-4310acba652d, rgb(0, 153, 255))",
+        "inline_61": "rgb(204, 204, 204)",
+        "inline_62": "var(--extracted-1w1cjl5, var(--token-6fff741a-90b6-438e-9423-1f7c07944681, rgb(255, 255, 255)))",
+        "inline_63": "var(--extracted-r6o4lv, var(--token-289cb3ad-ad59-4cce-aee5-0850b842d9c8, rgba(255, 255, 255, 0.8)))",
+        "inline_64": "black",
+        "inline_65": "var(--extracted-r6o4lv, rgb(255, 255, 255))",
+        "inline_66": "var(--extracted-r6o4lv, rgb(153, 153, 153))",
+        "inline_67": "var(--token-f5637926-8ee6-41cb-a320-ec3462d62cd5, rgba(255, 255, 255, 0.4))",
+        "inline_68": "rgba(8, 8, 8, 0.7)",
+        "inline_69": "var(--extracted-a0htzi, var(--token-26e3cb56-8447-4a64-9b7d-37f16a9909d4, rgb(255, 255, 255)))"
+      },
+      "fonts": [
+        "\"Open Runde\", \"Open Runde Placeholder\", sans-serif",
+        "\"Inter Variable\", \"Inter Variable Placeholder\", sans-serif",
+        "\"Inter\", \"Inter Placeholder\", sans-serif",
+        "\"Inter\", sans-serif",
+        "\"Mona Sans\", \"Mona Sans Placeholder\", sans-serif",
+        "\"GT Walsheim Medium\", \"GT Walsheim Medium Placeholder\", sans-serif",
+        "mona sans",
+        "\"Inter Framer SemiBold\", \"Inter Framer SemiBold Placeholder\", sans-serif"
+      ],
+      "font_sizes": [
+        "10px",
+        "32px",
+        "8px",
+        "13px",
+        "9px",
+        "7px",
+        "12px",
+        "18px",
+        "14px",
+        "15px",
+        "17px",
+        "20px",
+        "22px",
+        "61.5px",
+        "24px",
+        "calc(var(--variable-reference-yyVAjLhNu-q8_oY7uRM) * 1px)"
+      ],
+      "font_weights": [],
+      "line_heights": [],
+      "padding_values": [],
+      "margin_values": [],
+      "gap_values": [],
+      "border_radii": [
+        "10px",
+        "50px",
+        "50%",
+        "40px",
+        "inherit",
+        "0px",
+        "0",
+        "1px"
+      ],
+      "shadows": [
+        "0px 25px 50px 0px rgba(0, 0, 0, 0.25), 0px 5px 25px 0px rgba(0, 0, 0, 0.5)",
+        "0px 10px 10px 0px rgba(0, 0, 0, 0.3)",
+        "0px 0px 0px 2px rgb(9, 9, 9)",
+        "var(--9xgf7k)",
+        "0px 1px 2px 0px rgba(0, 0, 0, 0.25)",
+        "0px 0.5px 0px 0.5px rgba(255, 255, 255, 0.1), 0px 10px 30px 0px rgba(0, 0, 0, 0.25)",
+        "none",
+        "0px 10px 20px 0px rgba(0, 0, 0, 0.2), 0px 2px 4px 0px rgba(0, 0, 0, 0.25)"
+      ],
+      "breakpoints": [],
+      "buttons": [],
+      "cards": [],
+      "inputs": [],
+      "nav_patterns": [
+        {
+          "links_count": 12,
+          "links": [
+            "./",
+            "https://framer.com/r/login",
+            "https://www.framer.com/r/signup/",
+            "",
+            "./brand",
+            "",
+            "",
+            "",
+            "",
+            ""
+          ]
+        },
+        {
+          "links_count": 1,
+          "links": [
+            "./"
+          ]
+        },
+        {
+          "links_count": 23,
+          "links": [
+            "./developers/",
+            "./developers/comparison",
+            "./developers/faq",
+            "./",
+            "./developers/plugins-introduction",
+            "./developers/plugins-quick-start",
+            "./developers/publishing",
+            "./developers/changelog",
+            "./developers/reference",
+            "./developers/server-api-introduction"
+          ]
+        },
+        {
+          "links_count": 23,
+          "links": [
+            "./developers/",
+            "./developers/comparison",
+            "./developers/faq",
+            "./",
+            "./developers/plugins-introduction",
+            "./developers/plugins-quick-start",
+            "./developers/publishing",
+            "./developers/changelog",
+            "./developers/reference",
+            "./developers/server-api-introduction"
+          ]
+        }
+      ],
+      "transitions": [
+        "color .2s cubic-bezier(.44,0,.56,1)}@supports (aspect-ratio:1){body{--framer-aspect-ratio-supported:auto}}.framer-rZgDE.framer-10fe6s,.framer-rZgDE .framer-10fe6s{display:block}.framer-rZgDE.framer-1ba79in{width:14px",
+        "color .3s cubic-bezier(.44,0,.56,1)}.framer-gBDme[data-border=true]:after,.framer-gBDme [data-border=true]:after{content:\"\"",
+        "color .3s cubic-bezier(.44,0,.56,1)}.framer-1crIN .framer-styles-preset-152xjim:not(.rich-text-wrapper),.framer-1crIN .framer-styles-preset-152xjim.rich-text-wrapper a{--framer-link-hover-text-color:#fff9"
+      ],
+      "animations": [
+        "__framer-blink-input"
+      ],
+      "meta_description": "Build a free website with Framer\u00e2\u0080\u0094enjoy full design freedom, powerful CMS, built-in SEO, and real-time collaboration. Create professional, fully custom sites with the no-code builder loved by designers and high-performing teams.",
+      "og_image": "https://framerusercontent.com/images/yyBL8MFizGZKUd27rQGHp30fyc.jpg",
+      "favicon": "https://framerusercontent.com/images/Io89FonxEaWg4nxvQQllVLwPUUI.png",
+      "page_title": "Framer: Create a professional website, free. No code website builder loved by designers."
+    },
+    {
+      "site_name": "figma.com",
+      "url": "https://figma.com",
+      "scraped_at": "2026-04-29T14:44:33Z",
+      "colors": {
+        "f-cursor-text": "text",
+        "f-bg-color": "#C7F8FB",
+        "f-text-color": "#000000",
+        "f-list-header-color": "rgba(255, 255, 255, 0.6)",
+        "f-icon-bg-color": "rgba(255, 255, 255, 0.24)",
+        "f-badge-text-color": "#000000",
+        "f-badge-bg-color": "rgba(0, 0, 0, 0.08)",
+        "text-color": "#000000",
+        "bg-color": "#FFFFFF",
+        "f-text-secondary-color": "rgba(0, 0, 0, 0.65)",
+        "f-primary-btn-bg-color": "#000000",
+        "f-primary-btn-text-color": "#FFFFFF",
+        "f-form-input-bg-color": "rgba(0, 0, 0, 0.08)",
+        "f-form-select-hover-bg-color": "rgba(0, 0, 0, 0.16)",
+        "f-form-placeholder-text-color": "rgba(0, 0, 0, 0.5)",
+        "f-form-error-bg-color": "#972121",
+        "f-form-error-text-color": "#FFFFFF",
+        "f-primary-transparent-color": "rgba(0, 0, 0, 0.16)",
+        "f-lego-fg-color": "var(--f-text-color, #000000)",
+        "f-lego-bg-color": "var(--f-bg-color, #FFFFFF)",
+        "f-link-color": "var(--f-text-color, #000000)",
+        "f-emphasis-btn-bg-color": "#000000",
+        "f-emphasis-btn-text-color": "#FFFFFF",
+        "carousel-parent-text-color": "#FFFFFF",
+        "inline_0": "rgba(0, 0, 0, 0.08)"
+      },
+      "fonts": [],
+      "font_sizes": [],
+      "font_weights": [],
+      "line_heights": [],
+      "padding_values": [],
+      "margin_values": [],
+      "gap_values": [],
+      "border_radii": [],
+      "shadows": [],
+      "breakpoints": [],
+      "buttons": [],
+      "cards": [],
+      "inputs": [],
+      "nav_patterns": [
+        {
+          "links_count": 53,
+          "links": [
+            "https://www.figma.com/design/",
+            "https://www.figma.com/dev-mode/",
+            "https://www.figma.com/figjam/",
+            "https://www.figma.com/slides/",
+            "https://www.figma.com/draw/",
+            "https://www.figma.com/buzz/",
+            "https://www.figma.com/sites/",
+            "https://www.figma.com/make/",
+            "https://www.figma.com/ai/",
+            "https://www.figma.com/mcp-catalog/"
+          ]
+        },
+        {
+          "links_count": 12,
+          "links": [
+            "https://www.figma.com/design/",
+            "https://www.figma.com/dev-mode/",
+            "https://www.figma.com/figjam/",
+            "https://www.figma.com/slides/",
+            "https://www.figma.com/draw/",
+            "https://www.figma.com/buzz/",
+            "https://www.figma.com/sites/",
+            "https://www.figma.com/make/",
+            "https://www.figma.com/ai/",
+            "https://www.figma.com/mcp-catalog/"
+          ]
+        },
+        {
+          "links_count": 20,
+          "links": [
+            "https://www.figma.com/design-systems/",
+            "https://www.figma.com/prototyping/",
+            "https://www.figma.com/ux-design-tool/",
+            "https://www.figma.com/web-design/",
+            "https://www.figma.com/wireframe-tool/",
+            "https://www.figma.com/figjam/online-whiteboard/",
+            "https://www.figma.com/figjam/agile-workflows/",
+            "https://www.figma.com/figjam/strategic-planning/",
+            "https://www.figma.com/figjam/brainstorming-tool/",
+            "https://www.figma.com/figjam/diagramming-tool/"
+          ]
+        },
+        {
+          "links_count": 4,
+          "links": [
+            "https://www.figma.com/events-and-webinars/#upcoming-events",
+            "https://friends.figma.com/",
+            "https://www.figma.com/customers/",
+            "https://www.figma.com/gallery/"
+          ]
+        },
+        {
+          "links_count": 16,
+          "links": [
+            "https://www.figma.com/blog/",
+            "https://www.figma.com/community/plugins",
+            "https://www.figma.com/community/category/ui-kits",
+            "https://www.figma.com/community/category/icons",
+            "https://www.figma.com/community/widgets",
+            "https://www.figma.com/templates/",
+            "https://www.figma.com/tools/",
+            "https://www.figma.com/partners/",
+            "https://www.figma.com/community",
+            "https://www.figma.com/best-practices/"
+          ]
+        }
+      ],
+      "transitions": [
+        "-webkit-transform 250ms",
+        "transform 250ms",
+        "all 200ms ease",
+        "all 200ms ease",
+        "background 0.4s cubic-bezier(.8,0,.2,1)",
+        "background 0.4s cubic-bezier(.8,0,.2,1)",
+        "-webkit-transform 250ms,opacity 250ms",
+        "transform 250ms,opacity 250ms",
+        "-webkit-transform 250ms,opacity 250ms",
+        "transform 250ms,opacity 250ms",
+        "-webkit-transform 250ms,opacity 250ms",
+        "transform 250ms,opacity 250ms",
+        "-webkit-transform 250ms,opacity 250ms",
+        "transform 250ms,opacity 250ms",
+        "-webkit-transform 250ms,opacity 250ms"
+      ],
+      "animations": [
+        "animation-6j0toc",
+        "animation-jpvf7s",
+        "animation-zsk7zs",
+        "animation-yh21v4"
+      ],
+      "meta_description": "Figma is the leading collaborative design platform for building meaningful products. Design, prototype, and build products faster\u2014while gathering feedback all in one place.",
+      "og_image": "https://cdn.sanity.io/images/599r6htc/regionalized/342e17642c7afa81206490b0dd21c3e5724ae040-2400x1260.png?w=1200&q=70&fit=max&auto=format",
+      "favicon": "https://static.figma.com/app/icon/2/icon-128.png",
+      "page_title": "Figma: The Collaborative Interface Design Tool"
+    },
+    {
+      "site_name": "notion.so",
+      "url": "https://notion.so",
+      "scraped_at": "2026-04-29T14:44:36Z",
+      "colors": {
+        "inline_0": "var(--color-orange-400)",
+        "inline_1": "#ffb110",
+        "inline_2": "#ff8a33",
+        "inline_3": "var(--color-red-400)",
+        "inline_4": "var(--color-gray-800)",
+        "inline_5": "#ad6ded",
+        "inline_6": "var(--color-pink-400)",
+        "inline_7": "var(--color-purple-400)",
+        "inline_8": "transparent",
+        "inline_9": "var(--color-teal-400)",
+        "inline_10": "#f64932",
+        "inline_11": "var(--color-black)",
+        "inline_12": "var(--color-brown-400)",
+        "inline_13": "inherit",
+        "inline_14": "var(--color-yellow-400)",
+        "inline_15": "#2a9d99",
+        "inline_16": "var(--color-blue-400)",
+        "inline_17": "#1aae39",
+        "inline_18": "#ff83dd",
+        "inline_19": "#097fe8"
+      },
+      "fonts": [],
+      "font_sizes": [],
+      "font_weights": [],
+      "line_heights": [],
+      "padding_values": [],
+      "margin_values": [],
+      "gap_values": [],
+      "border_radii": [
+        "var(--border-radius-round)",
+        "var(--border-radius-200)"
+      ],
+      "shadows": [],
+      "breakpoints": [],
+      "buttons": [
+        {
+          "tag": "a",
+          "classes": "semanticTypography_semanticTypography__mWJkv linkText_linkText__527kz linkText_colorVariantPrimary__h6Nef linkText_hasArrow__2BwWV",
+          "text": "See what\u2019s new\u2192"
+        },
+        {
+          "tag": "a",
+          "classes": "semanticTypography_semanticTypography__mWJkv linkText_linkText__527kz linkText_colorVariantPrimary__h6Nef linkText_hasArrow__2BwWV",
+          "text": "Notion App\u2192"
+        },
+        {
+          "tag": "a",
+          "classes": "button_button__atjat button_buttonVariantPrimary__mUFQZ button_buttonSizeM__NexGD",
+          "text": "Get Notion free"
+        },
+        {
+          "tag": "a",
+          "classes": "semanticTypography_semanticTypography__mWJkv semanticTypography_variantInteractionButtonMedium__HCJEu button_button__bge_I HeroCTA_cta__hOE_c button_primary__k0d3I button_medium__VXS2i",
+          "text": "Get Notion free"
+        },
+        {
+          "tag": "a",
+          "classes": "semanticTypography_semanticTypography__mWJkv semanticTypography_variantInteractionButtonMedium__HCJEu button_button__bge_I HeroCTA_cta__hOE_c button_secondary__0_CV3 button_medium__VXS2i",
+          "text": "Request a demo"
+        },
+        {
+          "tag": "a",
+          "classes": "semanticTypography_semanticTypography__mWJkv semanticTypography_variantInteractionButtonMedium__HCJEu button_button__bge_I logoWallMarquee_logoWallMarqueeItem__Y3_iz logoWallMarquee_logoWallMarqueeItemDot__tx_vZ button_ghost__npAbk button_medium__VXS2i",
+          "text": ""
+        },
+        {
+          "tag": "a",
+          "classes": "semanticTypography_semanticTypography__mWJkv semanticTypography_variantInteractionButtonMedium__HCJEu button_button__bge_I logoWallMarquee_logoWallMarqueeItem__Y3_iz logoWallMarquee_logoWallMarqueeItemDot__tx_vZ button_ghost__npAbk button_medium__VXS2i",
+          "text": ""
+        },
+        {
+          "tag": "a",
+          "classes": "semanticTypography_semanticTypography__mWJkv semanticTypography_variantInteractionButtonMedium__HCJEu button_button__bge_I logoWallMarquee_logoWallMarqueeItem__Y3_iz logoWallMarquee_logoWallMarqueeItemDot__tx_vZ button_ghost__npAbk button_medium__VXS2i",
+          "text": ""
+        },
+        {
+          "tag": "a",
+          "classes": "semanticTypography_semanticTypography__mWJkv semanticTypography_variantInteractionButtonMedium__HCJEu button_button__bge_I logoWallMarquee_logoWallMarqueeItem__Y3_iz logoWallMarquee_logoWallMarqueeItemDot__tx_vZ button_ghost__npAbk button_medium__VXS2i",
+          "text": ""
+        },
+        {
+          "tag": "a",
+          "classes": "semanticTypography_semanticTypography__mWJkv semanticTypography_variantInteractionButtonMedium__HCJEu button_button__bge_I logoWallMarquee_logoWallMarqueeItem__Y3_iz logoWallMarquee_logoWallMarqueeItemDot__tx_vZ button_ghost__npAbk button_medium__VXS2i",
+          "text": ""
+        },
+        {
+          "tag": "a",
+          "classes": "semanticTypography_semanticTypography__mWJkv semanticTypography_variantInteractionButtonMedium__HCJEu button_button__bge_I logoWallMarquee_logoWallMarqueeItem__Y3_iz logoWallMarquee_logoWallMarqueeItemDot__tx_vZ button_ghost__npAbk button_medium__VXS2i",
+          "text": ""
+        },
+        {
+          "tag": "a",
+          "classes": "semanticTypography_semanticTypography__mWJkv semanticTypography_variantInteractionButtonMedium__HCJEu button_button__bge_I logoWallMarquee_logoWallMarqueeItem__Y3_iz logoWallMarquee_logoWallMarqueeItemDot__tx_vZ button_ghost__npAbk button_medium__VXS2i",
+          "text": ""
+        },
+        {
+          "tag": "a",
+          "classes": "semanticTypography_semanticTypography__mWJkv semanticTypography_variantInteractionButtonMedium__HCJEu button_button__bge_I logoWallMarquee_logoWallMarqueeItem__Y3_iz logoWallMarquee_logoWallMarqueeItemDot__tx_vZ button_ghost__npAbk button_medium__VXS2i",
+          "text": ""
+        },
+        {
+          "tag": "a",
+          "classes": "semanticTypography_semanticTypography__mWJkv semanticTypography_variantInteractionButtonMedium__HCJEu button_button__bge_I logoWallMarquee_logoWallMarqueeItem__Y3_iz logoWallMarquee_logoWallMarqueeItemDot__tx_vZ button_ghost__npAbk button_medium__VXS2i",
+          "text": ""
+        },
+        {
+          "tag": "button",
+          "classes": "flex items-center justify-center actionButton_actionButton__wgfeI actionButton_primary__kHcxb actionButton_circle__5pYaw bentoCarouselSlides_arrowButton__QE6gs bentoCarouselSlides_arrowButtonNext___wxyp",
+          "text": ""
+        },
+        {
+          "tag": "button",
+          "classes": "flex items-center justify-center actionButton_actionButton__wgfeI actionButton_alpha__8Bq7Q actionButton_circle__5pYaw bentoCarouselPlayPause_playPauseButton__bm0dz",
+          "text": ""
+        },
+        {
+          "tag": "a",
+          "classes": "cardCompact_cardCompactAnchor___7vu2",
+          "text": ""
+        },
+        {
+          "tag": "a",
+          "classes": "cardCompact_cardCompactAnchor___7vu2",
+          "text": ""
+        },
+        {
+          "tag": "a",
+          "classes": "cardCompact_cardCompactAnchor___7vu2",
+          "text": ""
+        },
+        {
+          "tag": "a",
+          "classes": "cardCompact_cardCompactAnchor___7vu2",
+          "text": ""
+        }
+      ],
+      "cards": [
+        {
+          "tag": "h2",
+          "classes": "semanticTypography_semanticTypography__mWJkv semanticTypography_variantCardTitle__nqcQy bento_bentoTitle__ndE4v"
+        },
+        {
+          "tag": "span",
+          "classes": "semanticTypography_semanticTypography__mWJkv semanticTypography_variantCardTitleSummary__lvrMk"
+        },
+        {
+          "tag": "p",
+          "classes": "semanticTypography_semanticTypography__mWJkv semanticTypography_variantCardBodySummary__7ucTw bentoCarouselHeader_accordionBody__3Z7CQ bentoCarouselHeader_accordionBodyExpanded__NrX_B"
+        },
+        {
+          "tag": "span",
+          "classes": "semanticTypography_semanticTypography__mWJkv semanticTypography_variantCardTitleSummary__lvrMk"
+        },
+        {
+          "tag": "p",
+          "classes": "semanticTypography_semanticTypography__mWJkv semanticTypography_variantCardBodySummary__7ucTw bentoCarouselHeader_accordionBody__3Z7CQ"
+        },
+        {
+          "tag": "span",
+          "classes": "semanticTypography_semanticTypography__mWJkv semanticTypography_variantCardTitleSummary__lvrMk"
+        },
+        {
+          "tag": "p",
+          "classes": "semanticTypography_semanticTypography__mWJkv semanticTypography_variantCardBodySummary__7ucTw bentoCarouselHeader_accordionBody__3Z7CQ"
+        },
+        {
+          "tag": "span",
+          "classes": "semanticTypography_semanticTypography__mWJkv semanticTypography_variantCardTitleSummary__lvrMk"
+        },
+        {
+          "tag": "p",
+          "classes": "semanticTypography_semanticTypography__mWJkv semanticTypography_variantCardBodySummary__7ucTw bentoCarouselHeader_accordionBody__3Z7CQ"
+        },
+        {
+          "tag": "div",
+          "classes": "semanticTypography_semanticTypography__mWJkv semanticTypography_variantCardTitleSummary__lvrMk"
+        },
+        {
+          "tag": "div",
+          "classes": "semanticTypography_semanticTypography__mWJkv semanticTypography_variantCardBodySummary__7ucTw"
+        },
+        {
+          "tag": "div",
+          "classes": "flex flex-row items-center lg:items-start justify-start flex-nowrap lg:flex-wrap inline-full gap-16 cardCompact_cardCompact__W2i4I"
+        },
+        {
+          "tag": "a",
+          "classes": "cardCompact_cardCompactAnchor___7vu2"
+        },
+        {
+          "tag": "h3",
+          "classes": "semanticTypography_semanticTypography__mWJkv semanticTypography_variantCardTitleSummary__lvrMk cardCompact_cardCompactTitle__zZaHK"
+        },
+        {
+          "tag": "span",
+          "classes": "arrow_arrow___6mKn arrow_arrowFlipRtl__ur0Ug cardCompact_cardCompactTitleArrow__tWhco"
+        },
+        {
+          "tag": "div",
+          "classes": "flex flex-row items-center lg:items-start justify-start flex-nowrap lg:flex-wrap inline-full gap-16 cardCompact_cardCompact__W2i4I"
+        },
+        {
+          "tag": "a",
+          "classes": "cardCompact_cardCompactAnchor___7vu2"
+        },
+        {
+          "tag": "h3",
+          "classes": "semanticTypography_semanticTypography__mWJkv semanticTypography_variantCardTitleSummary__lvrMk cardCompact_cardCompactTitle__zZaHK"
+        },
+        {
+          "tag": "span",
+          "classes": "arrow_arrow___6mKn arrow_arrowFlipRtl__ur0Ug cardCompact_cardCompactTitleArrow__tWhco"
+        },
+        {
+          "tag": "div",
+          "classes": "flex flex-row items-center lg:items-start justify-start flex-nowrap lg:flex-wrap inline-full gap-16 cardCompact_cardCompact__W2i4I"
+        }
+      ],
+      "inputs": [
+        {
+          "type": "checkbox",
+          "placeholder": "",
+          "classes": ""
+        },
+        {
+          "type": "checkbox",
+          "placeholder": "",
+          "classes": ""
+        },
+        {
+          "type": "checkbox",
+          "placeholder": "",
+          "classes": ""
+        },
+        {
+          "type": "checkbox",
+          "placeholder": "",
+          "classes": ""
+        },
+        {
+          "type": "checkbox",
+          "placeholder": "",
+          "classes": ""
+        },
+        {
+          "type": "checkbox",
+          "placeholder": "",
+          "classes": ""
+        },
+        {
+          "type": "checkbox",
+          "placeholder": "",
+          "classes": ""
+        },
+        {
+          "type": "checkbox",
+          "placeholder": "",
+          "classes": ""
+        },
+        {
+          "type": "checkbox",
+          "placeholder": "",
+          "classes": ""
+        },
+        {
+          "type": "checkbox",
+          "placeholder": "",
+          "classes": ""
+        }
+      ],
+      "nav_patterns": [
+        {
+          "links_count": 47,
+          "links": [
+            "/product",
+            "/product",
+            "/product/calendar",
+            "/product/mail",
+            "/product/ai",
+            "/product/agents",
+            "/product/ai-meeting-notes",
+            "/product/enterprise-search",
+            "/product/wikis",
+            "/product/docs"
+          ]
+        },
+        {
+          "links_count": 28,
+          "links": [
+            "/product",
+            "https://www.instagram.com/notionhq/",
+            "https://twitter.com/NotionHQ",
+            "https://www.linkedin.com/company/notionhq/",
+            "https://www.facebook.com/NotionHQ/",
+            "https://www.youtube.com/channel/UCoSvlWS5XcwaSzIcbuJ-Ysg",
+            "/about",
+            "/careers",
+            "/security",
+            "https://www.notion-status.com"
+          ]
+        }
+      ],
+      "transitions": [],
+      "animations": [],
+      "meta_description": "Build Custom Agents, search across all your apps, and automate busywork. The AI workspace where teams get more done, faster.",
+      "og_image": "https://www.notion.com/front-static/meta/custom-agents-og.png",
+      "favicon": "https://notion.so/front-static/favicon.ico",
+      "page_title": "The AI workspace that works for you. | Notion"
+    },
+    {
+      "site_name": "raycast.com",
+      "url": "https://raycast.com",
+      "scraped_at": "2026-04-29T14:44:39Z",
+      "colors": {
+        "inline_0": "linear-gradient(138deg, rgba(32, 35, 91, 0.70) 22.00%, rgba(7, 9, 33, 0.70) 82.00%)",
+        "inline_1": "radial-gradient(94.21% 78.40% at 50.00% 29.91%, rgba(39, 61, 180, 0.70), rgba(15, 9, 38, 0.40))",
+        "inline_2": "radial-gradient(84.60% 73.49% at 50.00% 26.51%, rgba(4, 63, 150, 0.70), rgba(6, 18, 37, 0.25))",
+        "inline_3": "215, 42, 42",
+        "inline_4": "radial-gradient(30.00% 40.00% at 52.00% 36.91%, rgba(13, 110, 48, 1.00), rgba(8, 53, 24, 1.00))",
+        "inline_5": "radial-gradient(181.77% 70.19% at 50.00% 38.11%, rgba(3, 91, 155, 0.70), rgba(0, 69, 150, 0.03))",
+        "inline_6": "radial-gradient(126.42% 76.60% at 50.00% 32.26%, rgba(84, 95, 102, 0.70), rgba(0, 36, 69, 0.13))",
+        "inline_7": "radial-gradient(99.74% 100.00% at 50.00% 0.00%, rgba(74, 21, 75, 0.70), rgba(29, 5, 29, 0.42))",
+        "inline_8": "radial-gradient(86.88% 75.47% at 50.00% 24.53%, rgba(82, 48, 145, 0.70), rgba(26, 11, 51, 0.14))",
+        "inline_9": "radial-gradient(94.21% 78.40% at 50.00% 29.91%, rgba(43, 94, 180, 0.70), rgba(13, 16, 35, 0.42))",
+        "inline_10": "radial-gradient(94.21% 78.40% at 50.00% 29.91%, rgba(4, 63, 150, 0.70), rgba(5, 9, 29, 0.42))",
+        "inline_11": "radial-gradient(90.35% 49.25% at 50.00% 59.06%, rgba(2, 61, 114, 0.70), rgba(5, 11, 28, 0.42))",
+        "inline_12": "radial-gradient(94.21% 78.40% at 50.00% 29.91%, rgba(4, 62, 150, 0.70), rgba(16, 0, 43, 0.16))",
+        "inline_13": "transparent",
+        "inline_14": "radial-gradient(84.35% 70.19% at 50.00% 38.11%, rgba(2, 96, 101, 0.57), rgba(5, 136, 178, 0.06))"
+      },
+      "fonts": [],
+      "font_sizes": [
+        "32px",
+        "23.75px",
+        "16px",
+        "24px"
+      ],
+      "font_weights": [],
+      "line_heights": [],
+      "padding_values": [],
+      "margin_values": [],
+      "gap_values": [],
+      "border_radii": [],
+      "shadows": [
+        "0px 1px 0px 0px rgba(255, 255, 255, 0.10) inset, 0px 0px 20px 3px rgba(7, 13, 79, 0.10) , 0px 0px 40px 20px rgba(85, 0, 98, 0.10) , 0 0 0 1px rgba(255, 255, 255, 0.06) inset",
+        "0px 1px 0px 0px rgba(255, 255, 255, 0.10) inset, 0px 0px 20px 3px rgba(46, 212, 105, 0.05) , 0px 0px 40px 20px rgba(46, 212, 105, 0.05) , 0 0 0 1px rgba(255, 255, 255, 0.06) inset",
+        "0px 1px 0px 0px rgba(255, 255, 255, 0.10) inset, 0px 30px 50px 0px rgba(0, 0, 0, 0.40) , 0px 4px 24px 0px rgba(3, 15, 129, 0.09) , 0 0 0 1px rgba(255, 255, 255, 0.06) inset",
+        "0px 1px 0px 0px rgba(255, 255, 255, 0.10) inset, 0px 30px 50px 0px rgba(0, 0, 0, 0.40) , 0px 4px 24px 0px rgba(3, 23, 129, 0.09) , 0 0 0 1px rgba(255, 255, 255, 0.06) inset",
+        "0px 1px 0px 0px rgba(255, 255, 255, 0.10) inset, 0px 30px 50px 0px rgba(0, 0, 0, 0.40) , 0px 4px 24px 0px rgba(51, 3, 129, 0.09) , 0 0 0 1px rgba(255, 255, 255, 0.06) inset",
+        "0px 1px 0px 0px rgba(255, 255, 255, 0.10) inset, 0px 30px 50px 0px rgba(0, 0, 0, 0.40) , 0px 4px 24px 0px rgba(3, 122, 129, 0.09) , 0 0 0 1px rgba(255, 255, 255, 0.06) inset",
+        "0px 1px 0px 0px rgba(255, 255, 255, 0.10) inset, 0px 30px 50px 0px rgba(0, 0, 0, 0.40) , 0px 4px 24px 0px rgba(3, 30, 129, 0.09) , 0 0 0 1px rgba(255, 255, 255, 0.06) inset",
+        "0px 30px 50px 0px rgba(0, 0, 0, 0.40) , 0px 1px 0px 0px rgba(255, 255, 255, 0.10) inset, 0px 4px 24px 0px rgba(3, 15, 129, 0.09) , 0 0 0 1px rgba(255, 255, 255, 0.06) inset",
+        "0px 1px 0px 0px rgba(255, 255, 255, 0.10) inset, 0px 0px 20px 3px rgba(7, 13, 79, 0.10) , 0px 0px 40px 20px rgba(7, 40, 79, 0.10) , 0 0 0 1px rgba(255, 255, 255, 0.06) inset",
+        "0px 30px 50px 0px rgba(0, 0, 0, 0.50) , 0px 1px 0px 0px rgba(255, 255, 255, 0.10) inset, 0px 0px 20px 3px rgba(79, 7, 59, 0.10) , 0px 0px 40px 20px rgba(85, 0, 98, 0.10) , 0 0 0 1px rgba(255, 255, 255, 0.06) inset",
+        "0px 30px 50px 0px rgba(0, 0, 0, 0.50) , 0px 1px 0px 0px rgba(255, 255, 255, 0.10) inset, 0px 0px 20px 3px rgba(7, 13, 79, 0.10) , 0px 0px 40px 20px rgba(85, 0, 98, 0.10) , 0 0 0 1px rgba(255, 255, 255, 0.06) inset",
+        "0px 1px 0px 0px rgba(255, 255, 255, 0.10) inset, 0px 0px 20px 3px rgba(7, 13, 79, 0.05) , 0px 0px 40px 20px rgba(7, 13, 79, 0.05) , 0 0 0 1px rgba(255, 255, 255, 0.06) inset"
+      ],
+      "breakpoints": [],
+      "buttons": [
+        {
+          "tag": "a",
+          "classes": "Button_button__JJiqJ Button_light__KdYEB Navbar_downloadButton__yQ3j6",
+          "text": "Download"
+        },
+        {
+          "tag": "a",
+          "classes": "Button_button__JJiqJ Button_light__KdYEB",
+          "text": "Log in"
+        },
+        {
+          "tag": "a",
+          "classes": "Button_button__JJiqJ Button_light__KdYEB",
+          "text": "Download for Mac"
+        },
+        {
+          "tag": "a",
+          "classes": "Button_button__JJiqJ Button_light__KdYEB",
+          "text": "Download for Windows (beta)"
+        },
+        {
+          "tag": "a",
+          "classes": "Button_button__JJiqJ Button_light__KdYEB GetYourTimeBack_downloadButton__aaxb1",
+          "text": "Download"
+        },
+        {
+          "tag": "button",
+          "classes": "Button_button__JJiqJ Button_light__KdYEB SnippetsShowcase_sendButton__QXTUE",
+          "text": "Send"
+        },
+        {
+          "tag": "a",
+          "classes": "Button_button__JJiqJ Button_light__KdYEB",
+          "text": "Download for Mac"
+        },
+        {
+          "tag": "a",
+          "classes": "Button_button__JJiqJ Button_light__KdYEB",
+          "text": "Download for Windows (beta)"
+        }
+      ],
+      "cards": [
+        {
+          "tag": "div",
+          "classes": "ExtensionHighlight_extensionCardWrapper__BE6OW"
+        },
+        {
+          "tag": "a",
+          "classes": "ExtensionCard_link__Uj5vM"
+        },
+        {
+          "tag": "div",
+          "classes": "ExtensionCard_card__g21uG"
+        },
+        {
+          "tag": "div",
+          "classes": "ExtensionCard_headerContainer__48wVu"
+        },
+        {
+          "tag": "div",
+          "classes": "ExtensionCard_header__Mx3up"
+        },
+        {
+          "tag": "img",
+          "classes": "ExtensionCard_icon__514rr"
+        },
+        {
+          "tag": "div",
+          "classes": "ExtensionCard_title__qWIv2"
+        },
+        {
+          "tag": "span",
+          "classes": "ExtensionCard_action__Os3w0"
+        },
+        {
+          "tag": "p",
+          "classes": "ExtensionCard_description__z_Oaf"
+        },
+        {
+          "tag": "div",
+          "classes": "ExtensionCard_divider__hPrH4"
+        },
+        {
+          "tag": "img",
+          "classes": "ExtensionCard_image__amxYw"
+        },
+        {
+          "tag": "div",
+          "classes": "ExtensionHighlight_extensionCardWrapper__BE6OW"
+        },
+        {
+          "tag": "a",
+          "classes": "ExtensionCard_link__Uj5vM"
+        },
+        {
+          "tag": "div",
+          "classes": "ExtensionCard_card__g21uG"
+        },
+        {
+          "tag": "div",
+          "classes": "ExtensionCard_headerContainer__48wVu"
+        },
+        {
+          "tag": "div",
+          "classes": "ExtensionCard_header__Mx3up"
+        },
+        {
+          "tag": "img",
+          "classes": "ExtensionCard_icon__514rr"
+        },
+        {
+          "tag": "div",
+          "classes": "ExtensionCard_title__qWIv2"
+        },
+        {
+          "tag": "span",
+          "classes": "ExtensionCard_action__Os3w0"
+        },
+        {
+          "tag": "p",
+          "classes": "ExtensionCard_description__z_Oaf"
+        }
+      ],
+      "inputs": [
+        {
+          "type": "input",
+          "placeholder": "",
+          "classes": "Input_input__trG8n"
+        },
+        {
+          "type": "submit",
+          "placeholder": "",
+          "classes": "Submit_submit__Qst6_"
+        }
+      ],
+      "nav_patterns": [],
+      "transitions": [],
+      "animations": [],
+      "meta_description": "A collection of powerful productivity tools all within an extendable launcher.",
+      "og_image": "https://www.raycast.com/opengraph-image-pwu6ef.png?7385e23163a01717",
+      "favicon": "https://raycast.com/favicon-production.png",
+      "page_title": "Raycast - Your shortcut to everything"
+    },
+    {
+      "site_name": "amie.so",
+      "url": "https://amie.so",
+      "scraped_at": "2026-04-29T14:44:44Z",
+      "colors": {
+        "inline_0": "transparent"
+      },
+      "fonts": [],
+      "font_sizes": [],
+      "font_weights": [],
+      "line_heights": [],
+      "padding_values": [],
+      "margin_values": [],
+      "gap_values": [],
+      "border_radii": [],
+      "shadows": [],
+      "breakpoints": [],
+      "buttons": [
+        {
+          "tag": "a",
+          "classes": "group text-secondary flex select-none items-center text-sm px-2.5 py-1.5 h-8 transition-colors font-medium leading-none outline-none hover:bg-black/5 rounded-lg",
+          "text": "Login"
+        },
+        {
+          "tag": "a",
+          "classes": "text-sm sm:text-md md:text-base text-secondary font-semibold shadow-natural px-7 py-3 rounded-xl bg-white tracking-[-0.0125em] flex items-center gap-2",
+          "text": "Request a demo"
+        },
+        {
+          "tag": "a",
+          "classes": "shadow-none gap-1.5 backdrop-blur flex items-center justify-center w-fit text-secondary text-xs rounded-full font-medium",
+          "text": "Feb 16:private meeting notes, apple reminders sync"
+        }
+      ],
+      "cards": [],
+      "inputs": [],
+      "nav_patterns": [
+        {
+          "links_count": 4,
+          "links": [
+            "/",
+            "/pricing",
+            "https://calendar.amie.so/login",
+            "https://calendar.amie.so/login"
+          ]
+        }
+      ],
+      "transitions": [],
+      "animations": [],
+      "meta_description": "Turn meeting notes into automated workflows. Handle meetings, summaries, todos and emails (soon) with your AI personal assistant.",
+      "og_image": "/images/meta.png",
+      "favicon": "https://amie.so/2024/images/favicons/default.png",
+      "page_title": "Amie - AI Note Taker"
+    },
+    {
+      "site_name": "ped.ro",
+      "url": "https://ped.ro",
+      "scraped_at": "2026-04-29T14:44:46Z",
+      "colors": {
+        "color-page-background": "var(--gray-1)",
+        "inline_0": "black",
+        "inline_1": "white",
+        "inline_2": "rgba(255, 255, 255, var(--text-opacity, 1))"
+      },
+      "fonts": [
+        "var(--font-editorial-new)"
+      ],
+      "font_sizes": [],
+      "font_weights": [],
+      "line_heights": [],
+      "padding_values": [],
+      "margin_values": [],
+      "gap_values": [],
+      "border_radii": [],
+      "shadows": [],
+      "breakpoints": [],
+      "buttons": [
+        {
+          "tag": "button",
+          "classes": "rt-reset home-video-button",
+          "text": "content creation"
+        }
+      ],
+      "cards": [],
+      "inputs": [],
+      "nav_patterns": [],
+      "transitions": [],
+      "animations": [],
+      "meta_description": "Code, content, and other things.",
+      "og_image": "https://ped.ro/opengraph-image.jpg?415d826f5aed124b",
+      "favicon": "https://ped.ro/favicon.ico",
+      "page_title": "Pedro Duarte's Personal Website"
+    }
+  ]
+}

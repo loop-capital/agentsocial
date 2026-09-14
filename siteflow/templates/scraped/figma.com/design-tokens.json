@@ -1,0 +1,143 @@
+{
+  "site_name": "figma.com",
+  "url": "https://figma.com",
+  "scraped_at": "2026-04-29T14:44:33Z",
+  "colors": {
+    "f-cursor-text": "text",
+    "f-bg-color": "#C7F8FB",
+    "f-text-color": "#000000",
+    "f-list-header-color": "rgba(255, 255, 255, 0.6)",
+    "f-icon-bg-color": "rgba(255, 255, 255, 0.24)",
+    "f-badge-text-color": "#000000",
+    "f-badge-bg-color": "rgba(0, 0, 0, 0.08)",
+    "text-color": "#000000",
+    "bg-color": "#FFFFFF",
+    "f-text-secondary-color": "rgba(0, 0, 0, 0.65)",
+    "f-primary-btn-bg-color": "#000000",
+    "f-primary-btn-text-color": "#FFFFFF",
+    "f-form-input-bg-color": "rgba(0, 0, 0, 0.08)",
+    "f-form-select-hover-bg-color": "rgba(0, 0, 0, 0.16)",
+    "f-form-placeholder-text-color": "rgba(0, 0, 0, 0.5)",
+    "f-form-error-bg-color": "#972121",
+    "f-form-error-text-color": "#FFFFFF",
+    "f-primary-transparent-color": "rgba(0, 0, 0, 0.16)",
+    "f-lego-fg-color": "var(--f-text-color, #000000)",
+    "f-lego-bg-color": "var(--f-bg-color, #FFFFFF)",
+    "f-link-color": "var(--f-text-color, #000000)",
+    "f-emphasis-btn-bg-color": "#000000",
+    "f-emphasis-btn-text-color": "#FFFFFF",
+    "carousel-parent-text-color": "#FFFFFF",
+    "inline_0": "rgba(0, 0, 0, 0.08)"
+  },
+  "fonts": [],
+  "font_sizes": [],
+  "font_weights": [],
+  "line_heights": [],
+  "padding_values": [],
+  "margin_values": [],
+  "gap_values": [],
+  "border_radii": [],
+  "shadows": [],
+  "breakpoints": [],
+  "buttons": [],
+  "cards": [],
+  "inputs": [],
+  "nav_patterns": [
+    {
+      "links_count": 53,
+      "links": [
+        "https://www.figma.com/design/",
+        "https://www.figma.com/dev-mode/",
+        "https://www.figma.com/figjam/",
+        "https://www.figma.com/slides/",
+        "https://www.figma.com/draw/",
+        "https://www.figma.com/buzz/",
+        "https://www.figma.com/sites/",
+        "https://www.figma.com/make/",
+        "https://www.figma.com/ai/",
+        "https://www.figma.com/mcp-catalog/"
+      ]
+    },
+    {
+      "links_count": 12,
+      "links": [
+        "https://www.figma.com/design/",
+        "https://www.figma.com/dev-mode/",
+        "https://www.figma.com/figjam/",
+        "https://www.figma.com/slides/",
+        "https://www.figma.com/draw/",
+        "https://www.figma.com/buzz/",
+        "https://www.figma.com/sites/",
+        "https://www.figma.com/make/",
+        "https://www.figma.com/ai/",
+        "https://www.figma.com/mcp-catalog/"
+      ]
+    },
+    {
+      "links_count": 20,
+      "links": [
+        "https://www.figma.com/design-systems/",
+        "https://www.figma.com/prototyping/",
+        "https://www.figma.com/ux-design-tool/",
+        "https://www.figma.com/web-design/",
+        "https://www.figma.com/wireframe-tool/",
+        "https://www.figma.com/figjam/online-whiteboard/",
+        "https://www.figma.com/figjam/agile-workflows/",
+        "https://www.figma.com/figjam/strategic-planning/",
+        "https://www.figma.com/figjam/brainstorming-tool/",
+        "https://www.figma.com/figjam/diagramming-tool/"
+      ]
+    },
+    {
+      "links_count": 4,
+      "links": [
+        "https://www.figma.com/events-and-webinars/#upcoming-events",
+        "https://friends.figma.com/",
+        "https://www.figma.com/customers/",
+        "https://www.figma.com/gallery/"
+      ]
+    },
+    {
+      "links_count": 16,
+      "links": [
+        "https://www.figma.com/blog/",
+        "https://www.figma.com/community/plugins",
+        "https://www.figma.com/community/category/ui-kits",
+        "https://www.figma.com/community/category/icons",
+        "https://www.figma.com/community/widgets",
+        "https://www.figma.com/templates/",
+        "https://www.figma.com/tools/",
+        "https://www.figma.com/partners/",
+        "https://www.figma.com/community",
+        "https://www.figma.com/best-practices/"
+      ]
+    }
+  ],
+  "transitions": [
+    "-webkit-transform 250ms",
+    "transform 250ms",
+    "all 200ms ease",
+    "all 200ms ease",
+    "background 0.4s cubic-bezier(.8,0,.2,1)",
+    "background 0.4s cubic-bezier(.8,0,.2,1)",
+    "-webkit-transform 250ms,opacity 250ms",
+    "transform 250ms,opacity 250ms",
+    "-webkit-transform 250ms,opacity 250ms",
+    "transform 250ms,opacity 250ms",
+    "-webkit-transform 250ms,opacity 250ms",
+    "transform 250ms,opacity 250ms",
+    "-webkit-transform 250ms,opacity 250ms",
+    "transform 250ms,opacity 250ms",
+    "-webkit-transform 250ms,opacity 250ms"
+  ],
+  "animations": [
+    "animation-6j0toc",
+    "animation-jpvf7s",
+    "animation-zsk7zs",
+    "animation-yh21v4"
+  ],
+  "meta_description": "Figma is the leading collaborative design platform for building meaningful products. Design, prototype, and build products faster\u2014while gathering feedback all in one place.",
+  "og_image": "https://cdn.sanity.io/images/599r6htc/regionalized/342e17642c7afa81206490b0dd21c3e5724ae040-2400x1260.png?w=1200&q=70&fit=max&auto=format",
+  "favicon": "https://static.figma.com/app/icon/2/icon-128.png",
+  "page_title": "Figma: The Collaborative Interface Design Tool"
+}

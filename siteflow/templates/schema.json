@@ -1,0 +1,108 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "SiteFlow Template Schema",
+  "description": "Schema for scraped and extracted website design templates",
+  "type": "object",
+  "required": ["templates", "meta"],
+  "properties": {
+    "meta": {
+      "type": "object",
+      "required": ["version", "generated_at", "total_templates"],
+      "properties": {
+        "version": { "type": "string", "default": "1.0.0" },
+        "generated_at": { "type": "string", "format": "date-time" },
+        "total_templates": { "type": "integer" },
+        "scraped_sites": { "type": "integer" },
+        "successful_extractions": { "type": "integer" }
+      }
+    },
+    "templates": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "site_name", "url", "source_type", "design_tokens", "style_classification"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+          "site_name": { "type": "string" },
+          "url": { "type": "string", "format": "uri" },
+          "source_type": { "type": "string", "enum": ["scraped", "curated", "generated"] },
+          "design_tokens": {
+            "type": "object",
+            "required": ["colors", "typography", "spacing", "components"],
+            "properties": {
+              "colors": {
+                "type": "object",
+                "properties": {
+                  "primary": { "type": "array", "items": { "type": "object" } },
+                  "secondary": { "type": "array", "items": { "type": "object" } },
+                  "accent": { "type": "array", "items": { "type": "object" } },
+                  "background": { "type": "array", "items": { "type": "object" } },
+                  "foreground": { "type": "array", "items": { "type": "object" } },
+                  "border": { "type": "array", "items": { "type": "object" } },
+                  "muted": { "type": "array", "items": { "type": "object" } }
+                }
+              },
+              "typography": {
+                "type": "object",
+                "properties": {
+                  "families": { "type": "object" },
+                  "sizes": { "type": "array", "items": { "type": "string" } },
+                  "weights": { "type": "array", "items": { "type": "string" } },
+                  "line_heights": { "type": "array", "items": { "type": "string" } }
+                }
+              },
+              "spacing": {
+                "type": "object",
+                "properties": {
+                  "padding": { "type": "array", "items": { "type": "string" } },
+                  "margin": { "type": "array", "items": { "type": "string" } },
+                  "gap": { "type": "array", "items": { "type": "string" } }
+                }
+              },
+              "components": {
+                "type": "object",
+                "properties": {
+                  "buttons": { "type": "array" },
+                  "cards": { "type": "array" },
+                  "inputs": { "type": "array" },
+                  "nav_patterns": { "type": "array" }
+                }
+              },
+              "borders": { "type": "object" },
+              "shadows": { "type": "object" }
+            }
+          },
+          "style_classification": {
+            "type": "object",
+            "properties": {
+              "tags": { "type": "array", "items": { "type": "string" } },
+              "philosophy": { "type": "string" },
+              "archetype": { "type": "string", "enum": ["saas", "fintech", "productivity", "creative", "developer", "ai", "portfolio", "ecommerce"] }
+            }
+          },
+          "page_templates": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "page": { "type": "string", "enum": ["landing", "about", "pricing", "contact", "blog", "docs"] },
+                "available": { "type": "boolean" },
+                "sections": { "type": "array", "items": { "type": "string" } }
+              }
+            }
+          },
+          "files": {
+            "type": "object",
+            "properties": {
+              "raw_scrape": { "type": "string" },
+              "design_system": { "type": "string" },
+              "tailwind_config": { "type": "string" },
+              "css_tokens": { "type": "string" },
+              "html_snapshot": { "type": "string" }
+            }
+          }
+        }
+      }
+    }
+  }
+}

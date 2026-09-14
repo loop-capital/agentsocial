@@ -1,0 +1,97 @@
+{
+  "sites": {
+    "amie.so": {
+      "style_tags": [
+        "flat-design",
+        "mixed-radii"
+      ],
+      "philosophy": "Modern professional web design",
+      "color_count": 0,
+      "font_count": 1,
+      "button_count": 3,
+      "motion_count": 0
+    },
+    "figma.com": {
+      "style_tags": [
+        "flat-design",
+        "mixed-radii",
+        "subtle-motion"
+      ],
+      "philosophy": "Modern professional web design",
+      "color_count": 25,
+      "font_count": 1,
+      "button_count": 0,
+      "motion_count": 19
+    },
+    "framer.com": {
+      "style_tags": [
+        "gradient-heavy",
+        "inter-typography",
+        "sans-serif",
+        "serif-accent",
+        "elevated-depth",
+        "mixed-radii",
+        "subtle-motion"
+      ],
+      "philosophy": "Editorial-inspired with personality",
+      "color_count": 91,
+      "font_count": 1,
+      "button_count": 0,
+      "motion_count": 4
+    },
+    "notion.so": {
+      "style_tags": [
+        "dark-mode-first",
+        "flat-design",
+        "mixed-radii"
+      ],
+      "philosophy": "Modern professional web design",
+      "color_count": 18,
+      "font_count": 1,
+      "button_count": 20,
+      "motion_count": 0
+    },
+    "ped.ro": {
+      "style_tags": [
+        "flat-design",
+        "mixed-radii"
+      ],
+      "philosophy": "Modern professional web design",
+      "color_count": 4,
+      "font_count": 1,
+      "button_count": 1,
+      "motion_count": 0
+    },
+    "raycast.com": {
+      "style_tags": [
+        "gradient-heavy",
+        "elevated-depth",
+        "mixed-radii"
+      ],
+      "philosophy": "Modern professional web design",
+      "color_count": 14,
+      "font_count": 1,
+      "button_count": 8,
+      "motion_count": 0
+    },
+    "stripe.com": {
+      "style_tags": [
+        "flat-design",
+        "mixed-radii"
+      ],
+      "philosophy": "Modern professional web design",
+      "color_count": 0,
+      "font_count": 1,
+      "button_count": 20,
+      "motion_count": 0
+    }
+  },
+  "common_patterns": {
+    "mixed-radii": 7,
+    "flat-design": 5,
+    "subtle-motion": 2,
+    "gradient-heavy": 2,
+    "elevated-depth": 2
+  },
+  "unique_patterns": {}
+}

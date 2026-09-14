@@ -1,0 +1,102 @@
+version: '3.8'
+
+services:
+  temporal:
+    image: temporalio/auto-setup:1.22
+    container_name: postiz-temporal
+    restart: always
+    environment:
+      - DB=postgresql
+      - DB_PORT=5432
+      - POSTGRES_USER=temporal
+      - POSTGRES_PWD=temporal-password
+      - POSTGRES_SEEDS=temporal-postgres
+    ports:
+      - "7233:7233"
+    networks:
+      - postiz-network
+    depends_on:
+      temporal-db:
+        condition: service_healthy
+
+  temporal-db:
+    image: postgres:15-alpine
+    container_name: temporal-postgres
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: temporal-password
+      POSTGRES_USER: temporal
+      POSTGRES_DB: temporal
+    volumes:
+      - temporal-postgres:/var/lib/postgresql/data
+    networks:
+      - postiz-network
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "temporal"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+
+  postiz:
+    image: ghcr.io/gitroomhq/postiz-app:latest
+    container_name: postiz
+    restart: always
+    env_file:
+      - .env.postiz
+    volumes:
+      - postiz-config:/config/
+      - postiz-uploads:/uploads/
+    ports:
+      - "4007:5000"
+    networks:
+      - postiz-network
+    depends_on:
+      postiz-postgres:
+        condition: service_healthy
+      postiz-redis:
+        condition: service_healthy
+      temporal:
+        condition: service_started
+
+  postiz-postgres:
+    image: postgres:17-alpine
+    container_name: postiz-postgres
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postiz-password}
+      POSTGRES_USER: ${POSTGRES_USER:-postiz-user}
+      POSTGRES_DB: ${POSTGRES_DB:-postiz-db-local}
+    volumes:
+      - postgres-volume:/var/lib/postgresql/data
+    networks:
+      - postiz-network
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "${POSTGRES_USER:-postiz-user}", "-d", "${POSTGRES_DB:-postiz-db-local}"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+
+  postiz-redis:
+    image: redis:7-alpine
+    container_name: postiz-redis
+    restart: always
+    volumes:
+      - redis-data:/data
+    networks:
+      - postiz-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+
+volumes:
+  postgres-volume:
+  redis-data:
+  postiz-config:
+  postiz-uploads:
+  temporal-postgres:
+
+networks:
+  postiz-network:
+    driver: bridge

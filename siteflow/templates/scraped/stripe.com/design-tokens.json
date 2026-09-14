@@ -1,0 +1,221 @@
+{
+  "site_name": "stripe.com",
+  "url": "https://stripe.com",
+  "scraped_at": "2026-04-29T14:44:27Z",
+  "colors": {},
+  "fonts": [],
+  "font_sizes": [],
+  "font_weights": [],
+  "line_heights": [],
+  "padding_values": [],
+  "margin_values": [],
+  "gap_values": [],
+  "border_radii": [],
+  "shadows": [],
+  "breakpoints": [],
+  "buttons": [
+    {
+      "tag": "button",
+      "classes": "hds-button hds-navigation-menu__trigger hds-button--transparent",
+      "text": "Products"
+    },
+    {
+      "tag": "button",
+      "classes": "hds-button hds-navigation-menu__trigger hds-button--transparent",
+      "text": "Solutions"
+    },
+    {
+      "tag": "button",
+      "classes": "hds-button hds-navigation-menu__trigger hds-button--transparent",
+      "text": "Developers"
+    },
+    {
+      "tag": "button",
+      "classes": "hds-button hds-navigation-menu__trigger hds-button--transparent",
+      "text": "Resources"
+    },
+    {
+      "tag": "a",
+      "classes": "hds-button hds-navigation-menu__trigger hds-button--transparent",
+      "text": "Pricing"
+    },
+    {
+      "tag": "a",
+      "classes": "hds-button hds-navigation-menu__trigger hds-button--transparent",
+      "text": "Sign in"
+    },
+    {
+      "tag": "a",
+      "classes": "hds-button hds-button--primary",
+      "text": "Start now"
+    },
+    {
+      "tag": "a",
+      "classes": "hds-button hds-button--secondary-on-quiet",
+      "text": "Contact sales"
+    },
+    {
+      "tag": "button",
+      "classes": "hds-button navigation-back-button hds-button--transparent",
+      "text": "Back"
+    },
+    {
+      "tag": "button",
+      "classes": "hds-ui-button hds-navigation-menu__trigger navigation-hamburger-button hds-ui-button--quiet",
+      "text": ""
+    },
+    {
+      "tag": "a",
+      "classes": "hds-button navigation-cta-button navigation-item__sign-in hds-button--secondary-on-quiet",
+      "text": "Sign inSign in"
+    },
+    {
+      "tag": "a",
+      "classes": "hds-button navigation-cta-button navigation-item__contact-sales hds-button--primary",
+      "text": "Contact sales"
+    },
+    {
+      "tag": "a",
+      "classes": "hds-button hds-button--primary",
+      "text": "Get started"
+    },
+    {
+      "tag": "a",
+      "classes": "hds-button hero-section__button--google hds-button--secondary",
+      "text": "Sign up with Google"
+    },
+    {
+      "tag": "a",
+      "classes": "hds-button sessions-section__cta-button hds-button--primary",
+      "text": "Watch keynote"
+    },
+    {
+      "tag": "a",
+      "classes": "hds-link stats-menu__stat-description__link hds-link--secondary",
+      "text": "historical uptime"
+    },
+    {
+      "tag": "a",
+      "classes": "hds-button hds-button--primary",
+      "text": "Stripe for enterprises"
+    },
+    {
+      "tag": "button",
+      "classes": "customer-stories__customer-button",
+      "text": "Hertz unifies commerce with Stripe."
+    },
+    {
+      "tag": "a",
+      "classes": "hds-button customer-story-button customer-story-button--open hds-button--secondary-on-quiet hds-button--compact",
+      "text": "Read the story"
+    },
+    {
+      "tag": "a",
+      "classes": "hds-button hds-button--secondary",
+      "text": "Read the story"
+    }
+  ],
+  "cards": [
+    {
+      "tag": "button",
+      "classes": "modular-solutions-bento-card modular-solutions-bento__card-payments"
+    },
+    {
+      "tag": "div",
+      "classes": "modular-solutions-bento-card__dialog-entry"
+    },
+    {
+      "tag": "div",
+      "classes": "modular-solutions-bento-card__dialog-entry-wrapper"
+    },
+    {
+      "tag": "div",
+      "classes": "modular-solutions-bento-card__text"
+    },
+    {
+      "tag": "h3",
+      "classes": "hds-heading modular-solutions-bento-card__title hds-heading--md"
+    },
+    {
+      "tag": "div",
+      "classes": "modular-solutions-bento-card__border"
+    },
+    {
+      "tag": "div",
+      "classes": "modular-solutions-bento-card__border-color"
+    },
+    {
+      "tag": "div",
+      "classes": "modular-solutions-bento-card__border-color-gradient"
+    },
+    {
+      "tag": "div",
+      "classes": "modular-solutions-bento-card__inner"
+    },
+    {
+      "tag": "div",
+      "classes": "modular-solutions-bento-card__content"
+    },
+    {
+      "tag": "div",
+      "classes": "modular-solutions-bento-card__content-inner"
+    },
+    {
+      "tag": "div",
+      "classes": "modular-solutions-bento-card__graphic"
+    },
+    {
+      "tag": "div",
+      "classes": "modular-solutions-bento-card__background"
+    },
+    {
+      "tag": "button",
+      "classes": "modular-solutions-bento-card modular-solutions-bento__card-billing"
+    },
+    {
+      "tag": "div",
+      "classes": "modular-solutions-bento-card__dialog-entry"
+    },
+    {
+      "tag": "div",
+      "classes": "modular-solutions-bento-card__dialog-entry-wrapper"
+    },
+    {
+      "tag": "div",
+      "classes": "modular-solutions-bento-card__text"
+    },
+    {
+      "tag": "h3",
+      "classes": "hds-heading modular-solutions-bento-card__title hds-heading--md"
+    },
+    {
+      "tag": "div",
+      "classes": "modular-solutions-bento-card__border"
+    },
+    {
+      "tag": "div",
+      "classes": "modular-solutions-bento-card__border-color"
+    }
+  ],
+  "inputs": [],
+  "nav_patterns": [
+    {
+      "links_count": 7,
+      "links": [
+        "/",
+        "/pricing",
+        "https://dashboard.stripe.com/login",
+        "https://dashboard.stripe.com/register",
+        "/contact/sales",
+        "https://dashboard.stripe.com/login",
+        "/contact/sales"
+      ]
+    }
+  ],
+  "transitions": [],
+  "animations": [],
+  "meta_description": "Stripe is a financial services platform that helps all types of businesses accept payments, build flexible billing models, and manage money movement.",
+  "og_image": "https://images.stripeassets.com/fzn2n1nzq965/XtX984S1GJVsVOXFC7kMu/01988281e867728dfb09aa7793a6e3b9/Stripe.jpg?q=80",
+  "favicon": "https://images.stripeassets.com/fzn2n1nzq965/1hgcBNd12BfT9VLgbId7By/01d91920114b124fb4cf6d448f9f06eb/favicon.svg",
+  "page_title": "Stripe | Financial Infrastructure to Grow Your Revenue"
+}

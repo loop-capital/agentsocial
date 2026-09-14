@@ -1,0 +1,29 @@
+[agentsocial-ceo/sessions/agentsocial-ceo/0d70bfee-89d4-4803-a6fa-8778014f6805.jsonl#L6] Assistant: Let me check recent activity and existing memory files.
+[agentsocial-ceo/sessions/agentsocial-ceo/0d70bfee-89d4-4803-a6fa-8778014f6805.jsonl#L20] Assistant: Now I have the full picture. Let me write today's daily note and update HEARTBEAT.md.
+[agentsocial-ceo/sessions/agentsocial-ceo/0d70bfee-89d4-4803-a6fa-8778014f6805.jsonl#L22] Assistant: Now update HEARTBEAT.md:
+[agentsocial-ceo/sessions/agentsocial-ceo/0d70bfee-89d4-4803-a6fa-8778014f6805.jsonl#L24] Assistant: **Daily memory review complete.** Summary: **Written**: `memory/2026-05-17.md` — quiet Sunday, no dev work. Dreaming promoted 2 candidates (GBP service test status). All systems operational. **HEARTBEAT.md**: Updated to reflect current state. 
+[agentsocial-ceo/sessions/agentsocial-ceo/345392f6-2c6b-4ab1-8726-4e1a8b1a7937.jsonl#L6] Assistant: [assistant turn failed before producing content]
+[agentsocial-ceo/sessions/agentsocial-ceo/345392f6-2c6b-4ab1-8726-4e1a8b1a7937.jsonl#L7] Assistant: [assistant turn failed before producing content]
+[agentsocial-ceo/sessions/agentsocial-ceo/345392f6-2c6b-4ab1-8726-4e1a8b1a7937.jsonl#L8] Assistant: [assistant turn failed before producing content]
+[agentsocial-ceo/sessions/agentsocial-ceo/345392f6-2c6b-4ab1-8726-4e1a8b1a7937.jsonl#L9] Assistant: [assistant turn failed before producing content]
+[agentsocial-ceo/sessions/agentsocial-ceo/656a92da-7dc6-4581-9fa0-878b0d75a4de.jsonl#L6] Assistant: [assistant turn failed before producing content]
+[agentsocial-ceo/sessions/agentsocial-ceo/656a92da-7dc6-4581-9fa0-878b0d75a4de.jsonl#L7] Assistant: [assistant turn failed before producing content]
+[agentsocial-ceo/sessions/agentsocial-ceo/656a92da-7dc6-4581-9fa0-878b0d75a4de.jsonl#L8] Assistant: [assistant turn failed before producing content]
+[agentsocial-ceo/sessions/agentsocial-ceo/656a92da-7dc6-4581-9fa0-878b0d75a4de.jsonl#L9] Assistant: [assistant turn failed before producing content]
+[agentsocial-ceo/sessions/agentsocial-ceo/9a337d95-0f98-4f5d-b72e-c190cd7a5d97.jsonl#L6] Assistant: [assistant turn failed before producing content]
+[agentsocial-ceo/sessions/agentsocial-ceo/9a337d95-0f98-4f5d-b72e-c190cd7a5d97.jsonl#L7] Assistant: [assistant turn failed before producing content]
+[agentsocial-ceo/sessions/agentsocial-ceo/9a337d95-0f98-4f5d-b72e-c190cd7a5d97.jsonl#L8] Assistant: [assistant turn failed before producing content]
+[agentsocial-ceo/sessions/agentsocial-ceo/9a337d95-0f98-4f5d-b72e-c190cd7a5d97.jsonl#L9] Assistant: [assistant turn failed before producing content]
+[agentsocial-ceo/sessions/agentsocial-ceo/c3a0e15e-53ec-46d2-9d6c-49e82a176458.jsonl#L12] Assistant: **Daily memory review complete.** Summary: **Written**: `memory/2026-05-17.md` — quiet Sunday, no dev work. Dreaming promoted 2 candidates (GBP service test status). All systems operational. **HEARTBEAT.md**: Updated to reflect current state. 
+[agentsocial-ceo/sessions/agentsocial-ceo/c6ba6ca7-4820-4fe0-85c5-eca765ae0144.jsonl#L6] Assistant: [assistant turn failed before producing content]
+[agentsocial-ceo/sessions/agentsocial-ceo/c6ba6ca7-4820-4fe0-85c5-eca765ae0144.jsonl#L7] Assistant: [assistant turn failed before producing content]
+[agentsocial-ceo/sessions/agentsocial-ceo/c6ba6ca7-4820-4fe0-85c5-eca765ae0144.jsonl#L8] Assistant: [assistant turn failed before producing content]
+[agentsocial-ceo/sessions/agentsocial-ceo/c6ba6ca7-4820-4fe0-85c5-eca765ae0144.jsonl#L9] Assistant: [assistant turn failed before producing content]
+[agentsocial-ceo/sessions/agentsocial-ceo/cfa70835-734d-4cc0-b763-2012da3c711d.jsonl#L6] Assistant: [assistant turn failed before producing content]
+[agentsocial-ceo/sessions/agentsocial-ceo/cfa70835-734d-4cc0-b763-2012da3c711d.jsonl#L7] Assistant: [assistant turn failed before producing content]
+[agentsocial-ceo/sessions/agentsocial-ceo/cfa70835-734d-4cc0-b763-2012da3c711d.jsonl#L8] Assistant: [assistant turn failed before producing content]
+[agentsocial-ceo/sessions/agentsocial-ceo/cfa70835-734d-4cc0-b763-2012da3c711d.jsonl#L9] Assistant: [assistant turn failed before producing content]
+[agentsocial-ceo/sessions/agentsocial-ceo/dc400a11-061b-494a-8405-3a460ff6693e.jsonl#L6] Assistant: [assistant turn failed before producing content]
+[agentsocial-ceo/sessions/agentsocial-ceo/dc400a11-061b-494a-8405-3a460ff6693e.jsonl#L7] Assistant: [assistant turn failed before producing content]
+[agentsocial-ceo/sessions/agentsocial-ceo/dc400a11-061b-494a-8405-3a460ff6693e.jsonl#L8] Assistant: [assistant turn failed before producing content]
+[agentsocial-ceo/sessions/agentsocial-ceo/dc400a11-061b-494a-8405-3a460ff6693e.jsonl#L9] Assistant: [assistant turn failed before producing content]

@@ -1,0 +1,300 @@
+'use client'
+
+import { useState } from 'react'
+import { motion } from 'framer-motion'
+
+const fadeUp = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0 },
+}
+
+const stagger = {
+  visible: { transition: { staggerChildren: 0.15 } },
+}
+
+export default function Home() {
+  const [showUpload, setShowUpload] = useState(false)
+  const [uploading, setUploading] = useState(false)
+  const [uploadResult, setUploadResult] = useState<string | null>(null)
+  const [showForward, setShowForward] = useState(false)
+  const [reporterPhone, setReporterPhone] = useState('')
+  const [reporterEmail, setReporterEmail] = useState('')
+  const [reporterName, setReporterName] = useState('')
+
+  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setUploading(true)
+    setUploadResult(null)
+
+    try {
+      const base64 = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader()
+        reader.onload = () => resolve(reader.result as string)
+        reader.onerror = reject
+        reader.readAsDataURL(file)
+      })
+
+      const res = await fetch('/api/report', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message_body: 'Screenshot uploaded by user',
+          screenshot_url: base64,
+          source: 'web',
+          reporter_phone: reporterPhone,
+          reporter_email: reporterEmail,
+          reporter_name: reporterName,
+        })
+      })
+      const data = await res.json()
+      if (data.success) {
+        setUploadResult(`Report submitted! Case #${data.case_number}`)
+      } else {
+        setUploadResult('Error submitting report. Please try again.')
+      }
+    } catch (err) {
+      setUploadResult('Error submitting report. Please try again.')
+    }
+    setUploading(false)
+  };
+
+  return (
+    <main className="min-h-screen">
+      {/* Nav */}
+      <nav className="fixed top-0 w-full bg-white/90 backdrop-blur-md z-50 border-b border-charcoal-100">
+        <div className="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 bg-teal-500 rounded-lg flex items-center justify-center">
+              <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
+              </svg>
+            </div>
+            <span className="font-bold text-xl text-charcoal">SpamSuit</span>
+          </div>
+          <div className="flex items-center gap-4">
+            <a href="/dashboard" className="text-teal-600 hover:text-teal-700 hidden sm:block">
+              Check Status
+            </a>
+            <a href="#report" className="btn-primary !py-2.5 !px-6 !text-base">
+              Report Spam
+            </a>
+          </div>
+        </div>
+      </nav>
+
+      {/* Hero */}
+      <section className="pt-32 pb-20 px-6 md:px-12 lg:px-24 bg-white">
+        <motion.div
+          className="max-w-4xl mx-auto text-center"
+          variants={stagger}
+          initial="hidden"
+          animate="visible"
+        >
+          <motion.div variants={fadeUp} className="mb-6">
+            <span className="inline-block bg-coral-50 text-coral-600 font-semibold text-sm px-4 py-1.5 rounded-full">
+              TCPA violations pay $500-$1,500 each
+            </span>
+          </motion.div>
+          <motion.h1 variants={fadeUp} className="text-5xl md:text-7xl font-bold text-charcoal leading-tight mb-6">
+            Getting unwanted texts?
+            <br />
+            <span className="text-teal-500">You could be owed money.</span>
+          </motion.h1>
+          <motion.p variants={fadeUp} className="text-xl md:text-2xl text-charcoal-400 mb-10 max-w-2xl mx-auto">
+            SpamSuit helps you fight back. Report your texts. We handle the rest.
+          </motion.p>
+          <motion.div variants={fadeUp} id="report" className="flex flex-col items-center gap-4">
+            <div className="bg-charcoal rounded-2xl p-6 md:p-8 text-center w-full max-w-lg">
+              <p className="text-charcoal-200 text-sm mb-2">Forward your spam texts to</p>
+              <p className="text-white text-2xl md:text-3xl font-bold tracking-wide">
+                +1 740 272 5287
+              </p>
+              <p className="text-teal-400 text-sm mt-2">or screenshot &amp; upload below</p>
+            </div>
+            <div className="flex gap-4 w-full max-w-lg">
+              <button onClick={() => setShowForward(true)} className="btn-primary flex-1">
+                Forward Now
+              </button>
+              <button onClick={() => setShowUpload(true)} className="btn-secondary flex-1">
+                Upload Screenshot
+              </button>
+            </div>
+
+            {/* Forward Instructions Modal */}
+            {showForward && (
+              <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={() => setShowForward(false)}>
+                <div className="bg-white rounded-2xl p-8 max-w-md w-full" onClick={e => e.stopPropagation()}>
+                  <h3 className="text-xl font-bold mb-4">How to Forward Spam</h3>
+                  <ol className="space-y-3 text-charcoal-600 mb-6">
+                    <li>1. Open the spam text message</li>
+                    <li>2. Tap and hold the message</li>
+                    <li>3. Select &quot;Forward&quot;</li>
+                    <li>4. Send it to: <strong className="text-teal-500">+1 740 272 5287</strong></li>
+                  </ol>
+                  <div className="space-y-3 mb-6">
+                    <label className="block text-sm font-medium text-charcoal-700">
+                      Your Phone Number (to receive credit)
+                    </label>
+                    <input
+                      type="tel"
+                      value={reporterPhone}
+                      onChange={(e) => setReporterPhone(e.target.value)}
+                      placeholder="Enter your phone number"
+                      className="w-full px-3 py-2 border border-charcoal-200 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
+                    />
+                  </div>
+                  <p className="text-sm text-charcoal-400 mb-4">Or you can forward it to: +1 740 272 5287</p>
+                  <button onClick={() => setShowForward(false)} className="btn-primary w-full">Got It</button>
+                </div>
+              </div>
+            )}
+
+            {/* Upload Modal */}
+            {showUpload && (
+              <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={() => setShowUpload(false)}>
+                <div className="bg-white rounded-2xl p-8 max-w-md w-full" onClick={e => e.stopPropagation()}>
+                  <h3 className="text-xl font-bold mb-4">Upload Spam Screenshot</h3>
+                  <p className="text-charcoal-400 mb-4">Take a screenshot of the spam text and upload it here.</p>
+                  <label className="block">
+                    <div className="border-2 border-dashed border-charcoal-200 rounded-xl p-8 text-center cursor-pointer hover:border-teal-400 transition">
+                      <svg className="w-10 h-10 text-charcoal-300 mx-auto mb-2" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
+                      </svg>
+                      <p className="text-charcoal-400">{uploading ? 'Uploading...' : 'Click to select screenshot'}</p>
+                    </div>
+                    <input type="file" accept="image/*" onChange={handleUpload} className="hidden" />
+                  </label>
+
+                  {/* Contact Information */}
+                  <div className="space-y-3 mt-6">
+                    <label className="block text-sm font-medium text-charcoal-700 mb-1">
+                      Your Phone Number (for follow-up)
+                    </label>
+                    <input
+                      type="tel"
+                      value={reporterPhone}
+                      onChange={(e) => setReporterPhone(e.target.value)}
+                      placeholder="Enter your phone number"
+                      className="w-full px-3 py-2 border border-charcoal-200 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
+                    />
+                    <label className="block text-sm font-medium text-charcoal-700 mb-1">
+                      Your Email (for follow-up)
+                    </label>
+                    <input
+                      type="email"
+                      value={reporterEmail}
+                      onChange={(e) => setReporterEmail(e.target.value)}
+                      placeholder="Enter your email address"
+                      className="w-full px-3 py-2 border border-charcoal-200 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
+                    />
+                    <label className="block text-sm font-medium text-charcoal-700 mb-1">
+                      Your Name (optional)
+                    </label>
+                    <input
+                      type="text"
+                      value={reporterName}
+                      onChange={(e) => setReporterName(e.target.value)}
+                      placeholder="Enter your name (optional)"
+                      className="w-full px-3 py-2 border border-charcoal-200 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
+                    />
+                  </div>
+
+                  {uploadResult && (
+                    <p className={`mt-4 text-center font-semibold ${uploadResult.includes('Case') ? 'text-teal-500' : 'text-coral-500'}`}>{uploadResult}</p>
+                  )}
+                  <button onClick={() => { setShowUpload(false); setUploadResult(null) }} className="btn-secondary w-full mt-4">Close</button>
+                </div>
+              </div>
+            )}
+          </motion.div>
+        </motion.div>
+      </section>
+
+      {/* How It Works */}
+      <section className="section-padding bg-charcoal-50">
+        <div className="max-w-6xl mx-auto">
+          <h2 className="text-3xl md:text-4xl font-bold text-center mb-16">How it works</h2>
+          <div className="grid md:grid-cols-3 gap-8">
+            {[
+              {
+                step: '1',
+                title: 'Report',
+                desc: 'Forward your spam texts to +1 740 272 5287. Takes 5 seconds.',
+                icon: (
+                  <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
+                  </svg>
+                ),
+              },
+              {
+                step: '2',
+                title: 'We Validate',
+                desc: 'Our system identifies TCPA violations and builds your case.',
+                icon: (
+                  <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                ),
+              },
+              {
+                step: '3',
+                title: 'Get Paid',
+                desc: 'We connect you with attorneys. You pay nothing unless you win.',
+                icon: (
+                  <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 00-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 01-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 003 15h-.75M15 10.5a3 3 0 11-6 0 3 3 0 016 0zm3 0h.008v.008H18V10.5zm-12 0h.008v.008H6V10.5z" />
+                  </svg>
+                ),
+              },
+            ].map((item) => (
+              <motion.div
+                key={item.step}
+                variants={fadeUp}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true }}
+                className="bg-white rounded-2xl p-8 shadow-sm border border-charcoal-100"
+              >
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="w-12 h-12 bg-teal-50 text-teal-500 rounded-xl flex items-center justify-center">
+                    {item.icon}
+                  </div>
+                  <span className="text-charcoal-300 font-bold text-sm">STEP {item.step}</span>
+                </div>
+                <h3 className="text-xl font-bold mb-2">{item.title}</h3>
+                <p className="text-charcoal-400 leading-relaxed">{item.desc}</p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* The Numbers */}
+      <section className="section-padding bg-white">
+        <div className="max-w-6xl mx-auto">
+          <h2 className="text-3xl md:text-4xl font-bold text-center mb-16">The numbers</h2>
+          <div className="grid md:grid-cols-3 gap-8">
+            {[
+              { value: '$500-$1,500', label: 'Per TCPA violation you report' },
+              { value: '$250M+', label: 'Recovered annually in TCPA settlements' },
+              { value: '$0', label: 'Cost to you - attorneys pay when they win' },
+            ].map((item, i) => (
+              <motion.div
+                key={i}
+                variants={fadeUp}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true }}
+                className="text-center p-8"
+              >
+                <p className="text-4xl md:text-5xl font-bold text-teal-500 mb-3">{item.value}</p>
+                <p className="text-charcoal-400 text-lg">{item.label}</p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+    </main>
+  )
+}
