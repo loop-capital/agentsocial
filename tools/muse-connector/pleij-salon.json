@@ -1,0 +1,50 @@
+{
+  "connector_name": "pleij-salon",
+  "business_name": "PLEIJ Salon",
+  "website": "https://pleijsalon.com",
+  "industry": "hair salon",
+  "location": {
+    "city": "Columbus",
+    "state": "OH",
+    "address": "1279 Polaris Parkway, Columbus, OH 43240"
+  },
+  "contact": {
+    "phone": "614-665-1751",
+    "email": "info@pleijsalon.com"
+  },
+  "hours": {
+    "monday": "9:00-19:00",
+    "tuesday": "9:00-19:00",
+    "wednesday": "9:00-19:00",
+    "thursday": "9:00-19:00",
+    "friday": "9:00-19:00",
+    "saturday": "9:00-17:00",
+    "sunday": "closed"
+  },
+  "services": [
+    "Haircuts",
+    "Color & Highlights",
+    "Balayage",
+    "Extensions",
+    "Treatments",
+    "Bridal Styling"
+  ],
+  "booking": {
+    "method": "website",
+    "url": "https://pleijsalon.com/booking",
+    "requires_login": false,
+    "supports_guest": true
+  },
+  "muse_integration": {
+    "type": "browser",
+    "capabilities": [
+      "browse_services",
+      "check_availability",
+      "book_appointment",
+      "get_pricing",
+      "ask_questions"
+    ],
+    "connector_status": "pending_submission",
+    "submission_url": "https://muse.ai/platform"
+  }
+}
