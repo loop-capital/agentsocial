@@ -31,6 +31,8 @@ export const PUBLIC_ROUTES = [
   "GET /review-sentry/templates",
   "/twilio/sms",
   "/twilio/sms-status",
+  "/twilio/call-status",
+  "/twilio/voice-status",
   "/twilio/voice",
 ];
 

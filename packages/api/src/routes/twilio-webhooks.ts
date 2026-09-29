@@ -2,6 +2,8 @@ import type { FastifyInstance } from "fastify";
 import { eq, and, sql } from "drizzle-orm";
 import { db, reviewSolicitations } from "../db/index.js";
 import { registerTwilioFormParser, verifyTwilioSignature } from "../plugins/twilio-webhook.js";
+import { optInPhone, optOutPhone } from "../services/sms.js";
+import { applyStatusCallback } from "../services/outbound-messaging.js";
 
 // ─── Twilio Webhook Routes ─────────────────────────────────────────────────────
 // Handles incoming SMS replies, delivery receipts, and voice calls from Twilio.
@@ -28,6 +30,7 @@ export const twilioWebhookRoutes = async (server: FastifyInstance) => {
     if (optOutKeywords.includes(messageBody)) {
       // Mark the phone number as opted out in our system
       console.log(`[Twilio SMS] Opt-out received from ${fromNumber}`);
+      await optOutPhone(fromNumber);
       // Twilio automatically handles STOP/UNSUBSCRIBE on shared short codes
       // We should respect this and not send further messages
       return reply
@@ -37,6 +40,7 @@ export const twilioWebhookRoutes = async (server: FastifyInstance) => {
 
     if (optInKeywords.includes(messageBody)) {
       console.log(`[Twilio SMS] Opt-in received from ${fromNumber}`);
+      await optInPhone(fromNumber);
       return reply
         .header("Content-Type", "text/xml")
         .send("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response></Response>");
@@ -100,6 +104,9 @@ export const twilioWebhookRoutes = async (server: FastifyInstance) => {
 
     console.log(`[Twilio SMS Status] SID: ${messageSid}, Status: ${messageStatus}${errorCode ? `, Error: ${errorCode}` : ""}`);
 
+    // Outbound messages sent through /messaging
+    await applyStatusCallback("sms", messageSid, messageStatus, { errorCode });
+
     // Update solicitation status based on delivery
     if (messageStatus === "delivered") {
       // Message was delivered — we could update a delivery tracking field here
@@ -114,6 +121,26 @@ export const twilioWebhookRoutes = async (server: FastifyInstance) => {
   });
 
   // ─── POST /api/v1/twilio/voice — Incoming Voice Call ───────────────────────
+
+  // ─── POST /api/v1/twilio/voice-status — Inbound call status ───────────────
+  // The voice agent (voice.getagentsocial.com) asks Twilio to report here
+
+  server.post("/voice-status", async (request, reply) => {
+    const body = request.body as Record<string, string>;
+    request.log.info(
+      { callSid: body.CallSid, status: body.CallStatus, duration: body.CallDuration, direction: body.Direction },
+      "Twilio voice status",
+    );
+    return reply.header("Content-Type", "text/xml").send("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response></Response>");
+  });
+
+  // ─── POST /api/v1/twilio/call-status — Outbound call completion ────────────
+
+  server.post("/call-status", async (request, reply) => {
+    const body = request.body as Record<string, string>;
+    await applyStatusCallback("call", body.CallSid, body.CallStatus, { errorCode: body.ErrorCode, duration: body.CallDuration });
+    return reply.header("Content-Type", "text/xml").send("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response></Response>");
+  });
 
   server.post("/voice", async (request, reply) => {
     console.log("[Twilio Voice] Incoming call received");

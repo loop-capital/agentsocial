@@ -90,6 +90,7 @@ sqlBrand("/review-sentry/removal/cases/{id}", "SELECT brand_id FROM review_remov
 sqlBrand("/clientvet/clients/{id}", "SELECT brand_id FROM client_risk_flags WHERE id::text = $1");
 sqlBrand("/clientvet/deposits/{id}", "SELECT brand_id FROM deposit_payments WHERE id::text = $1");
 sqlBrand("/campaigns/{id}", "SELECT brand_id FROM campaigns WHERE id::text = $1");
+sqlBrand("/messaging/messages/{id}", "SELECT brand_id FROM outbound_messages WHERE id::text = $1");
 
 // Landing pages are addressed by slug; only writes need an owner (GET is public)
 RESOURCE_BRAND.push({

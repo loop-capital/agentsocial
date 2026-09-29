@@ -118,7 +118,7 @@ export const uploadMediaSchema = z.object({
 
 export const createWebhookSchema = z.object({
   url: z.string().url(),
-  events: z.array(z.enum(["post.scheduled", "post.published", "post.failed", "comment.received", "generate.completed", "generate.failed"])),
+  events: z.array(z.enum(["post.scheduled", "post.published", "post.failed", "comment.received", "generate.completed", "generate.failed", "message.delivered", "message.failed", "call.completed"])),
   secret: z.string().min(16).optional(),
   active: z.boolean().default(true),
 });

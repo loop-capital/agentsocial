@@ -6,6 +6,7 @@ import { db } from "../db/index.js";
 import { reviewRequests, reviewCampaigns } from "../db/schema.js";
 import { eq, and, gte, sql } from "drizzle-orm";
 import { renderTemplate } from "./sms-templates.js";
+import { isOptedOut, normalizePhone, recordOptOut, removeOptOut } from "./outbound-messaging.js";
 
 // ─── Config ──────────────────────────────────────────────────────────────────
 
@@ -208,6 +209,7 @@ export async function bulkSendReviewRequests(
  * Checks both review_requests records and any opt-out markers.
  */
 export async function isPhoneOptedOut(phone: string): Promise<boolean> {
+  if (await isOptedOut(normalizePhone(phone) ?? phone)) return true;
   const result = await db
     .select({ id: reviewRequests.id })
     .from(reviewRequests)
@@ -227,6 +229,7 @@ export async function isPhoneOptedOut(phone: string): Promise<boolean> {
  * If no existing request record exists, creates a placeholder record.
  */
 export async function optOutPhone(phone: string): Promise<void> {
+  await recordOptOut(phone);
   // Update any existing records for this phone
   const updated = await db
     .update(reviewRequests)
@@ -264,6 +267,7 @@ export async function optOutPhone(phone: string): Promise<void> {
  * Re-allow a phone number (UNSTOP/START).
  */
 export async function optInPhone(phone: string): Promise<void> {
+  await removeOptOut(phone);
   await db
     .update(reviewRequests)
     .set({

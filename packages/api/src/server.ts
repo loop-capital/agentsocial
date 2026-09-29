@@ -46,10 +46,12 @@ import { profilesRoutes } from "./routes/profiles.js";
 import { landingPagesRoutes } from "./routes/landing-pages.js";
 import { subscriptionGuardPlugin } from "./plugins/subscription-guard.js";
 import { crmRoutes } from "./routes/crm.js";
+import { messagingRoutes } from "./routes/messaging.js";
 import { startWorkers, stopWorkers } from "./workers/index.js";
 import { requeueScheduledPosts } from "./queues/requeue.js";
 import { ensureGenerationTables, sweepGenerationJobs } from "./services/generation-jobs.js";
 import { checkChannelHealth } from "./services/channel-health.js";
+import { sweepOutboundMessages } from "./services/outbound-messaging.js";
 import { aiRoutes } from "./routes/ai.js";
 import { brandHubRoutes } from "./routes/brand-hub.js";
 import { pool } from "./db/index.js";
@@ -149,6 +151,7 @@ await server.register(swagger, {
       { name: "Webhooks", description: "Webhook management" },
       { name: "Clipify", description: "Short-form video repurposing" },
       { name: "Gemini", description: "Multimodal AI generation (text, image, video)" },
+      { name: "Messaging", description: "Proactive SMS and voice calls (reminders, follow-ups) with opt-out, quiet-hours and daily-cap safeguards." },
       { name: "Generation", description: "muapi image/video generation: async jobs, spend tracking and per-brand budgets. Brand via x-brand-id header or brand_id." },
     ],
   },
@@ -212,6 +215,7 @@ await server.register(reviewSentryRoutes, { prefix: "/api/v1/review-sentry" });
 await server.register(clientvetRoutes, { prefix: "/api/v1/clientvet" });
 await server.register(adManagementRoutes, { prefix: "/api/v1/ad-management" });
 await server.register(crmRoutes, { prefix: "/api/v1/crm" });
+await server.register(messagingRoutes, { prefix: "/api/v1/messaging" });
 await server.register(subscriptionGuardPlugin);
 
 // ─── Global Error Handler ───────────────────────────────────────────────────
@@ -497,6 +501,11 @@ const start = async () => {
         server.log.warn({ err: e.message }, "⚠️ Channel health check failed"));
     setTimeout(healthCheck, 60_000).unref();
     setInterval(healthCheck, 24 * 60 * 60_000).unref();
+
+    // Send scheduled SMS / calls that are due
+    setInterval(() => {
+      sweepOutboundMessages().catch((e: any) => server.log.warn({ err: e.message }, "⚠️ Outbound message sweep failed"));
+    }, 30_000).unref();
 
     // Poll in-flight muapi generation jobs so clients never wait on a request
     setInterval(() => {
