@@ -1,4 +1,5 @@
 import "dotenv/config";
+import { createHash } from "crypto";
 import Fastify from "fastify";
 import cors from "@fastify/cors";
 import helmet from "@fastify/helmet";
@@ -8,6 +9,7 @@ import swagger from "@fastify/swagger";
 import swaggerUi from "@fastify/swagger-ui";
 import { serializerCompiler, validatorCompiler, jsonSchemaTransform, ZodTypeProvider } from "fastify-type-provider-zod";
 import authPlugin from "./plugins/auth.js";
+import { accessControl } from "./plugins/access-control.js";
 import { healthRoutes } from "./routes/health.js";
 import { legalRoutes } from "./routes/legal.js";
 import { authRoutes } from "./routes/auth.js";
@@ -77,6 +79,15 @@ await server.register(helmet, {
 await server.register(rateLimit, {
   max: 100,
   timeWindow: "1 minute",
+  // All traffic arrives through the Cloudflare tunnel from 127.0.0.1, so limit
+  // per credential, then per real client IP, instead of one shared bucket
+  keyGenerator: (request) => {
+    const credential = (request.headers["x-api-key"] as string | undefined) ?? request.headers.authorization;
+    if (credential) return `cred:${createHash("sha256").update(credential).digest("hex").slice(0, 32)}`;
+    const ip = (request.headers["cf-connecting-ip"] as string | undefined)
+      ?? (request.headers["x-forwarded-for"] as string | undefined)?.split(",")[0].trim();
+    return `ip:${ip ?? request.ip}`;
+  },
 });
 
 await server.register(multipart, {
@@ -148,7 +159,9 @@ await server.register(swaggerUi, {
 await server.register(authPlugin);
 
 // ─── Global Auth Guard ──────────────────────────────────────────────────────
-// Protect all routes except explicitly public ones
+// Protect all routes except explicitly public ones. Entries are path prefixes,
+// optionally limited to one method ("GET /profiles"); a trailing "$" means an
+// exact path match.
 const PUBLIC_PREFIXES = [
   "/auth/register",
   "/auth/login",
@@ -164,18 +177,15 @@ const PUBLIC_PREFIXES = [
   "/billing/plans",
   "/billing/tiers",
   "/billing/webhook",
-  "/billing/init-plans",
-  "/billing/checkout",
   "/docs",
   "/legal",
-  "/landing-pages/",
-  "/profiles",
-  "/review-sentry/business/",
-  "/review-sentry/rate",
-  "/review-sentry/feedback",
+  "GET /landing-pages/",
+  "GET /profiles",
+  "GET /review-sentry/business/",
+  "POST /review-sentry/rate$",
+  "POST /review-sentry/feedback$",
   "/review-sentry/sms/webhook",
-  "/review-sentry/templates",
-  "/review-sentry/opt-out/",
+  "GET /review-sentry/templates",
   "/twilio/sms",
   "/twilio/sms-status",
   "/twilio/voice",
@@ -185,13 +195,20 @@ server.addHook("onRequest", async (request, reply) => {
   const fullUrl = request.url.split("?")[0]; // strip query string
   // Normalize: strip /api/v1 prefix for matching
   const path = fullUrl.startsWith("/api/v1") ? fullUrl.slice("/api/v1".length) || "/" : fullUrl;
-  const isPublic = PUBLIC_PREFIXES.some((prefix) => path.startsWith(prefix));
+  const isPublic = PUBLIC_PREFIXES.some((entry) => {
+    const [method, pattern] = entry.includes(" ") ? entry.split(" ") : [null, entry];
+    if (method && method !== request.method) return false;
+    return pattern.endsWith("$") ? path === pattern.slice(0, -1) : path.startsWith(pattern);
+  });
   if (isPublic) return;
   // Also allow root / and favicon
   if (path === "/" || path === "/favicon.ico") return;
   // For all other routes, require authentication
   await server.authenticate(request, reply);
 });
+
+// Brand ownership + admin-only areas, once auth has set request.userId
+server.addHook("preHandler", accessControl);
 
 // ─── Routes ──────────────────────────────────────────────────────────────────
 

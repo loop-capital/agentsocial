@@ -1,3 +1,4 @@
+import { verifyTwilioSignature } from "../plugins/twilio-webhook.js";
 // Review Sentry API Routes
 // Review gating, solicitation, feedback capture, SMS dispatch, and review removal workflow
 
@@ -73,9 +74,10 @@ export async function reviewSentryRoutes(server: FastifyInstance) {
 
   // ─── Brand ownership verification hook ──────────────────────────────────
   // Public routes that don't need auth: /business/:slug, /rate, /feedback, /sms/webhook
+  // request.url is the full path (/api/v1/review-sentry/...), so match the tail
   const isPublicRoute = (url: string) => {
-    const path = url.split("?")[0];
-    return path.match(/\/business\/[^/]+$/) ||
+    const path = url.split("?")[0].replace(/^.*\/review-sentry/, "");
+    return /^\/business\/[^/]+$/.test(path) ||
            path === "/rate" ||
            path === "/feedback" ||
            path === "/sms/webhook";
@@ -532,7 +534,7 @@ export async function reviewSentryRoutes(server: FastifyInstance) {
 
   // ─── POST /sms/webhook — Twilio delivery status + opt-out handling ────────
 
-  server.post("/sms/webhook", async (request, reply) => {
+  server.post("/sms/webhook", { preHandler: verifyTwilioSignature }, async (request, reply) => {
     const body = request.body as Record<string, string>;
     const messageSid = body.MessageSid;
     const messageStatus = body.MessageStatus;

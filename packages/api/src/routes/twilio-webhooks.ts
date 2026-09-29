@@ -1,11 +1,15 @@
 import type { FastifyInstance } from "fastify";
 import { eq, and, sql } from "drizzle-orm";
 import { db, reviewSolicitations } from "../db/index.js";
+import { registerTwilioFormParser, verifyTwilioSignature } from "../plugins/twilio-webhook.js";
 
 // ─── Twilio Webhook Routes ─────────────────────────────────────────────────────
 // Handles incoming SMS replies, delivery receipts, and voice calls from Twilio.
 
 export const twilioWebhookRoutes = async (server: FastifyInstance) => {
+  // Twilio posts form bodies and signs every request
+  registerTwilioFormParser(server);
+  server.addHook("preHandler", verifyTwilioSignature);
 
   // ─── POST /api/v1/twilio/sms — Incoming SMS Reply ──────────────────────────
 
