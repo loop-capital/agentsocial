@@ -1,6 +1,6 @@
 # AgentSocial — Architecture Decision Records
 
-**Last Updated:** 2026-06-01
+**Last Updated:** 2026-09-14
 
 ---
 
@@ -109,3 +109,21 @@
 - **Context:** Need analytics for client sites. Building our own is costly. Third-party analytics (Google Analytics) adds privacy concerns and data dependency.
 - **Decision:** Self-host Plausible on Hetzner (free, open source, GDPR-compliant). Built into all plans, not an upsell.
 - **Consequences:** Zero incremental cost, full data ownership, 3-metric API integration (visitors, top pages, conversion rate). Clients see results in our UI, not a separate dashboard. Tracking script embedded on every SiteFlow site.
+
+---
+
+## ADR-013: Zernio for GBP/TikTok/Inbox/Broadcasts/CRM
+- **Date:** 2026-06-02
+- **Status:** Accepted
+- **Context:** Composio does not cover GBP, TikTok, or advanced CRM features. Needed unified API for remaining platforms.
+- **Decision:** Use Zernio as secondary adapter for GBP, TikTok, inbox, broadcasts, sequences, automations, CRM, and analytics.
+- **Consequences:** 14 base + 50+ extended endpoints. PLEIJ connected via Zernio for TikTok and GBP. Adds another external dependency but fills Composio gaps.
+
+---
+
+## ADR-014: Cloudinary for Generated Asset CDN
+- **Date:** 2026-09-13
+- **Status:** Accepted
+- **Context:** Generated images and videos from muapi need persistent, publicly accessible URLs for social media posting. Raw muapi URLs are temporary and may expire.
+- **Decision:** Integrate Cloudinary as CDN for generated assets. Upload base64 or URL images to Cloudinary, return public URL. Fallback to raw muapi URL when Cloudinary is unconfigured.
+- **Consequences:** All generated assets have persistent URLs. Cloudinary free tier handles initial volume. Adds external dependency but standard for media CDN. Implemented in `packages/api/src/services/cloudinary.ts` and `packages/api/src/routes/generate-post-assets.ts`.

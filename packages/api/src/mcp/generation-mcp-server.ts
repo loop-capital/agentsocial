@@ -282,12 +282,12 @@ const ALL_TOOLS = [
   GENERATE_IMAGE_TOOL,
   GENERATE_VIDEO_TOOL,
   CHECK_VIDEO_JOB_TOOL,
-  GENERATE_LIPSYNC_TOOL,
-  GENERATE_TTS_TOOL,
-  TRAIN_AVATAR_TOOL,
-  GENERATE_AVATAR_VIDEO_TOOL,
-  CHECK_AVATAR_STATUS_TOOL,
-  CLONE_VOICE_TOOL,
+  // TODO: GENERATE_LIPSYNC_TOOL — service.generateLipsyncVideo removed; restore when lipsync is re-implemented
+  // TODO: GENERATE_TTS_TOOL — service.generateTTS removed; restore when TTS is re-implemented
+  // TODO: TRAIN_AVATAR_TOOL — service.trainAvatar removed; restore when IC-LoRA avatar training is re-implemented
+  // TODO: GENERATE_AVATAR_VIDEO_TOOL — service.generateAvatarVideo removed; restore when avatar video generation is re-implemented
+  // TODO: CHECK_AVATAR_STATUS_TOOL — service.getAvatarTrainingStatus removed; restore with avatar training
+  // TODO: CLONE_VOICE_TOOL — service.cloneVoice removed; restore when voice cloning is re-implemented
   LIST_MODELS_TOOL,
   ESTIMATE_COST_TOOL,
   GET_STATUS_TOOL,
@@ -396,107 +396,24 @@ async function main() {
           };
         }
 
-        // ─── Generate Lipsync ────────────────────────────────────────────
-        case "generate_lipsync": {
-          const model = (args!.model as string) || "kling-v2-avatar-standard";
-          const result = await service.generateLipsyncVideo({
-            imageUrl: args!.imageUrl as string,
-            audioUrl: args!.audioUrl as string,
-            prompt: args!.prompt as string | undefined,
-            model,
-            aspectRatio: args!.aspectRatio as string | undefined,
-            brandId: args!.brandId as string,
-            userId: MCP_USER_ID,
-          });
-          return {
-            content: [
-              { type: "text" as const, text: JSON.stringify({ jobId: result.jobId, status: result.status, model: result.model, provider: result.provider, cost: result.cost }, null, 2) },
-            ],
-          };
-        }
+        // TODO: Generate Lipsync — service.generateLipsyncVideo removed; restore when re-implemented
+        // case "generate_lipsync": { ... }
 
-        // ─── Generate TTS ────────────────────────────────────────────────
-        case "generate_tts": {
-          const result = await service.generateTTS({
-            text: args!.text as string,
-            voice: args!.voice as string | undefined,
-            model: args!.model as string | undefined,
-            speed: args!.speed as number | undefined,
-            brandId: args!.brandId as string,
-            userId: MCP_USER_ID,
-          });
-          return {
-            content: [
-              { type: "text" as const, text: JSON.stringify({ audioUrl: result.audioUrl, duration: result.duration, model: result.model, provider: result.provider, cost: result.cost }, null, 2) },
-            ],
-          };
-        }
+        // TODO: Generate TTS — service.generateTTS removed; restore when re-implemented
+        // case "generate_tts": { ... }
 
-        // ─── Train Avatar ────────────────────────────────────────────────
-        case "train_avatar": {
-          const result = await service.trainAvatar({
-            referenceImages: args!.referenceImages as string[],
-            referenceAudio: args!.referenceAudio as string | undefined,
-            personName: args!.personName as string,
-            personDescription: args!.personDescription as string | undefined,
-            brandId: args!.brandId as string,
-            userId: MCP_USER_ID,
-          });
-          return {
-            content: [
-              { type: "text" as const, text: JSON.stringify({ avatarId: result.avatarId, status: result.status, model: result.model, cost: result.cost }, null, 2) },
-            ],
-          };
-        }
+        // TODO: Train Avatar — service.trainAvatar removed; restore when IC-LoRA training is re-implemented
+        // case "train_avatar": { ... }
 
-        // ─── Generate Avatar Video ───────────────────────────────────────
-        case "generate_avatar_video": {
-          const result = await service.generateAvatarVideo({
-            referenceImages: args!.referenceImages as string[] | undefined,
-            referenceAudio: args!.referenceAudio as string | undefined,
-            prompt: args!.prompt as string,
-            icLoraId: args!.avatarId as string,
-            voiceIdentity: args!.voiceIdentity as string | undefined,
-            aspectRatio: args!.aspectRatio as string | undefined,
-            duration: args!.duration as number | undefined,
-            resolution: args!.resolution as string | undefined,
-            model: args!.model as string | undefined,
-            brandId: args!.brandId as string,
-            userId: MCP_USER_ID,
-          });
-          return {
-            content: [
-              { type: "text" as const, text: JSON.stringify({ jobId: result.jobId, status: result.status, model: result.model, provider: "ltx", cost: result.cost }, null, 2) },
-            ],
-          };
-        }
+        // TODO: Generate Avatar Video — service.generateAvatarVideo removed; restore when re-implemented
+        // case "generate_avatar_video": { ... }
 
-        // ─── Check Avatar Status ─────────────────────────────────────────
-        case "check_avatar_status": {
-          const result = await service.getAvatarTrainingStatus(args!.avatarId as string);
-          return {
-            content: [
-              { type: "text" as const, text: JSON.stringify(result, null, 2) },
-            ],
-          };
-        }
+        // TODO: Check Avatar Status — service.getAvatarTrainingStatus removed; restore when training is re-implemented
+        // case "check_avatar_status": { ... }
 
-        // ─── Clone Voice ─────────────────────────────────────────────────
-        case "clone_voice": {
-          const result = await service.cloneVoice({
-            name: args!.name as string,
-            audioUrl: args!.audioUrl as string,
-            model: args!.model as "minimax-voice-clone" | "suno-voice-clone" | undefined,
-            description: args!.description as string | undefined,
-            brandId: args!.brandId as string,
-            userId: MCP_USER_ID,
-          });
-          return {
-            content: [
-              { type: "text" as const, text: JSON.stringify({ voiceId: result.voiceId, name: result.name, model: result.model, cost: result.cost }, null, 2) },
-            ],
-          };
-        }
+        // TODO: Clone Voice — service.cloneVoice removed; restore when voice cloning is re-implemented
+        // case "clone_voice": { ... }
+
 
         // ─── List Models ─────────────────────────────────────────────────
         case "list_models": {

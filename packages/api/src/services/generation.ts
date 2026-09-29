@@ -117,6 +117,10 @@ export interface TextGenerationResponse {
   model: string;
   provider: GenerationProvider;
   usage?: { promptTokens: number; completionTokens: number; totalTokens: number };
+  cost?: {
+    amountUsd: number;
+    amountCredits?: number;
+  };
 }
 
 export interface ModelInfo {
@@ -213,7 +217,7 @@ export const PROVIDER_COST_ESTIMATES: Record<string, { min: number; max: number;
   "kling-v3.0-omni-4k-image-to-video":       { min: 2.68, max: 2.68, unit: "video" },
   "kling-v3.0-omni-4k-text-to-video":        { min: 2.68, max: 2.68, unit: "video" },
   // Gemini models (free tier, limited)
-  "gemini-2.0-flash":  { min: 0, max: 0, unit: "text" },
+  "gemini-3.6-flash":  { min: 0, max: 0, unit: "text" },
   "gemini-2.0-flash-preview-image-generation": { min: 0, max: 0, unit: "image" },
   "veo-2.0-generate-001": { min: 0, max: 0, unit: "video" },
 };
@@ -249,6 +253,72 @@ export const SALON_MODEL_RECOMMENDATIONS = {
 } as const;
 
 // ─── Generation Service ────────────────────────────────────────────────────
+
+// ─── muapi errors ───────────────────────────────────────────────────────────
+
+/** An error returned by muapi, carrying its HTTP status and body for callers. */
+export class MuapiError extends Error {
+  constructor(
+    public upstreamStatus: number,
+    public upstreamError: unknown,
+    public code: string,
+    message: string,
+  ) {
+    super(message);
+    this.name = "MuapiError";
+  }
+}
+
+async function muapiError(res: Response, action: string): Promise<MuapiError> {
+  const text = await res.text();
+  let body: any = text;
+  try { body = JSON.parse(text); } catch { /* keep text */ }
+
+  const upstreamCode = body?.error?.code ?? body?.detail?.error?.code;
+  const code =
+    upstreamCode === "INSUFFICIENT_CREDITS" || res.status === 402 ? "provider_insufficient_credits" :
+    res.status === 422 || res.status === 400 ? "invalid_generation_params" :
+    res.status === 401 || res.status === 403 ? "provider_auth_error" :
+    res.status === 404 ? "model_not_found" :
+    res.status === 429 ? "provider_rate_limited" :
+    "provider_upstream_error";
+
+  // Prefer muapi's own message; for validation errors list each bad field
+  const detail = Array.isArray(body?.detail)
+    ? body.detail.map((d: any) => `${(d.loc ?? []).filter((l: string) => l !== "body").join(".")}: ${d.msg}`).join("; ")
+    : body?.error?.message ?? body?.detail?.error?.message ?? (typeof body?.detail === "string" ? body.detail : undefined);
+
+  return new MuapiError(res.status, body, code, `muapi ${action} failed (${res.status})${detail ? `: ${detail}` : ""}`);
+}
+
+export interface MuapiSubmitResult {
+  requestId: string;
+  costUsd: number | null;
+  raw: unknown;
+}
+
+export interface MuapiPollResult {
+  status: "processing" | "completed" | "failed";
+  outputs: Array<{ url: string; mimeType: string }>;
+  costUsd: number | null;
+  error?: string;
+  raw: unknown;
+}
+
+function muapiCost(data: any, res: Response): number | null {
+  const fromBody = data?.cost?.amount_usd;
+  if (typeof fromBody === "number") return fromBody;
+  const fromHeader = res.headers.get("X-MuAPI-Cost-USD");
+  return fromHeader !== null && fromHeader !== "" ? Number(fromHeader) : null;
+}
+
+function guessMimeType(url: string): string {
+  const ext = url.split("?")[0].split(".").pop()?.toLowerCase();
+  if (ext === "mp4" || ext === "mov" || ext === "webm") return `video/${ext === "mov" ? "quicktime" : ext}`;
+  if (ext === "jpg" || ext === "jpeg") return "image/jpeg";
+  if (ext === "webp") return "image/webp";
+  return ext === "png" ? "image/png" : "application/octet-stream";
+}
 
 export interface GenerationServiceConfig {
   defaultProvider: GenerationProvider;
@@ -356,20 +426,10 @@ export function createGenerationService(config: GenerationServiceConfig) {
       return { amountUsd: local.min, dynamic: false };
     }
 
-    // Query muapi pricing API for dynamic models
-    try {
-      const apiKey = config.muapiApiKey || process.env.MUAPI_API_KEY;
-      const baseUrl = config.muapiBaseUrl || "https://api.muapi.ai";
-
-      const res = await fetch(`${baseUrl}/api/v1/models/${model}`);
-      if (res.ok) {
-        const data = await res.json();
-        if (data.cost !== undefined) {
-          return { amountUsd: data.cost, dynamic: data.dynamic_pricing || false };
-        }
-      }
-    } catch {
-      // Fall through to estimate
+    // muapi catalog price (cached)
+    const listed = (await fetchMuapiModels()).find((m) => m.id === model);
+    if (listed?.cost !== undefined) {
+      return { amountUsd: listed.cost, dynamic: listed.dynamicPricing ?? false };
     }
 
     // Rough estimates by category
@@ -382,248 +442,146 @@ export function createGenerationService(config: GenerationServiceConfig) {
     return { amountUsd: 0.05, dynamic: true };
   }
 
-  // ─── muapi Provider Implementation ─────────────────────────────────────
+  // ─── muapi transport ────────────────────────────────────────────────────
 
-  async function generateImageMuapi(req: ImageGenerationRequest): Promise<ImageGenerationResponse> {
+  function muapiAuth(): { apiKey: string; baseUrl: string } {
     const apiKey = config.muapiApiKey || process.env.MUAPI_API_KEY;
     if (!apiKey) throw new Error("MUAPI_API_KEY is not configured");
+    return { apiKey, baseUrl: config.muapiBaseUrl || "https://api.muapi.ai" };
+  }
 
-    const baseUrl = config.muapiBaseUrl || "https://api.muapi.ai";
-    const model = req.model || "nano-banana";
-
-    const body: Record<string, any> = {
-      prompt: req.prompt,
-    };
-    if (req.aspectRatio) body.aspect_ratio = req.aspectRatio;
-    if (req.negativePrompt) body.negative_prompt = req.negativePrompt;
-    if (req.numberOfImages) body.num_images = req.numberOfImages;
-    if (req.referenceImages?.length) {
-      body.reference_images = req.referenceImages;
-    }
-
-    // Image-to-image models use different endpoint
-    const isEdit = req.referenceImages && req.referenceImages.length > 0;
-    const endpoint = isEdit ? `/api/v1/${model}` : `/api/v1/${model}`;
-
-    const res = await fetch(`${baseUrl}${endpoint}`, {
+  /** Submit a generation to muapi (all muapi generations are async). */
+  async function submitMuapi(model: string, body: Record<string, unknown>): Promise<MuapiSubmitResult> {
+    const { apiKey, baseUrl } = muapiAuth();
+    const res = await fetch(`${baseUrl}/api/v1/${model}`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-api-key": apiKey,
-      },
+      headers: { "Content-Type": "application/json", "x-api-key": apiKey },
       body: JSON.stringify(body),
+      signal: AbortSignal.timeout(60_000),
     });
+    if (!res.ok) throw await muapiError(res, `${model} submit`);
 
-    if (!res.ok) {
-      const errText = await res.text();
-      throw new Error(`muapi image generation failed (${res.status}): ${errText}`);
+    const data: any = await res.json();
+    const requestId = data.request_id ?? data.id ?? data.task_id;
+    if (!requestId) {
+      throw new MuapiError(res.status, data, "provider_upstream_error", "muapi submit returned no request_id");
     }
+    return { requestId, costUsd: muapiCost(data, res), raw: data };
+  }
 
-    const data = await res.json();
-    const costUsd = parseFloat(res.headers.get("X-MuAPI-Cost-USD") || "0");
+  /** Poll a muapi prediction once. */
+  async function pollMuapi(requestId: string): Promise<MuapiPollResult> {
+    const { apiKey, baseUrl } = muapiAuth();
+    const res = await fetch(`${baseUrl}/api/v1/predictions/${requestId}/result`, {
+      headers: { "x-api-key": apiKey },
+      signal: AbortSignal.timeout(30_000),
+    });
+    if (!res.ok) throw await muapiError(res, "result poll");
 
-    const images: ImageGenerationResponse["images"] = [];
-
-    // muapi returns either base64 data or URLs
-    if (data.data) {
-      // Single image response
-      if (data.data.url) {
-        images.push({ data: "", mimeType: data.data.mime_type || "image/png", url: data.data.url });
-      } else if (data.data.image) {
-        images.push({ data: data.data.image, mimeType: data.data.mime_type || "image/png" });
-      }
-    }
-    // Multiple images
-    if (data.images && Array.isArray(data.images)) {
-      for (const img of data.images) {
-        if (img.url) {
-          images.push({ data: "", mimeType: img.mime_type || "image/png", url: img.url });
-        } else if (img.image || img.data) {
-          images.push({ data: img.image || img.data, mimeType: img.mime_type || "image/png" });
-        }
-      }
-    }
-    // Fallback: check for output field
-    if (images.length === 0 && data.output) {
-      if (Array.isArray(data.output)) {
-        for (const out of data.output) {
-          if (typeof out === "string") {
-            images.push({ data: "", mimeType: "image/png", url: out });
-          } else if (out.url) {
-            images.push({ data: "", mimeType: out.mime_type || "image/png", url: out.url });
-          }
-        }
-      } else if (typeof data.output === "string") {
-        images.push({ data: "", mimeType: "image/png", url: data.output });
-      }
-    }
-
-    if (images.length === 0) {
-      throw new Error(`muapi returned no images. Response: ${JSON.stringify(data).slice(0, 500)}`);
-    }
-
+    const data: any = await res.json();
+    const status =
+      data.status === "completed" || data.status === "succeeded" ? "completed" :
+      data.status === "failed" || data.status === "cancelled" || data.status === "canceled" ? "failed" :
+      "processing";
+    const urls: string[] = (Array.isArray(data.outputs) ? data.outputs : [])
+      .map((o: any) => (typeof o === "string" ? o : o?.url))
+      .filter(Boolean);
     return {
-      images,
-      model,
-      provider: "muapi",
-      cost: costUsd > 0 ? { amountUsd: costUsd } : undefined,
+      status,
+      outputs: urls.map((url) => ({ url, mimeType: guessMimeType(url) })),
+      costUsd: muapiCost(data, res),
+      error: status === "failed" ? (data.error ?? data.message ?? `muapi status: ${data.status}`) : undefined,
+      raw: data,
     };
   }
 
-  async function generateVideoMuapi(req: VideoGenerationRequest): Promise<VideoGenerationResponse> {
-    const apiKey = config.muapiApiKey || process.env.MUAPI_API_KEY;
-    if (!apiKey) throw new Error("MUAPI_API_KEY is not configured");
-
-    const baseUrl = config.muapiBaseUrl || "https://api.muapi.ai";
-    const model = req.model || "seedance-2.0";
-
-    const body: Record<string, any> = {
-      prompt: req.prompt,
-    };
+  /** Map our request fields to muapi's (snake_case, lowercase resolution). */
+  function muapiVideoBody(req: VideoGenerationRequest): Record<string, unknown> {
+    const body: Record<string, unknown> = { prompt: req.prompt };
     if (req.aspectRatio) body.aspect_ratio = req.aspectRatio;
     if (req.duration) body.duration = req.duration;
     if (req.negativePrompt) body.negative_prompt = req.negativePrompt;
     if (req.numberOfVideos) body.num_videos = req.numberOfVideos;
-    if (req.resolution) body.resolution = req.resolution;
+    if (req.resolution) body.resolution = req.resolution.toLowerCase();
     if (req.referenceImageUrl) body.image_url = req.referenceImageUrl;
+    return body;
+  }
 
-    // Estimate cost before generation
-    const estimatedCost = await estimateCost(model, body);
+  function muapiImageBody(req: ImageGenerationRequest): Record<string, unknown> {
+    const body: Record<string, unknown> = { prompt: req.prompt };
+    if (req.aspectRatio) body.aspect_ratio = req.aspectRatio;
+    if (req.negativePrompt) body.negative_prompt = req.negativePrompt;
+    if (req.numberOfImages) body.num_images = req.numberOfImages;
+    if (req.referenceImages?.length) body.images_list = req.referenceImages;
+    return body;
+  }
 
-    const res = await fetch(`${baseUrl}/api/v1/${model}`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-api-key": apiKey,
-      },
-      body: JSON.stringify(body),
-    });
+  // ─── muapi Provider Implementation ─────────────────────────────────────
 
-    if (!res.ok) {
-      const errText = await res.text();
-      throw new Error(`muapi video generation failed (${res.status}): ${errText}`);
+  async function generateImageMuapi(req: ImageGenerationRequest): Promise<ImageGenerationResponse> {
+    const model = req.model || "nano-banana";
+    const submitted = await submitMuapi(model, muapiImageBody(req));
+
+    // Image jobs usually finish in seconds; wait up to 90s
+    const deadline = Date.now() + 90_000;
+    let result = await pollMuapi(submitted.requestId);
+    while (result.status === "processing" && Date.now() < deadline) {
+      await new Promise((r) => setTimeout(r, 2000));
+      result = await pollMuapi(submitted.requestId);
+    }
+    if (result.status === "failed") {
+      throw new MuapiError(200, result.raw, "generation_failed", `muapi ${model} failed: ${result.error}`);
+    }
+    if (result.status !== "completed") {
+      throw new MuapiError(504, result.raw, "generation_timeout", `muapi ${model} did not finish within 90s (request ${submitted.requestId})`);
     }
 
-    const data = await res.json();
-    const costUsd = parseFloat(res.headers.get("X-MuAPI-Cost-USD") || "0");
-
-    // muapi video generation is async — returns a task/job ID
-    const taskId = data.id || data.task_id || data.request_id || data.job_id;
-
-    if (!taskId) {
-      // Some models return video directly (synchronous)
-      if (data.data?.url || data.output) {
-        return {
-          jobId: `muapi-sync-${Date.now()}`,
-          status: "complete",
-          model,
-          provider: "muapi",
-          cost: costUsd > 0 ? { amountUsd: costUsd } : { amountUsd: estimatedCost.amountUsd },
-        };
-      }
-      throw new Error(`muapi video generation returned no task ID. Response: ${JSON.stringify(data).slice(0, 500)}`);
-    }
-
+    const costUsd = result.costUsd ?? submitted.costUsd;
     return {
-      jobId: `muapi-${taskId}`,
+      images: result.outputs.map((o) => ({ data: "", mimeType: o.mimeType, url: o.url })),
+      model,
+      provider: "muapi",
+      cost: costUsd !== null ? { amountUsd: costUsd } : undefined,
+    };
+  }
+
+  async function generateVideoMuapi(req: VideoGenerationRequest): Promise<VideoGenerationResponse> {
+    const model = req.model || "seedance-2.0";
+    const submitted = await submitMuapi(model, muapiVideoBody(req));
+    const cost = submitted.costUsd ?? (await estimateCost(model)).amountUsd;
+    return {
+      jobId: `muapi-${submitted.requestId}`,
       status: "processing",
       model,
       provider: "muapi",
-      cost: costUsd > 0 ? { amountUsd: costUsd } : { amountUsd: estimatedCost.amountUsd },
+      cost: { amountUsd: cost },
     };
   }
 
   async function editVideoMuapi(req: VideoEditRequest): Promise<VideoGenerationResponse> {
-    const apiKey = config.muapiApiKey || process.env.MUAPI_API_KEY;
-    if (!apiKey) throw new Error("MUAPI_API_KEY is not configured");
-
-    const baseUrl = config.muapiBaseUrl || "https://api.muapi.ai";
     const model = req.model || "wan2.2-edit-video";
-
-    const body: Record<string, any> = {
-      video_url: req.videoUrl,
-      prompt: req.prompt,
-    };
+    const body: Record<string, unknown> = { video_url: req.videoUrl, prompt: req.prompt };
     if (req.negativePrompt) body.negative_prompt = req.negativePrompt;
-
-    const res = await fetch(`${baseUrl}/api/v1/${model}`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-api-key": apiKey,
-      },
-      body: JSON.stringify(body),
-    });
-
-    if (!res.ok) {
-      const errText = await res.text();
-      throw new Error(`muapi video edit failed (${res.status}): ${errText}`);
-    }
-
-    const data = await res.json();
-    const costUsd = parseFloat(res.headers.get("X-MuAPI-Cost-USD") || "0");
-    const taskId = data.id || data.task_id || data.request_id;
-
+    const submitted = await submitMuapi(model, body);
     return {
-      jobId: taskId ? `muapi-${taskId}` : `muapi-sync-${Date.now()}`,
-      status: taskId ? "processing" : "complete",
+      jobId: `muapi-${submitted.requestId}`,
+      status: "processing",
       model,
       provider: "muapi",
-      cost: costUsd > 0 ? { amountUsd: costUsd } : undefined,
+      cost: submitted.costUsd !== null ? { amountUsd: submitted.costUsd } : undefined,
     };
   }
 
   async function pollMuapiJob(jobId: string): Promise<VideoJobStatus> {
-    const apiKey = config.muapiApiKey || process.env.MUAPI_API_KEY;
-    if (!apiKey) throw new Error("MUAPI_API_KEY is not configured");
-
-    const baseUrl = config.muapiBaseUrl || "https://api.muapi.ai";
-
-    // Extract the muapi task ID from our composite jobId
-    const taskId = jobId.replace(/^muapi-/, "");
-
-    const res = await fetch(`${baseUrl}/api/v1/status/${taskId}`, {
-      headers: {
-        "x-api-key": apiKey,
-      },
-    });
-
-    if (!res.ok) {
-      throw new Error(`muapi job poll failed (${res.status}): ${await res.text()}`);
-    }
-
-    const data = await res.json();
-    const costUsd = parseFloat(res.headers.get("X-MuAPI-Cost-USD") || "0");
-
-    const status = data.status === "completed" ? "complete" :
-                   data.status === "failed" ? "failed" :
-                   "processing";
-
-    const videos: Array<{ url: string; mimeType: string }> = [];
-
-    if (status === "complete") {
-      if (data.data?.url) {
-        videos.push({ url: data.data.url, mimeType: data.data.mime_type || "video/mp4" });
-      } else if (data.output) {
-        const outputs = Array.isArray(data.output) ? data.output : [data.output];
-        for (const out of outputs) {
-          if (typeof out === "string") {
-            videos.push({ url: out, mimeType: "video/mp4" });
-          } else if (out.url) {
-            videos.push({ url: out.url, mimeType: out.mime_type || "video/mp4" });
-          }
-        }
-      }
-    }
-
+    const result = await pollMuapi(jobId.replace(/^muapi-/, ""));
     return {
       jobId,
-      status,
-      model: data.model || "unknown",
+      status: result.status === "completed" ? "complete" : result.status,
+      model: (result.raw as any)?.model || "unknown",
       provider: "muapi",
-      videos: videos.length > 0 ? videos : undefined,
-      error: data.error || data.message,
-      cost: costUsd > 0 ? { amountUsd: costUsd } : undefined,
+      videos: result.outputs.length > 0 ? result.outputs : undefined,
+      error: result.error,
+      cost: result.costUsd !== null ? { amountUsd: result.costUsd } : undefined,
     };
   }
 
@@ -864,6 +822,89 @@ export function createGenerationService(config: GenerationServiceConfig) {
     };
   }
 
+  // ─── Text Generation ───────────────────────────────────────────────────
+
+  async function generateText(req: TextGenerationRequest): Promise<TextGenerationResponse> {
+    const provider = resolveProvider(req.provider);
+
+    switch (provider) {
+      case "muapi":
+        return generateTextMuapi(req);
+      case "gemini":
+        return generateTextGemini(req);
+      default:
+        throw new Error(`Unknown provider: ${provider}`);
+    }
+  }
+
+  async function generateTextMuapi(req: TextGenerationRequest): Promise<TextGenerationResponse> {
+    const apiKey = config.muapiApiKey || process.env.MUAPI_API_KEY;
+    if (!apiKey) throw new Error("MUAPI_API_KEY is not configured");
+
+    const baseUrl = config.muapiBaseUrl || "https://api.muapi.ai";
+    const model = req.model || "gemini-3.6-flash";
+
+    const body: Record<string, any> = {
+      prompt: req.prompt,
+    };
+    if (req.maxTokens) body.max_tokens = req.maxTokens;
+    if (req.temperature !== undefined) body.temperature = req.temperature;
+    if (req.topP !== undefined) body.top_p = req.topP;
+    if (req.systemInstruction) body.system_instruction = req.systemInstruction;
+
+    const res = await fetch(`${baseUrl}/api/v1/${model}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-api-key": apiKey,
+      },
+      body: JSON.stringify(body),
+    });
+
+    if (!res.ok) {
+      const errText = await res.text();
+      throw new Error(`muapi text generation failed (${res.status}): ${errText}`);
+    }
+
+    const data = await res.json();
+    const costUsd = parseFloat(res.headers.get("X-MuAPI-Cost-USD") || "0");
+
+    const text =
+      typeof data.text === "string"
+        ? data.text
+        : data.output?.text ?? data.output ?? data.response ?? "";
+
+    if (!text) {
+      throw new Error(`muapi returned no text. Response: ${JSON.stringify(data).slice(0, 500)}`);
+    }
+
+    return {
+      text,
+      model,
+      provider: "muapi",
+      usage: data.usage,
+      cost: costUsd > 0 ? { amountUsd: costUsd } : undefined,
+    };
+  }
+
+  async function generateTextGemini(req: TextGenerationRequest): Promise<TextGenerationResponse> {
+    const { generateText: geminiGenerate } = await import("./gemini.js");
+    const result = await geminiGenerate(req.prompt, {
+      model: req.model,
+      maxTokens: req.maxTokens,
+      temperature: req.temperature,
+      topP: req.topP,
+      systemInstruction: req.systemInstruction,
+    });
+
+    return {
+      text: result.text,
+      model: result.model,
+      provider: "gemini",
+      usage: result.usage,
+    };
+  }
+
   // ─── Return public API ──────────────────────────────────────────────────
 
   return {
@@ -871,12 +912,17 @@ export function createGenerationService(config: GenerationServiceConfig) {
     generateVideo,
     editVideo,
     getVideoJobStatus,
+    submitMuapi,
+    pollMuapi,
+    muapiVideoBody,
+    muapiImageBody,
     listModels,
     estimateCost,
     resolveProvider,
     createCharacter,
     createVoiceProfile,
     generateCharacterVideo,
+    generateText,
     SALON_MODEL_RECOMMENDATIONS,
     PROVIDER_COST_ESTIMATES,
   };

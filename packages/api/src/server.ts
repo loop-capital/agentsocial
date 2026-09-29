@@ -6,7 +6,7 @@ import rateLimit from "@fastify/rate-limit";
 import multipart from "@fastify/multipart";
 import swagger from "@fastify/swagger";
 import swaggerUi from "@fastify/swagger-ui";
-import { serializerCompiler, validatorCompiler, ZodTypeProvider } from "fastify-type-provider-zod";
+import { serializerCompiler, validatorCompiler, jsonSchemaTransform, ZodTypeProvider } from "fastify-type-provider-zod";
 import authPlugin from "./plugins/auth.js";
 import { healthRoutes } from "./routes/health.js";
 import { legalRoutes } from "./routes/legal.js";
@@ -34,6 +34,7 @@ import { composioRoutes } from "./routes/composio.js";
 import { socialRoutes } from "./routes/social.js";
 import { geminiRoutes } from "./routes/gemini.js";
 import { generationRoutes } from "./routes/generation.js";
+import { generatePostAssetsRoutes } from "./routes/generate-post-assets.js";
 import { reviewSentryRoutes } from "./routes/review-sentry.js";
 import { clientvetRoutes } from "./routes/clientvet.js";
 import { adManagementRoutes } from "./routes/ad-management.js";
@@ -41,7 +42,12 @@ import { accountManagerRoutes } from "./routes/account-manager.js";
 import { profilesRoutes } from "./routes/profiles.js";
 import { landingPagesRoutes } from "./routes/landing-pages.js";
 import { subscriptionGuardPlugin } from "./plugins/subscription-guard.js";
+import { crmRoutes } from "./routes/crm.js";
 import { startWorkers, stopWorkers } from "./workers/index.js";
+import { requeueScheduledPosts } from "./queues/requeue.js";
+import { ensureGenerationTables, sweepGenerationJobs } from "./services/generation-jobs.js";
+import { aiRoutes } from "./routes/ai.js";
+import { brandHubRoutes } from "./routes/brand-hub.js";
 import { pool } from "./db/index.js";
 
 const server = Fastify({
@@ -77,6 +83,31 @@ await server.register(multipart, {
   limits: { fileSize: 50 * 1024 * 1024 }, // 50MB
 });
 
+// Routes mix Zod schemas and plain JSON Schema; convert only the Zod parts for the spec
+const isZod = (s: unknown) => !!s && typeof s === "object" && "_def" in (s as object);
+const zodAwareTransform: typeof jsonSchemaTransform = ({ schema, url }) => {
+  if (!schema) return { schema, url };
+  const zodParts: Record<string, any> = {};
+  const plainParts: Record<string, any> = {};
+  for (const [k, v] of Object.entries(schema as Record<string, any>)) {
+    if (k === "response" && v && typeof v === "object") {
+      const zodRes: Record<string, any> = {};
+      const plainRes: Record<string, any> = {};
+      for (const [code, r] of Object.entries(v)) (isZod(r) ? zodRes : plainRes)[code] = r;
+      if (Object.keys(zodRes).length) zodParts.response = zodRes;
+      if (Object.keys(plainRes).length) plainParts.response = plainRes;
+    } else {
+      (isZod(v) ? zodParts : plainParts)[k] = v;
+    }
+  }
+  const converted = jsonSchemaTransform({ schema: zodParts as any, url }).schema as Record<string, any>;
+  const response = { ...(plainParts.response ?? {}), ...(converted?.response ?? {}) };
+  return {
+    schema: { ...plainParts, ...converted, ...(Object.keys(response).length ? { response } : {}) } as any,
+    url,
+  };
+};
+
 await server.register(swagger, {
   openapi: {
     info: {
@@ -84,7 +115,15 @@ await server.register(swagger, {
       version: "1.0.0",
       description: "Agent-first social media management API",
     },
-    servers: [{ url: "/api/v1", description: "API v1" }],
+    // Route paths already include /api/v1, so the server URL is the host root
+    servers: [{ url: "/", description: "API v1" }],
+    components: {
+      securitySchemes: {
+        apiKey: { type: "apiKey", in: "header", name: "X-API-Key" },
+        bearerAuth: { type: "http", scheme: "bearer", bearerFormat: "JWT" },
+      },
+    },
+    security: [{ apiKey: [] }, { bearerAuth: [] }],
     tags: [
       { name: "Auth", description: "Authentication endpoints" },
       { name: "Brands", description: "Brand management" },
@@ -96,8 +135,10 @@ await server.register(swagger, {
       { name: "Webhooks", description: "Webhook management" },
       { name: "Clipify", description: "Short-form video repurposing" },
       { name: "Gemini", description: "Multimodal AI generation (text, image, video)" },
+      { name: "Generation", description: "muapi image/video generation: async jobs, spend tracking and per-brand budgets. Brand via x-brand-id header or brand_id." },
     ],
   },
+  transform: zodAwareTransform,
 });
 
 await server.register(swaggerUi, {
@@ -112,6 +153,7 @@ const PUBLIC_PREFIXES = [
   "/auth/register",
   "/auth/login",
   "/health",
+  "/clientvet/deposits/webhook", // Square-signed; verified in the handler (fails closed)
   "/webhooks",
   "/browser-auth",
   "/channels/callback",
@@ -179,12 +221,16 @@ await server.register(profilesRoutes, { prefix: "/api/v1/profiles" });
 await server.register(landingPagesRoutes, { prefix: "/api/v1/landing-pages" });
 await server.register(twilioWebhookRoutes, { prefix: "/api/v1/twilio" });
 await server.register(composioRoutes, { prefix: "/api/v1/composio" });
+await server.register(aiRoutes, { prefix: "/api/v1/ai" });
+await server.register(brandHubRoutes, { prefix: "/api/v1/hub" });
 await server.register(socialRoutes, { prefix: "/api/v1/social" });
 await server.register(geminiRoutes, { prefix: "/api/v1/gemini" });
   await server.register(generationRoutes, { prefix: "/api/v1/generate" });
+await server.register(generatePostAssetsRoutes, { prefix: "/api/v1/generate" });
 await server.register(reviewSentryRoutes, { prefix: "/api/v1/review-sentry" });
 await server.register(clientvetRoutes, { prefix: "/api/v1/clientvet" });
 await server.register(adManagementRoutes, { prefix: "/api/v1/ad-management" });
+await server.register(crmRoutes, { prefix: "/api/v1/crm" });
 await server.register(subscriptionGuardPlugin);
 
 // ─── Global Error Handler ───────────────────────────────────────────────────
@@ -232,6 +278,26 @@ const start = async () => {
     // ── Run DB migrations (auto-create tables) ─────────────────────────────────
     // Run async — don't block server startup if DB is slow/unreachable
     const migrationPromise = (async () => {
+      try {
+        await pool.query(`ALTER TABLE brands ADD COLUMN IF NOT EXISTS voice_profile text`);
+        await pool.query(`ALTER TABLE brands ADD COLUMN IF NOT EXISTS profile jsonb NOT NULL DEFAULT '{}'::jsonb`);
+      } catch (e: any) {
+        server.log.warn({ err: e.message }, "⚠️ voice_profile migration skipped");
+      }
+      try {
+        await ensureGenerationTables();
+        await pool.query(`ALTER TABLE webhooks ADD COLUMN IF NOT EXISTS secret_encrypted text`);
+      } catch (e: any) {
+        server.log.warn({ err: e.message }, "⚠️ generation jobs migration skipped");
+      }
+      // New publishing platforms (GBP via Zernio, Pinterest via Composio)
+      for (const v of ["gbp", "pinterest"]) {
+        try {
+          await pool.query(`ALTER TYPE platform ADD VALUE IF NOT EXISTS '${v}'`);
+        } catch (e: any) {
+          server.log.warn({ err: e.message, value: v }, "⚠️ platform enum migration skipped");
+        }
+      }
       try {
         await pool.query(`
           CREATE TABLE IF NOT EXISTS competitor_profiles (
@@ -426,6 +492,23 @@ const start = async () => {
     startWorkers();
 
     server.log.info(`✅ BullMQ workers started`);
+
+    // Rebuild scheduled jobs from the database now, then every 5 minutes as a safety net.
+    const sweep = async () => {
+      try {
+        const r = await requeueScheduledPosts();
+        if (r.queued || r.missed) server.log.info(r, "🔁 Scheduled posts re-queued");
+      } catch (e: any) {
+        server.log.warn({ err: e.message }, "⚠️ Scheduled-post re-queue failed");
+      }
+    };
+    void sweep();
+    setInterval(sweep, 5 * 60_000).unref();
+
+    // Poll in-flight muapi generation jobs so clients never wait on a request
+    setInterval(() => {
+      sweepGenerationJobs().catch((e: any) => server.log.warn({ err: e.message }, "⚠️ Generation job sweep failed"));
+    }, 10_000).unref();
   } catch (err) {
     server.log.error(err);
     process.exit(1);

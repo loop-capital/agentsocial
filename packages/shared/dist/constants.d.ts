@@ -5,7 +5,7 @@
 export declare const API_VERSIONS: {
     readonly facebook: "v18.0";
 };
-export declare const SOCIAL_PLATFORMS: readonly ["facebook", "twitter", "instagram", "linkedin"];
+export declare const SOCIAL_PLATFORMS: readonly ["facebook", "twitter", "instagram", "linkedin", "tiktok"];
 export type SocialPlatform = typeof SOCIAL_PLATFORMS[number];
 export declare const TASK_STATUSES: readonly ["pending", "assigned", "in_progress", "completed", "failed"];
 export type TaskStatus = typeof TASK_STATUSES[number];

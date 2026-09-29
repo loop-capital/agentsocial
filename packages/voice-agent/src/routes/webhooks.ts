@@ -3,10 +3,10 @@
  * Handles callbacks from Dograh (call ended, transcription complete, etc.)
  */
 
-import { Router } from 'express';
+import { Router, type Request, type Response } from 'express';
 import { agentsocial } from '../services/agentsocial-client.js';
 
-export const webhookRouter = Router();
+export const webhookRouter: Router = Router();
 
 // Dograh call ended webhook
 webhookRouter.post('/dograh/call-ended', async (req, res) => {

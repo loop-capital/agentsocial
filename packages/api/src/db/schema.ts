@@ -6,7 +6,7 @@ import { nanoid } from "nanoid";
 
 export const platformEnum = pgEnum("platform", [
   "twitter", "linkedin", "facebook", "instagram",
-  "youtube", "tiktok", "wordpress", "bluesky",
+  "youtube", "tiktok", "wordpress", "bluesky", "gbp", "pinterest",
 ]);
 
 export const postStatusEnum = pgEnum("post_status", [
@@ -31,6 +31,18 @@ export const commentSentimentEnum = pgEnum("comment_sentiment", [
 
 export const mediaProcessingStatusEnum = pgEnum("media_processing_status", [
   "processing", "complete", "failed",
+]);
+export const crmProviderEnum = pgEnum("crm_provider", [
+  "gohighlevel", "square",
+]);
+export const crmSyncDirectionEnum = pgEnum("crm_sync_direction", [
+  "bidirectional", "push_only", "pull_only",
+]);
+export const crmSyncStatusEnum = pgEnum("crm_sync_status", [
+  "pending", "syncing", "completed", "failed", "paused",
+]);
+export const crmConflictResolutionEnum = pgEnum("crm_conflict_resolution", [
+  "local_wins", "remote_wins", "merge", "manual",
 ]);
 
 // ─── Users ───────────────────────────────────────────────────────────────────
@@ -92,12 +104,33 @@ export const brands = pgTable("brands", {
   name: text("name").notNull(),
   logoUrl: text("logo_url"),
   timezone: text("timezone").notNull().default("UTC"),
+  // Brand voice (markdown) used by the AI planner
+  voiceProfile: text("voice_profile"),
+  // Structured brand profile (audience, pillars, goals, ...) — see services/brand-hub.ts
+  profile: jsonb("profile").notNull().default({}),
   // ── Billing ──
   subscriptionStatus: subscriptionStatusEnum("subscription_status").notNull().default("inactive"),
   subscriptionPlan: text("subscription_plan"), // free, pro, agency
   squareCustomerId: text("square_customer_id"),
   squareSubscriptionId: text("square_subscription_id"),
   trialEndsAt: timestamp("trial_ends_at", { withTimezone: true }),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+});
+
+// ─── Contacts (basic version for CRM integration) ────────────────────────────
+// Phase 1A: foundation table referenced by crm_contact_mappings.
+// Phase 2: extend with custom fields, segment tags, lifecycle stage, etc.
+export const contacts = pgTable("contacts", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  brandId: uuid("brand_id").notNull().references(() => brands.id, { onDelete: "cascade" }),
+  email: text("email"),
+  phone: text("phone"),
+  firstName: text("first_name"),
+  lastName: text("last_name"),
+  tags: text("tags").array(),
+  customFields: jsonb("custom_fields").default({}),
+  source: text("source").notNull().default("manual"), // manual, import, crm_sync, webhook
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
 });
@@ -256,6 +289,8 @@ export const webhooks = pgTable("webhooks", {
   url: text("url").notNull(),
   events: text("events").array().notNull(),
   secretHash: text("secret_hash").notNull(),
+  // Encrypted copy of the secret so deliveries can be HMAC-signed
+  secretEncrypted: text("secret_encrypted"),
   active: boolean("active").notNull().default(true),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
 });
@@ -726,6 +761,140 @@ export const chatMessagesRelations = relations(chatMessages, ({ one }) => ({
 export const chatFollowupsRelations = relations(chatFollowups, ({ one }) => ({
   brand: one(brands, { fields: [chatFollowups.brandId], references: [brands.id] }),
   session: one(chatSessions, { fields: [chatFollowups.sessionId], references: [chatSessions.id] }),
+}));
+
+// ─── CRM Integrations ───────────────────────────────────────────────────────
+// Phase 1A foundation tables for CRM connector strategy pattern.
+// Adapters for GoHighLevel and Square are implemented in Phase 1B/1C.
+
+// CRM Provider Configurations (per brand)
+export const crmProviders = pgTable("crm_providers", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  brandId: uuid("brand_id").notNull().references(() => brands.id, { onDelete: "cascade" }),
+  provider: crmProviderEnum("provider").notNull(),
+  // OAuth credentials (encrypted)
+  accessTokenEncrypted: text("access_token_encrypted"),
+  refreshTokenEncrypted: text("refresh_token_encrypted"),
+  tokenExpiresAt: timestamp("token_expires_at", { withTimezone: true }),
+  // GHL-specific: location/sub-account ID; also used for Square locationId
+  externalAccountId: text("external_account_id"),
+  externalCompanyId: text("external_company_id"),
+  // Configuration
+  syncDirection: crmSyncDirectionEnum("sync_direction").notNull().default("bidirectional"),
+  syncEnabled: boolean("sync_enabled").notNull().default(false),
+  webhookEnabled: boolean("webhook_enabled").notNull().default(false),
+  webhookUrl: text("webhook_url"),
+  webhookSecret: text("webhook_secret"),
+  lastSyncedAt: timestamp("last_synced_at", { withTimezone: true }),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+});
+
+// Contact Mapping Table (AgentSocial ↔ CRM)
+export const crmContactMappings = pgTable("crm_contact_mappings", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  brandId: uuid("brand_id").notNull().references(() => brands.id, { onDelete: "cascade" }),
+  crmProviderId: uuid("crm_provider_id").notNull().references(() => crmProviders.id, { onDelete: "cascade" }),
+  agentSocialContactId: uuid("agent_social_contact_id").notNull(), // references contacts.id
+  crmContactId: text("crm_contact_id").notNull(),
+  crmExternalId: text("crm_external_id"),
+  // Deduplication keys
+  matchEmail: text("match_email"),
+  matchPhone: text("match_phone"),
+  // Sync metadata
+  lastSyncedAt: timestamp("last_synced_at", { withTimezone: true }),
+  syncStatus: crmSyncStatusEnum("sync_status").notNull().default("pending"),
+  conflictResolution: crmConflictResolutionEnum("conflict_resolution").notNull().default("remote_wins"),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+});
+
+// Sync Jobs (for tracking batch operations)
+export const crmSyncJobs = pgTable("crm_sync_jobs", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  brandId: uuid("brand_id").notNull().references(() => brands.id, { onDelete: "cascade" }),
+  crmProviderId: uuid("crm_provider_id").notNull().references(() => crmProviders.id, { onDelete: "cascade" }),
+  jobId: text("job_id").notNull(), // Redis/BullMQ job ID
+  type: text("type").notNull(), // 'batch', 'webhook', 'manual'
+  direction: crmSyncDirectionEnum("direction").notNull(),
+  status: crmSyncStatusEnum("status").notNull().default("pending"),
+  totalRecords: integer("total_records").notNull().default(0),
+  processedRecords: integer("processed_records").notNull().default(0),
+  failedRecords: integer("failed_records").notNull().default(0),
+  errorMessage: text("error_message"),
+  startedAt: timestamp("started_at", { withTimezone: true }),
+  completedAt: timestamp("completed_at", { withTimezone: true }),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+});
+
+// Sync Logs (audit trail)
+export const crmSyncLogs = pgTable("crm_sync_logs", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  brandId: uuid("brand_id").notNull().references(() => brands.id, { onDelete: "cascade" }),
+  crmProviderId: uuid("crm_provider_id").notNull().references(() => crmProviders.id, { onDelete: "cascade" }),
+  syncJobId: uuid("sync_job_id").references(() => crmSyncJobs.id, { onDelete: "set null" }),
+  contactMappingId: uuid("contact_mapping_id").references(() => crmContactMappings.id, { onDelete: "set null" }),
+  action: text("action").notNull(), // 'create', 'update', 'delete', 'skip'
+  direction: text("direction").notNull(), // 'push', 'pull'
+  result: text("result").notNull(), // 'success', 'failed', 'conflict'
+  requestData: jsonb("request_data"),
+  responseData: jsonb("response_data"),
+  errorMessage: text("error_message"),
+  durationMs: integer("duration_ms"),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+});
+
+// Webhook Events (incoming from CRM)
+export const crmWebhookEvents = pgTable("crm_webhook_events", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  brandId: uuid("brand_id").notNull().references(() => brands.id, { onDelete: "cascade" }),
+  crmProviderId: uuid("crm_provider_id").notNull().references(() => crmProviders.id, { onDelete: "cascade" }),
+  externalEventId: text("external_event_id").notNull(),
+  eventType: text("event_type").notNull(), // 'contact.created', 'contact.updated', etc.
+  payload: jsonb("payload").notNull(),
+  signature: text("signature"),
+  verified: boolean("verified").notNull().default(false),
+  processed: boolean("processed").notNull().default(false),
+  processingError: text("processing_error"),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  processedAt: timestamp("processed_at", { withTimezone: true }),
+});
+
+// ─── CRM Relations ───────────────────────────────────────────────────────────
+export const contactsRelations = relations(contacts, ({ one }) => ({
+  brand: one(brands, { fields: [contacts.brandId], references: [brands.id] }),
+}));
+
+export const crmProvidersRelations = relations(crmProviders, ({ one, many }) => ({
+  brand: one(brands, { fields: [crmProviders.brandId], references: [brands.id] }),
+  contactMappings: many(crmContactMappings),
+  syncJobs: many(crmSyncJobs),
+  syncLogs: many(crmSyncLogs),
+  webhookEvents: many(crmWebhookEvents),
+}));
+
+export const crmContactMappingsRelations = relations(crmContactMappings, ({ one }) => ({
+  brand: one(brands, { fields: [crmContactMappings.brandId], references: [brands.id] }),
+  crmProvider: one(crmProviders, { fields: [crmContactMappings.crmProviderId], references: [crmProviders.id] }),
+  contact: one(contacts, { fields: [crmContactMappings.agentSocialContactId], references: [contacts.id] }),
+}));
+
+export const crmSyncJobsRelations = relations(crmSyncJobs, ({ one, many }) => ({
+  brand: one(brands, { fields: [crmSyncJobs.brandId], references: [brands.id] }),
+  crmProvider: one(crmProviders, { fields: [crmSyncJobs.crmProviderId], references: [crmProviders.id] }),
+  logs: many(crmSyncLogs),
+}));
+
+export const crmSyncLogsRelations = relations(crmSyncLogs, ({ one }) => ({
+  brand: one(brands, { fields: [crmSyncLogs.brandId], references: [brands.id] }),
+  crmProvider: one(crmProviders, { fields: [crmSyncLogs.crmProviderId], references: [crmProviders.id] }),
+  syncJob: one(crmSyncJobs, { fields: [crmSyncLogs.syncJobId], references: [crmSyncJobs.id] }),
+  contactMapping: one(crmContactMappings, { fields: [crmSyncLogs.contactMappingId], references: [crmContactMappings.id] }),
+}));
+
+export const crmWebhookEventsRelations = relations(crmWebhookEvents, ({ one }) => ({
+  brand: one(brands, { fields: [crmWebhookEvents.brandId], references: [brands.id] }),
+  crmProvider: one(crmProviders, { fields: [crmWebhookEvents.crmProviderId], references: [crmProviders.id] }),
 }));
 
 // ─── Profiles (GetUpLook Public Business Profiles) ────────────────────────────

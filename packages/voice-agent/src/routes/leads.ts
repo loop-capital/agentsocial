@@ -3,10 +3,10 @@
  * Manages leads captured from voice calls
  */
 
-import { Router } from 'express';
+import { Router, type Request, type Response } from 'express';
 import { agentsocial } from '../services/agentsocial-client.js';
 
-export const leadRouter = Router();
+export const leadRouter: Router = Router();
 
 // Create lead from voice call
 leadRouter.post('/', async (req, res) => {

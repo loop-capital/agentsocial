@@ -9,9 +9,11 @@ import {
   depositRequirements,
   clientFlagEvents,
   clientPrivateNotes,
+  depositPayments,
   brands,
 } from "../db/schema.js";
 import { eq, and, or, ilike, desc, sql } from "drizzle-orm";
+import { verifySquareSignature } from "../services/square-webhook.js";
 import {
   calculateRiskLevel,
   assessClientRisk,
@@ -98,7 +100,64 @@ const AddNoteSchema = z.object({
 
 // ─── Routes ──────────────────────────────────────────────────────────────────
 
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 export const clientvetRoutes = async (server: FastifyInstance) => {
+  // ─── Access control ──────────────────────────────────────────────────────
+  // server.ts already requires login for every route not on its public list.
+  // On top of that, every route here must name a brand the caller OWNS, so one
+  // salon can't read or change another salon's clients by swapping a brand id.
+  // The Square deposit webhook is the one public route: it is authenticated by
+  // Square's signature inside its handler instead of a login.
+  const isWebhook = (url: string) => url.split("?")[0].endsWith("/deposits/webhook");
+
+  // Keep the raw JSON text so the webhook signature can be checked against exactly what Square sent.
+  server.addContentTypeParser("application/json", { parseAs: "string" }, (request, body, done) => {
+    (request as unknown as { rawBody: string }).rawBody = body as string;
+    try {
+      done(null, body ? JSON.parse(body as string) : {});
+    } catch (err) {
+      (err as { statusCode?: number }).statusCode = 400;
+      done(err as Error, undefined);
+    }
+  });
+
+  server.addHook("onRequest", async (request, reply) => {
+    if (isWebhook(request.url)) return;
+    await server.authenticate(request, reply);
+  });
+
+  server.addHook("preHandler", async (request, reply) => {
+    if (isWebhook(request.url)) return;
+    const params = (request.params ?? {}) as Record<string, string>;
+    const query = (request.query ?? {}) as Record<string, string>;
+    const body = (request.body ?? {}) as Record<string, unknown>;
+    const supplied = (params.brandId ?? query.brandId ?? (body.brandId as string | undefined)) as string | undefined;
+
+    // Some routes address a record by id; the record's own brand must match the one supplied.
+    let recordBrand: string | undefined;
+    if (params.id && UUID_RE.test(params.id) && request.url.includes("/clients/")) {
+      const [flag] = await db.select({ brandId: clientRiskFlags.brandId }).from(clientRiskFlags).where(eq(clientRiskFlags.id, params.id)).limit(1);
+      recordBrand = flag?.brandId;
+    }
+    if (params.paymentId && UUID_RE.test(params.paymentId)) {
+      const [pay] = await db.select({ brandId: depositPayments.brandId }).from(depositPayments).where(eq(depositPayments.id, params.paymentId)).limit(1);
+      recordBrand = pay?.brandId;
+    }
+
+    const brandId = recordBrand ?? supplied;
+    if (!brandId || !UUID_RE.test(brandId)) {
+      return reply.status(400).send({ error: { code: "missing_brand", message: "A valid brandId is required" } });
+    }
+    if (recordBrand && supplied && recordBrand !== supplied) {
+      return reply.status(403).send({ error: { code: "forbidden", message: "Record does not belong to this brand" } });
+    }
+    const [owned] = await db.select({ id: brands.id }).from(brands).where(and(eq(brands.id, brandId), eq(brands.userId, request.userId!))).limit(1);
+    if (!owned) {
+      return reply.status(403).send({ error: { code: "forbidden", message: "Brand does not belong to user" } });
+    }
+  });
+
 
   // ─── Check Client Before Booking ─────────────────────────────────────────
   // This is the endpoint the booking system calls to determine if a deposit is needed
@@ -698,6 +757,17 @@ export const clientvetRoutes = async (server: FastifyInstance) => {
 
   // Square webhook for deposit payments
   server.post("/deposits/webhook", async (request, reply) => {
+    if (!process.env.SQUARE_DEPOSIT_WEBHOOK_SIGNATURE_KEY || !process.env.SQUARE_DEPOSIT_WEBHOOK_URL) {
+      return reply.status(503).send({ error: "Webhook not configured" });
+    }
+    const valid = verifySquareSignature({
+      rawBody: (request as unknown as { rawBody?: string }).rawBody,
+      signature: request.headers["x-square-hmacsha256-signature"] as string | undefined,
+      notificationUrl: process.env.SQUARE_DEPOSIT_WEBHOOK_URL,
+      signatureKey: process.env.SQUARE_DEPOSIT_WEBHOOK_SIGNATURE_KEY,
+    });
+    if (!valid) return reply.status(401).send({ error: "Invalid signature" });
+
     const body = request.body as any;
     const eventType = body?.type || body?.event_type;
 

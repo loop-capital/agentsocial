@@ -2,6 +2,7 @@ import type { FastifyInstance, FastifyRequest } from "fastify";
 import fp from "fastify-plugin";
 import fastifyJwt from "@fastify/jwt";
 import { eq } from "drizzle-orm";
+import bcrypt from "bcryptjs";
 import { db, apiKeys, users } from "../db/index.js";
 
 // Augment @fastify/jwt types
@@ -48,7 +49,16 @@ async function authenticate(
           .where(eq(apiKeys.prefix, prefix))
           .limit(1);
 
-        if (keyRecord && (!keyRecord.expiresAt || keyRecord.expiresAt > new Date())) {
+        // The prefix is only an index lookup; the full key must match the stored hash
+        if (
+          keyRecord &&
+          (!keyRecord.expiresAt || keyRecord.expiresAt > new Date()) &&
+          (await bcrypt.compare(apiKey, keyRecord.keyHash))
+        ) {
+          await db
+            .update(apiKeys)
+            .set({ lastUsedAt: new Date() })
+            .where(eq(apiKeys.id, keyRecord.id));
           request.userId = keyRecord.userId;
           request.apiKeyPermissions = keyRecord.permissions ?? [];
           return;

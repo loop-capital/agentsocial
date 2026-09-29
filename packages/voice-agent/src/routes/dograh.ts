@@ -3,10 +3,10 @@
  * Proxies requests to Dograh API for agent management
  */
 
-import { Router } from 'express';
+import { Router, type Request, type Response } from 'express';
 import { dograh } from '../services/dograh-client.js';
 
-export const dograhRouter = Router();
+export const dograhRouter: Router = Router();
 
 // List all agents
 dograhRouter.get('/agents', async (_req, res) => {

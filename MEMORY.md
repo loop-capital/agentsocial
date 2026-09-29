@@ -72,11 +72,11 @@
 ### Tool Paths
 - QMD DB: `/home/jason/.config/qmd/qmd.db` | Binary: `/home/jason/.local/bin/qmd`
 - Wiki: `~/.openclaw/wiki/agentsocial/` | Obsidian: `~/.openclaw/obsidian-vault/`
-- Graphify: `/home/jason/.local/bin/graphify`
 - Memory: `~/.openclaw/workspaces/agentsocial/memory/`
 
 ### Cron Jobs
-- **QMD Re-index**: daily 6AM ET | **Weekly Curation**: Sun 4AM ET | **Graphify Refresh**: Mon/Thu 3AM ET
+- **QMD Re-index**: daily 6AM ET | **Weekly Curation**: Sun 4AM ET
+- Graphify removed 2026-09-14 (fleet-wide) — was never actually wired into any agent workflow or app; removed after review. `/home/jason/.local/bin/graphify` is Jason's own personal Claude Code tool, unrelated to this workspace.
 
 ---
 
@@ -155,7 +155,8 @@
 - **Last meaningful user activity**: Sep 11 (Adobe Firefly troubleshooting).
 
 
-## Promoted From Short-Term Memory (2026-09-13)
-
+ ## Recent Research
+ - 2026-09-25: Research (sources: Meta Connect 2026/Adsuploader, Hootsuite/Emplifi for LinkedIn), 7 findings, see research/findings-2026-09-25.md
+ - 2026-09-18: Research (sources: JETFUEL Agency/SocialBee for Meta, TheLinkedBlog/InfluenceFlow for LinkedIn), 5 findings, see research/findings-2026-09-18.md
 <!-- openclaw-memory-promotion:memory:claim:249be31edb3b -->
 - Memory Maintenance: Daily note written (this file). [score=0.760 signals=10 recalls=0 avg=0.620 source=memory/2026-08-29.md:12-12] <!-- trigger: maintenance, written --> <!-- importance: 8 -->

@@ -27,6 +27,14 @@ const MAX_CHARS: Record<string, number> = {
 
 const ALL_PLATFORMS = ["twitter", "linkedin", "facebook", "instagram", "tiktok"];
 
+interface RelatedPost {
+  platform: string;
+  caption: string;
+  hashtags: string[];
+  suggestedImagePrompt: string;
+  sourcePostId: string;
+}
+
 type ToneOption = "professional" | "casual" | "humorous" | "inspirational" | "educational";
 type LengthOption = "short" | "medium" | "long";
 
@@ -108,6 +116,7 @@ function CreatePostInner() {
   const [mediaType, setMediaType] = useState<"image" | "video" | null>(null);
   const [showPreview, setShowPreview] = useState(false);
   const [postStatus, setPostStatus] = useState<"draft" | "scheduled" | "published" | null>(null);
+  const [createdPostId, setCreatedPostId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // AI generation state
@@ -119,6 +128,20 @@ function CreatePostInner() {
   const [aiError, setAiError] = useState("");
   const [aiHashtags, setAiHashtags] = useState<string[]>([]);
   const [aiImagePrompts, setAiImagePrompts] = useState<string[]>([]);
+
+  // Generate image/video state
+  const [imageLoading, setImageLoading] = useState(false);
+  const [imageError, setImageError] = useState("");
+  const [videoLoading, setVideoLoading] = useState(false);
+  const [videoError, setVideoError] = useState("");
+  const [videoJobId, setVideoJobId] = useState<string | null>(null);
+  const [videoJobStatus, setVideoJobStatus] = useState<string | null>(null);
+
+  // Related posts state
+  const [relatedLoading, setRelatedLoading] = useState(false);
+  const [relatedError, setRelatedError] = useState("");
+  const [relatedPosts, setRelatedPosts] = useState<RelatedPost[]>([]);
+  const [showRelatedPanel, setShowRelatedPanel] = useState(false);
 
   // Template picker state
   const [showTemplatePanel, setShowTemplatePanel] = useState(false);
@@ -210,16 +233,118 @@ function CreatePostInner() {
       if (!platforms.length) {
         platforms.push(...selectedPlatforms.map((p) => ({ integrationId: p, settings: { __type: p } })));
       }
-      await socialApi.createPost(brandId, {
+      const res: any = await socialApi.createPost(brandId, {
         content,
         platforms,
         scheduledAt: new Date(`${scheduleDate}T${scheduleTime}`).toISOString(),
       });
+      setCreatedPostId(res?.id || null);
       setPostStatus("scheduled");
     } catch (err: any) {
       setSubmitError(err.message || "Failed to schedule post");
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  // Generate image from caption
+  const handleGenerateImage = async () => {
+    const caption = content.trim() || aiTopic.trim();
+    if (!caption) {
+      setImageError("Enter a caption or AI topic first");
+      return;
+    }
+    setImageLoading(true);
+    setImageError("");
+    try {
+      const result: any = await contentApi.generateImageFromCaption({
+        caption,
+        aspectRatio: activePlatform === "instagram" ? "1:1" : "16:9",
+        brandId,
+      });
+      setMediaPreview(result.imageUrl);
+      setMediaType("image");
+    } catch (err: any) {
+      setImageError(err.message || "Image generation failed");
+    } finally {
+      setImageLoading(false);
+    }
+  };
+
+  // Generate video from caption
+  const handleGenerateVideo = async () => {
+    const caption = content.trim() || aiTopic.trim();
+    if (!caption) {
+      setVideoError("Enter a caption or AI topic first");
+      return;
+    }
+    setVideoLoading(true);
+    setVideoError("");
+    setVideoJobId(null);
+    setVideoJobStatus(null);
+    try {
+      const result: any = await contentApi.generateVideoFromCaption({
+        caption,
+        imageUrl: mediaType === "image" ? mediaPreview : null,
+        aspectRatio: activePlatform === "instagram" ? "9:16" : "16:9",
+        brandId,
+      });
+      setVideoJobId(result.jobId);
+      setVideoJobStatus(result.status);
+    } catch (err: any) {
+      setVideoError(err.message || "Video generation failed");
+    } finally {
+      setVideoLoading(false);
+    }
+  };
+
+  // Poll video job status
+  useEffect(() => {
+    if (!videoJobId || videoJobStatus === "complete" || videoJobStatus === "failed") return;
+
+    const poll = async () => {
+      try {
+        const result: any = await contentApi.getVideoJobStatus({ jobId: videoJobId, brandId });
+        setVideoJobStatus(result.status);
+        if (result.status === "complete" && result.videoUrl) {
+          setMediaPreview(result.videoUrl);
+          setMediaType("video");
+          setVideoJobId(null);
+        } else if (result.status === "failed") {
+          setVideoError(result.error || "Video generation failed");
+          setVideoJobId(null);
+        }
+      } catch (err: any) {
+        setVideoError(err.message || "Failed to check video status");
+        setVideoJobId(null);
+      }
+    };
+
+    const interval = setInterval(poll, 5000);
+    poll();
+    return () => clearInterval(interval);
+  }, [videoJobId, videoJobStatus, brandId, mediaPreview, mediaType]);
+
+  // Generate related posts
+  const handleGenerateRelatedPosts = async () => {
+    if (!createdPostId) {
+      setRelatedError("Create a post first");
+      return;
+    }
+    setRelatedLoading(true);
+    setRelatedError("");
+    setShowRelatedPanel(true);
+    try {
+      const result: any = await contentApi.generateRelatedPosts({
+        postId: createdPostId,
+        targetPlatforms: selectedPlatforms.length > 0 ? selectedPlatforms : ["twitter", "linkedin", "instagram"],
+        brandId,
+      });
+      setRelatedPosts(result.relatedPosts || []);
+    } catch (err: any) {
+      setRelatedError(err.message || "Related posts generation failed");
+    } finally {
+      setRelatedLoading(false);
     }
   };
 
@@ -239,7 +364,8 @@ function CreatePostInner() {
       if (!platforms.length) {
         platforms.push(...selectedPlatforms.map((p) => ({ integrationId: p, settings: { __type: p } })));
       }
-      await socialApi.createPost(brandId, { content, platforms });
+      const res: any = await socialApi.createPost(brandId, { content, platforms });
+      setCreatedPostId(res?.id || null);
       setPostStatus("published");
     } catch (err: any) {
       setSubmitError(err.message || "Failed to publish post");
@@ -253,11 +379,12 @@ function CreatePostInner() {
     setSubmitting(true);
     setSubmitError("");
     try {
-      await socialApi.createPost(brandId, {
+      const res: any = await socialApi.createPost(brandId, {
         content,
         platforms: selectedPlatforms.map((p) => ({ integrationId: p, settings: { __type: p } })),
         status: "draft",
       });
+      setCreatedPostId(res?.id || null);
       setPostStatus("draft");
     } catch (err: any) {
       setSubmitError(err.message || "Failed to save draft");
@@ -276,8 +403,15 @@ function CreatePostInner() {
     setMediaType(null);
     setShowPreview(false);
     setPostStatus(null);
+    setCreatedPostId(null);
     setAiHashtags([]);
     setAiImagePrompts([]);
+    setImageError("");
+    setVideoError("");
+    setVideoJobId(null);
+    setVideoJobStatus(null);
+    setRelatedPosts([]);
+    setShowRelatedPanel(false);
     setSubmitError("");
   };
 
@@ -324,9 +458,68 @@ function CreatePostInner() {
             {postStatus === "scheduled" && `✓ Scheduled for ${scheduleDate} at ${scheduleTime}`}
             {postStatus === "draft" && "✓ Draft saved"}
           </span>
-          <button onClick={() => setPostStatus(null)} style={{ background: "none", border: "none", cursor: "pointer", color: "inherit", padding: "0.25rem" }}>
-            <IconX />
-          </button>
+          <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+            {createdPostId && (
+              <button
+                className="btn btn-secondary btn-sm"
+                onClick={handleGenerateRelatedPosts}
+                disabled={relatedLoading}
+              >
+                <IconSparkles /> {relatedLoading ? "Generating..." : "Generate Related Posts"}
+              </button>
+            )}
+            <button onClick={() => setPostStatus(null)} style={{ background: "none", border: "none", cursor: "pointer", color: "inherit", padding: "0.25rem" }}>
+              <IconX />
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Related Posts Panel */}
+      {showRelatedPanel && (
+        <div className="card" style={{ marginBottom: "1.5rem" }}>
+          <div className="card-header" style={{ justifyContent: "space-between" }}>
+            <h3 style={{ fontSize: "0.875rem", fontWeight: 600 }}>
+              <IconSparkles /> Related Post Variations
+            </h3>
+            <button className="btn btn-ghost btn-sm" onClick={() => setShowRelatedPanel(false)}>
+              <IconX />
+            </button>
+          </div>
+          <div style={{ padding: "0.875rem 1.25rem" }}>
+            {relatedError && (
+              <div style={{ padding: "0.5rem 0.75rem", borderRadius: "var(--radius-sm)", background: "#fee2e2", color: "#991b1b", fontSize: "0.8125rem", marginBottom: "0.75rem" }}>
+                {relatedError}
+              </div>
+            )}
+            {relatedLoading && relatedPosts.length === 0 && (
+              <div style={{ textAlign: "center", padding: "1.5rem", color: "var(--text-muted)" }}>Generating variations...</div>
+            )}
+            <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
+              {relatedPosts.map((post, idx) => (
+                <div key={idx} style={{ padding: "0.75rem", border: "1px solid var(--border-default)", borderRadius: "var(--radius-md)" }}>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "0.375rem" }}>
+                    <span style={{ fontSize: "0.8125rem", fontWeight: 600, textTransform: "capitalize", color: PLATFORM_COLORS[post.platform] || "var(--text-primary)" }}>
+                      {post.platform}
+                    </span>
+                    <Link
+                      href={`/social/create?brandId=${brandId}&caption=${encodeURIComponent(post.caption)}&platform=${post.platform}`}
+                      className="btn btn-primary btn-sm"
+                      style={{ fontSize: "0.75rem" }}
+                    >
+                      Create Draft
+                    </Link>
+                  </div>
+                  <p style={{ fontSize: "0.8125rem", color: "var(--text-secondary)", margin: "0 0 0.375rem", whiteSpace: "pre-wrap" }}>{post.caption}</p>
+                  {post.hashtags.length > 0 && (
+                    <div style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>
+                      {post.hashtags.join(" ")}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       )}
 
@@ -658,11 +851,27 @@ function CreatePostInner() {
                 </div>
               )}
 
-              {/* Media Upload */}
-              <div style={{ display: "flex", gap: "0.5rem", marginTop: "1rem", flexWrap: "wrap" }}>
+              {/* Media Upload + AI Generation */}
+              <div style={{ display: "flex", gap: "0.5rem", marginTop: "1rem", flexWrap: "wrap", alignItems: "center" }}>
                 <input ref={fileInputRef} type="file" accept="image/*,video/*" style={{ display: "none" }} onChange={handleMediaChange} />
                 <button className="btn btn-secondary btn-sm" onClick={() => fileInputRef.current?.click()}>
                   <IconImage /> Add Media
+                </button>
+                <button
+                  className="btn btn-secondary btn-sm"
+                  onClick={handleGenerateImage}
+                  disabled={imageLoading || !content.trim()}
+                  title="Generate an image from your caption"
+                >
+                  <IconSparkles /> {imageLoading ? "Generating..." : "Generate Image"}
+                </button>
+                <button
+                  className="btn btn-secondary btn-sm"
+                  onClick={handleGenerateVideo}
+                  disabled={videoLoading || videoJobId !== null || !content.trim()}
+                  title="Generate a video from your caption"
+                >
+                  <IconSparkles /> {videoLoading ? "Starting..." : videoJobId ? "Generating..." : "Generate Video"}
                 </button>
                 {mediaPreview && (
                   <button className="btn btn-secondary btn-sm" onClick={() => { setMediaPreview(null); setMediaType(null); }}>
@@ -670,6 +879,18 @@ function CreatePostInner() {
                   </button>
                 )}
               </div>
+
+              {(imageError || videoError) && (
+                <div style={{ marginTop: "0.75rem", padding: "0.5rem 0.75rem", borderRadius: "var(--radius-sm)", background: "#fee2e2", color: "#991b1b", fontSize: "0.8125rem" }}>
+                  {imageError || videoError}
+                </div>
+              )}
+
+              {videoJobId && (
+                <div style={{ marginTop: "0.75rem", padding: "0.5rem 0.75rem", borderRadius: "var(--radius-sm)", background: "#fef9c3", color: "#854d0e", fontSize: "0.8125rem" }}>
+                  Video job: {videoJobId} — {videoJobStatus === "complete" ? "ready" : "processing"}
+                </div>
+              )}
 
               {mediaPreview && (
                 <div style={{ marginTop: "0.75rem", borderRadius: "var(--radius-md)", overflow: "hidden", maxHeight: 240 }}>

@@ -71,12 +71,35 @@ export const exportReportQueue = new Queue<ExportReportJob>(QUEUES.EXPORT_REPORT
 
 // ─── Job Enqueue Helpers ──────────────────────────────────────────────────────
 
+/** Deterministic id so a post/channel pair can only have one live publish job. */
+export const publishJobId = (postId: string, channelId: string) => `pub-${postId}-${channelId}`;
+
+/**
+ * Enqueue (or re-enqueue) a publish job. Any existing job for the same
+ * post/channel is removed first, so rescheduling never leaves a stale job
+ * that would fire at the old time.
+ */
 export async function enqueuePostPublish(data: PostPublishJob): Promise<Job<PostPublishJob>> {
+  await removePostPublishJobs(data.postId, [data.channelId]);
+  const delay = data.scheduledFor
+    ? Math.max(0, new Date(data.scheduledFor).getTime() - Date.now())
+    : undefined;
   return postPublishQueue.add("publish-post", data, {
-    delay: data.scheduledFor
-      ? new Date(data.scheduledFor).getTime() - Date.now()
-      : undefined,
+    jobId: publishJobId(data.postId, data.channelId),
+    delay,
   });
+}
+
+/** Remove pending/delayed publish jobs (cancel, reschedule, delete). Active jobs are left to the worker's guards. */
+export async function removePostPublishJobs(postId: string, channelIds: string[]): Promise<void> {
+  await Promise.all(
+    channelIds.map(async (channelId) => {
+      const job = await postPublishQueue.getJob(publishJobId(postId, channelId));
+      if (!job) return;
+      const state = await job.getState();
+      if (state !== "active") await job.remove().catch(() => undefined);
+    }),
+  );
 }
 
 export async function enqueueAnalyticsSync(data: AnalyticsSyncJob): Promise<Job<AnalyticsSyncJob>> {

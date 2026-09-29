@@ -24,7 +24,7 @@ import {
   Settings2,
   Users,
 } from "lucide-react";
-import { api } from "../../../lib/api";
+import { api, authedFetch } from "../../../lib/api";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -204,7 +204,7 @@ function ClientLookup({ brandId }: { brandId: string }) {
 
     try {
       // Lookup client profile
-      const lookupRes = await fetch(`${API_URL}/api/v1/clientvet/clients/${encodeURIComponent(query.trim())}?brandId=${brandId}`);
+      const lookupRes = await authedFetch(`${API_URL}/api/v1/clientvet/clients/${encodeURIComponent(query.trim())}?brandId=${brandId}`);
       let client: ClientFlag | null = null;
       if (lookupRes.ok) {
         const data = await lookupRes.json();
@@ -220,7 +220,7 @@ function ClientLookup({ brandId }: { brandId: string }) {
         body.phone = query.trim();
       }
 
-      const checkRes = await fetch(`${API_URL}/api/v1/clientvet/check`, {
+      const checkRes = await authedFetch(`${API_URL}/api/v1/clientvet/check`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
@@ -272,7 +272,7 @@ function ClientLookup({ brandId }: { brandId: string }) {
 
   const loadNotes = async (clientFlagId: string) => {
     try {
-      const res = await fetch(`${API_URL}/api/v1/clientvet/clients/${clientFlagId}/notes?brandId=${brandId}`);
+      const res = await authedFetch(`${API_URL}/api/v1/clientvet/clients/${clientFlagId}/notes?brandId=${brandId}`);
       if (res.ok) {
         const data = await res.json();
         setNotes(data.notes || []);
@@ -284,7 +284,7 @@ function ClientLookup({ brandId }: { brandId: string }) {
 
   const loadFlagHistory = async (clientFlagId: string) => {
     try {
-      const res = await fetch(`${API_URL}/api/v1/clientvet/clients/${clientFlagId}/flags?brandId=${brandId}`);
+      const res = await authedFetch(`${API_URL}/api/v1/clientvet/clients/${clientFlagId}/flags?brandId=${brandId}`);
       if (res.ok) {
         const data = await res.json();
         setFlagHistory(data.flags || data || []);
@@ -298,7 +298,7 @@ function ClientLookup({ brandId }: { brandId: string }) {
     if (!assessment?.clientFlagId) return;
     setLoading(true);
     try {
-      const res = await fetch(`${API_URL}/api/v1/clientvet/clients/${assessment.clientFlagId}/flag`, {
+      const res = await authedFetch(`${API_URL}/api/v1/clientvet/clients/${assessment.clientFlagId}/flag`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -325,7 +325,7 @@ function ClientLookup({ brandId }: { brandId: string }) {
   const addNote = async () => {
     if (!assessment?.clientFlagId || !newNote.trim()) return;
     try {
-      const res = await fetch(`${API_URL}/api/v1/clientvet/clients/${assessment.clientFlagId}/notes?brandId=${brandId}`, {
+      const res = await authedFetch(`${API_URL}/api/v1/clientvet/clients/${assessment.clientFlagId}/notes?brandId=${brandId}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ note: newNote }),
@@ -692,7 +692,7 @@ function FlaggedClientsTable({ brandId }: { brandId: string }) {
       if (sortBy) params.set("sortBy", sortBy);
       if (sortDir) params.set("sortDir", sortDir);
 
-      const res = await fetch(`${API_URL}/api/v1/clientvet/clients?${params}`);
+      const res = await authedFetch(`${API_URL}/api/v1/clientvet/clients?${params}`);
       if (res.ok) {
         const data: ClientsResponse = await res.json();
         setClients(data.clients || []);
@@ -874,7 +874,7 @@ function BookingCheck({ brandId }: { brandId: string }) {
         body.phone = query.trim();
       }
 
-      const res = await fetch(`${API_URL}/api/v1/clientvet/check`, {
+      const res = await authedFetch(`${API_URL}/api/v1/clientvet/check`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
@@ -1020,7 +1020,7 @@ function DepositPolicySettings({ brandId }: { brandId: string }) {
   const fetchPolicies = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${API_URL}/api/v1/clientvet/deposits/${brandId}`);
+      const res = await authedFetch(`${API_URL}/api/v1/clientvet/deposits/${brandId}`);
       if (res.ok) {
         const data = await res.json();
         setPolicies(data.policies || data || defaultPolicies);
@@ -1051,7 +1051,7 @@ function DepositPolicySettings({ brandId }: { brandId: string }) {
     setError(null);
     setSuccessMessage(null);
     try {
-      const res = await fetch(`${API_URL}/api/v1/clientvet/deposits/${brandId}`, {
+      const res = await authedFetch(`${API_URL}/api/v1/clientvet/deposits/${brandId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ policies }),

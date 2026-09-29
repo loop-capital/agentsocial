@@ -943,7 +943,7 @@ export const socialRoutes = async (server: FastifyInstance) => {
       profileId?: string; accountId?: string; startDate?: string; endDate?: string;
     };
     const result = await zernio.getPostAnalytics({ profileId, accountId, startDate, endDate });
-    return reply.send({ data: result.analytics });
+    return reply.send({ data: result.posts, overview: result.overview });
   });
 
   server.get("/analytics/daily", {
@@ -953,7 +953,7 @@ export const socialRoutes = async (server: FastifyInstance) => {
       profileId?: string; accountId?: string; startDate?: string; endDate?: string;
     };
     const result = await zernio.getDailyAnalytics({ profileId, accountId, startDate, endDate });
-    return reply.send({ data: result.analytics });
+    return reply.send({ data: result.dailyData });
   });
 
   server.get("/analytics/best-time", {

@@ -8,8 +8,9 @@ import {
   reviewCampaigns,
   reviewRequests,
   reviewRemovalCases,
+  brands,
 } from "../db/schema.js";
-import { eq, and, inArray, desc } from "drizzle-orm";
+import { eq, and, inArray, desc, sql, ilike } from "drizzle-orm";
 import {
   bulkSendReviewRequests,
   sendSMS,
@@ -68,6 +69,68 @@ const flagReviewSchema = z.object({
 // ─── Route Registration ──────────────────────────────────────────────────────
 
 export async function reviewSentryRoutes(server: FastifyInstance) {
+  const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+  // ─── Brand ownership verification hook ──────────────────────────────────
+  // Public routes that don't need auth: /business/:slug, /rate, /feedback, /sms/webhook
+  const isPublicRoute = (url: string) => {
+    const path = url.split("?")[0];
+    return path.match(/\/business\/[^/]+$/) ||
+           path === "/rate" ||
+           path === "/feedback" ||
+           path === "/sms/webhook";
+  };
+
+  server.addHook("onRequest", async (request, reply) => {
+    if (isPublicRoute(request.url)) return;
+    await server.authenticate(request, reply);
+  });
+
+  server.addHook("preHandler", async (request, reply) => {
+    if (isPublicRoute(request.url)) return;
+
+    const params = (request.params ?? {}) as Record<string, string>;
+    const query = (request.query ?? {}) as Record<string, string>;
+    const body = (request.body ?? {}) as Record<string, unknown>;
+
+    // Extract brand_id from various sources
+    let brandId: string | undefined;
+    if (params.brandId) brandId = params.brandId;
+    if (params.id && UUID_RE.test(params.id)) {
+      // For campaign routes, verify the campaign belongs to the brand
+      const campaign = await db.query.reviewCampaigns.findFirst({
+        where: (c, { eq }) => eq(c.id, params.id),
+      });
+      if (campaign) brandId = campaign.brandId;
+    }
+    if (!brandId && body.brand_id) brandId = body.brand_id as string;
+    if (!brandId && body.brandId) brandId = body.brandId as string;
+    if (!brandId && query.brand_id) brandId = query.brand_id;
+    if (!brandId && query.brandId) brandId = query.brandId;
+
+    if (!brandId || !UUID_RE.test(brandId)) {
+      return reply.status(400).send({
+        error: { code: "missing_brand", message: "A valid brandId is required" },
+      });
+    }
+
+    // Verify user owns this brand
+    const [owned] = await db
+      .select({ id: brands.id })
+      .from(brands)
+      .where(and(eq(brands.id, brandId), eq(brands.userId, request.userId!)))
+      .limit(1);
+
+    if (!owned) {
+      return reply.status(403).send({
+        error: { code: "forbidden", message: "Brand does not belong to user" },
+      });
+    }
+
+    // Store brandId on request for downstream use
+    (request as any).verifiedBrandId = brandId;
+  });
+
   // Register content type parser for Twilio webhook callbacks (form-urlencoded)
   server.addContentTypeParser(
     "application/x-www-form-urlencoded",
@@ -88,7 +151,9 @@ export async function reviewSentryRoutes(server: FastifyInstance) {
   );
   // ─── GET /business/:slug — Public: business info for review page ──────────
 
-  server.get("/business/:slug", async (request, reply) => {
+  server.get("/business/:slug", {
+    config: { rateLimit: { max: 30, timeWindow: '1 minute' } }
+  }, async (request, reply) => {
     const { slug } = request.params as { slug: string };
 
     const campaign = await db.query.reviewCampaigns.findFirst({
@@ -115,7 +180,9 @@ export async function reviewSentryRoutes(server: FastifyInstance) {
 
   // ─── POST /rate — Customer rates 1-5 stars ────────────────────────────────
 
-  server.post("/rate", async (request, reply) => {
+  server.post("/rate", {
+    config: { rateLimit: { max: 10, timeWindow: '1 minute' } }
+  }, async (request, reply) => {
     const body = rateSchema.parse(request.body);
     const { slug, rating } = body;
 
@@ -161,7 +228,9 @@ export async function reviewSentryRoutes(server: FastifyInstance) {
 
   // ─── POST /feedback — Customer submits negative feedback ──────────────────
 
-  server.post("/feedback", async (request, reply) => {
+  server.post("/feedback", {
+    config: { rateLimit: { max: 10, timeWindow: '1 minute' } }
+  }, async (request, reply) => {
     const body = feedbackSchema.parse(request.body);
     const { slug, rating, name, email, details } = body;
 

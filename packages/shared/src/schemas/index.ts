@@ -29,6 +29,7 @@ export const connectChannelSchema = z.object({
 });
 
 export const updateChannelSchema = z.object({
+  name: z.string().trim().min(1).max(100).optional().describe("Display name of the channel"),
   settings: z.object({
     auto_reply_enabled: z.boolean().optional(),
     auto_reply_message: z.string().optional(),
@@ -43,7 +44,7 @@ export const updateChannelSchema = z.object({
 
 export const createPostSchema = z.object({
   brand_id: z.string().min(1),
-  content: z.string().min(1).max(2000),
+  content: z.string().min(1).max(5000),
   content_html: z.string().optional(),
   channels: z.array(z.string()).min(1),
   media: z.array(z.object({
@@ -60,7 +61,7 @@ export const createPostSchema = z.object({
 });
 
 export const updatePostSchema = z.object({
-  content: z.string().min(1).max(2000).optional(),
+  content: z.string().min(1).max(5000).optional(),
   content_html: z.string().optional(),
   channels: z.array(z.string()).optional(),
   scheduled_at: z.string().datetime().optional(),
@@ -117,7 +118,7 @@ export const uploadMediaSchema = z.object({
 
 export const createWebhookSchema = z.object({
   url: z.string().url(),
-  events: z.array(z.enum(["post.scheduled", "post.published", "post.failed", "comment.received"])),
+  events: z.array(z.enum(["post.scheduled", "post.published", "post.failed", "comment.received", "generate.completed", "generate.failed"])),
   secret: z.string().min(16).optional(),
   active: z.boolean().default(true),
 });

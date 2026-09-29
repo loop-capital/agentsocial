@@ -5,7 +5,7 @@
  * PLEIJ Salon is our first customer — wife's salon.
  */
 
-import express from 'express';
+import express, { type Application } from 'express';
 import cors from 'cors';
 import { leadRouter } from './routes/leads.js';
 import { bookingRouter } from './routes/bookings.js';
@@ -14,7 +14,7 @@ import { analyticsRouter } from './routes/analytics.js';
 import { dograhRouter } from './routes/dograh.js';
 import { webhookRouter } from './routes/webhooks.js';
 
-const app = express();
+const app: Application = express();
 const PORT = process.env.VOICE_AGENT_PORT || 3010;
 
 app.use(cors());

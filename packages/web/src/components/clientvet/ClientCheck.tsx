@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { authedFetch } from "../../../lib/api";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -119,7 +120,7 @@ export default function ClientCheck({ brandId, onRiskDetermined }: ClientCheckPr
     setError(null);
 
     try {
-      const res = await fetch("/api/v1/clientvet/check", {
+      const res = await authedFetch("/api/v1/clientvet/check", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -154,7 +155,7 @@ export default function ClientCheck({ brandId, onRiskDetermined }: ClientCheckPr
 
   const loadNotes = async (clientFlagId: string) => {
     try {
-      const res = await fetch(`/api/v1/clientvet/clients/${clientFlagId}/notes?brandId=${brandId}`);
+      const res = await authedFetch(`/api/v1/clientvet/clients/${clientFlagId}/notes?brandId=${brandId}`);
       if (res.ok) {
         const data = await res.json();
         setNotes(data.notes || []);
@@ -171,7 +172,7 @@ export default function ClientCheck({ brandId, onRiskDetermined }: ClientCheckPr
 
     setLoading(true);
     try {
-      const res = await fetch(`/api/v1/clientvet/clients/${assessment.clientFlagId}/flag`, {
+      const res = await authedFetch(`/api/v1/clientvet/clients/${assessment.clientFlagId}/flag`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -199,7 +200,7 @@ export default function ClientCheck({ brandId, onRiskDetermined }: ClientCheckPr
     if (!assessment?.clientFlagId || !newNote.trim()) return;
 
     try {
-      const res = await fetch(`/api/v1/clientvet/clients/${assessment.clientFlagId}/notes?brandId=${brandId}`, {
+      const res = await authedFetch(`/api/v1/clientvet/clients/${assessment.clientFlagId}/notes?brandId=${brandId}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ note: newNote }),

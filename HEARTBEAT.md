@@ -1,6 +1,6 @@
 # HEARTBEAT.md
 
-## Build Status — 2026-09-13
+## Build Status — 2026-09-26
 
 ### 📚 Source of Truth
 **Read these first, keep them current:**
@@ -30,23 +30,16 @@
 - **Staging Deploy**: ✅ PC3 (API :3002, Web :3000, PM2, Maven user) | ❌ Production (need Hetzner)
 - **Last Deploy**: commit 8da9913 (June 6)
 
-### 🔴 CRITICAL: 98 Days Since Last Commit (14+ Weeks)
-Last commit: 8da9913 (June 6). Uncommitted work:
-- Generation API expansion (+622 lines: voice clone, lipsync, TTS, Seedance multi-ref)
-- Review Sentry public funnel UI (667 lines modified)
-- ClientVet route expansion (54+ new lines)
-- Project-docs updates (ARCHITECTURE, DECISIONS, INFRASTRUCTURE)
-- Voice agent modifications (PLEIJ receptionist, signature validation patches)
-- Chat widget (new — assets/chat-widget/, API route, web component)
-- Content creation framework (new — content-creation/ with Briar PBA system)
-- Bank partnership contacts (new — bank-partnership-contacts.md)
-- Shared dist rebuilds
-- `pleij-llms.txt` (new file)
-- 104 files changed, 2,500 insertions, 19,468 deletions
-**Loss risk is CRITICAL. 98 days. 14+ weeks.**
+### 🟡 113 Days Since Last Commit (16+ Weeks)
+Last commit: 8da9913 (June 6). Two commits since then (Sep 13): security fixes + checkpoint.
+**Uncommitted work still at risk: 104 files changed, ~2,500 insertions.**
 
-### NOW (Week of Sep 14-20) — Updated Sep 13
-1. 🔴 **COMMIT uncommitted work** — 98 days at risk, loss risk CRITICAL (104 files)
+**Committed Sep 13:**
+- `5781c52` — Checkpoint: 98 days of uncommitted work (since 2026-06-06)
+- `3fdef32` — security: stop tracking committed secrets, fix broken gitignore patterns
+
+### NOW (Week of Sep 21-27) — Updated Sep 26
+1. 🔴 **COMMIT uncommitted work** — 113 days at risk, loss risk (104 files)
 2. 🔴 **APPLY for GBP API access** — Eligible since July 22 (52 days!). No one applied yet.
 3. 🔴 **Activate DataForSEO billing** — Jason to add payment method at https://app.dataforseo.com → Billing
 4. 🔴 **Jason to star 3-5 Batch 1 ideas** → then produce final scripts
@@ -83,7 +76,7 @@ Last commit: 8da9913 (June 6). Uncommitted work:
 13. Google Ads MCP evaluation for Elite tier
 
 ### Blocked/Pending
-- ❌ GBP API access — **rejected June 2** (60-day age). **Eligible to reapply since July 22 — 52 days, NOT YET APPLIED.** Zernio bridge active (ADR-013).
+- ❌ GBP API access — **rejected June 2** (60-day age). **Eligible to reapply since July 22 — 66 days, NOT YET APPLIED.** Zernio bridge active (ADR-013).
 - ❌ Hetzner Cloud account + API key — need from Jason
 - ❌ DNS wildcard for *.clawstudio.co
 - ❌ Phorest API credentials — apply for first client
@@ -94,11 +87,11 @@ Last commit: 8da9913 (June 6). Uncommitted work:
 - ⚠️ Supabase DB pauses when idle — needs manual resume
 - ⚠️ DataForSEO — account active but **free trial with zero limits** — Jason needs to add payment method
 - ❌ PM2 startup script for PC3 (needs sudo for systemd)
-- 🔴 **98 days since last commit** — 104 uncommitted files, CRITICAL loss risk (14+ weeks stale)
+- 🔴 **113 days since last commit** — 104+ uncommitted files, loss risk (16+ weeks stale)
 - ❌ Adobe Firefly via Composio OAuth — session resets blocked; Firefly MCP is working alternative
 
 ### 🔄 Weekly Docs Review Cron
 Every Monday 10AM ET — review project-docs/, wiki entities, MEMORY.md for staleness.
 
 ### 🔄 Weekly Memory Curation Cron
-Every Sunday 4AM ET — review daily logs, curate MEMORY.md, update HEARTBEAT.md. Last run: 2026-09-13. Staleness updated: 2026-09-13 (98 days).
+Every Sunday 4AM ET — review daily logs, curate MEMORY.md, update HEARTBEAT.md. Last run: 2026-09-26. Staleness updated: 2026-09-26 (113 days).

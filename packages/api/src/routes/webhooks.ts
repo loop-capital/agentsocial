@@ -4,6 +4,7 @@ import { nanoid } from "nanoid";
 import { eq, and } from "drizzle-orm";
 import { createWebhookSchema } from "@agentsocial/shared";
 import { db, webhooks } from "../db/index.js";
+import { encryptToken } from "../connectors/token-store.js";
 
 export const webhooksRoutes = async (server: FastifyInstance) => {
   // GET /webhooks
@@ -35,12 +36,14 @@ export const webhooksRoutes = async (server: FastifyInstance) => {
       url: string; events: string[]; secret?: string; active?: boolean;
     };
 
-    const secretHash = await bcrypt.hash(secret || nanoid(32), 10);
+    const signingSecret = secret || `whsec_${nanoid(24)}`;
+    const secretHash = await bcrypt.hash(signingSecret, 10);
     const [webhook] = await db.insert(webhooks).values({
       userId: request.userId!,
       url,
       events,
       secretHash,
+      secretEncrypted: encryptToken(signingSecret),
       active: active ?? true,
     }).returning();
 
@@ -48,7 +51,7 @@ export const webhooksRoutes = async (server: FastifyInstance) => {
       id: webhook.id,
       url: webhook.url,
       events: webhook.events,
-      secret: secret || `whsec_${nanoid(24)}`,
+      secret: signingSecret,
       active: webhook.active,
       created_at: webhook.createdAt,
     });

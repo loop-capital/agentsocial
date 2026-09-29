@@ -16,6 +16,11 @@ import {
   X,
   ChevronRight,
   Sparkles,
+  type LucideIcon,
+  Palette,
+  Inbox,
+  Building2,
+  LayoutTemplate,
   Eye,
   Link2,
   Globe,
@@ -31,47 +36,93 @@ import {
   Users,
   Shield,
   Mic,
+  PenSquare,
+  ListTodo,
 } from "lucide-react";
 import { useState } from "react";
 import CCEverywhereProvider from "../../src/components/adobe-express/CCEverywhereProvider";
 import { AuthProvider, ProtectedRoute, useAuth } from "../../src/lib/auth";
 
-const navItems = [
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/posts", label: "Posts", icon: FileText },
-  { href: "/clipify", label: "Clipify", icon: Scissors },
-  { href: "/channels", label: "Channels", icon: Globe },
-  { href: "/analytics", label: "Analytics", icon: BarChart2 },
-  { href: "/competitors", label: "Competitors", icon: Eye },
-  { href: "/gbp", label: "GBP Dashboard", icon: Star },
-  { href: "/gbp/reviews", label: "Reviews", icon: MessageSquare },
-  { href: "/gbp/widget", label: "Chat Widget", icon: MessageCircle },
-  { href: "/gbp/booking", label: "Bookings", icon: CalendarCheck },
-  { href: "/gbp/ads", label: "Ads", icon: Megaphone },
-  { href: "/ad-management", label: "Ad Management", icon: DollarSign },
-  { href: "/campaigns", label: "Campaigns", icon: Send },
-  { href: "/manager", label: "Manager", icon: Users },
-  { href: "/review-sentry", label: "Review Sentry", icon: Star },
-  { href: "/voice", label: "Voice AI", icon: Mic },
-  { href: "/clientvet", label: "ClientVet", icon: Shield },
-  { href: "/billing", label: "Billing", icon: CreditCard },
-  { href: "/calendar", label: "Calendar", icon: Calendar },
-  { href: "/create-express", label: "Adobe Express", icon: Sparkles },
-  { href: "/settings", label: "Settings", icon: Settings },
+type NavItem = { href: string; label: string; icon: LucideIcon };
+
+// Grouped by the customer's workflow: plan → create → publish → engage → grow.
+const navSections: Array<{ label: string | null; items: NavItem[] }> = [
+  { label: null, items: [{ href: "/dashboard", label: "Dashboard", icon: LayoutDashboard }] },
+  {
+    label: "Plan",
+    items: [
+      { href: "/ai-planner", label: "AI Planner", icon: Sparkles },
+      { href: "/content-calendar", label: "Content Calendar", icon: Calendar },
+    ],
+  },
+  {
+    label: "Create",
+    items: [
+      { href: "/create-post", label: "Create Post", icon: PenSquare },
+      { href: "/clipify", label: "Video Clips", icon: Scissors },
+      { href: "/create-express", label: "Design Studio", icon: Palette },
+    ],
+  },
+  {
+    label: "Publish",
+    items: [
+      { href: "/queue", label: "Queue", icon: ListTodo },
+      { href: "/posts", label: "All Posts", icon: FileText },
+      { href: "/channels", label: "Channels", icon: Globe },
+    ],
+  },
+  {
+    label: "Engage",
+    items: [
+      { href: "/inbox", label: "Inbox", icon: Inbox },
+      { href: "/gbp", label: "Google Business", icon: Star },
+      { href: "/gbp/reviews", label: "Reviews", icon: MessageSquare },
+      { href: "/review-sentry", label: "Review Requests", icon: Send },
+      { href: "/gbp/widget", label: "Chat Widget", icon: MessageCircle },
+      { href: "/voice", label: "Voice AI", icon: Mic },
+    ],
+  },
+  {
+    label: "Grow",
+    items: [
+      { href: "/analytics", label: "Analytics", icon: BarChart2 },
+      { href: "/competitors", label: "Competitors", icon: Eye },
+      { href: "/campaigns", label: "Campaigns", icon: Megaphone },
+      { href: "/ad-management", label: "Ads", icon: DollarSign },
+      { href: "/gbp/ads", label: "Local Ads", icon: Megaphone },
+      { href: "/gbp/landing-pages", label: "Landing Pages", icon: LayoutTemplate },
+    ],
+  },
+  {
+    label: "Clients",
+    items: [
+      { href: "/clientvet", label: "ClientVet", icon: Shield },
+      { href: "/gbp/booking", label: "Bookings", icon: CalendarCheck },
+    ],
+  },
+  {
+    label: "Brand",
+    items: [
+      { href: "/brand", label: "Brand Hub", icon: Building2 },
+      { href: "/manager", label: "Accounts", icon: Users },
+      { href: "/billing", label: "Billing", icon: CreditCard },
+      { href: "/settings", label: "Settings", icon: Settings },
+    ],
+  },
 ];
 
-const bottomNavItems = [
-  { href: "/help", label: "Help & Support", icon: HelpCircle },
-];
+const bottomNavItems: NavItem[] = [];
 
 function DashboardShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { user, logout } = useAuth();
 
+  const allHrefs = navSections.flatMap((sec) => sec.items.map((i) => i.href));
   const isActive = (href: string) => {
-    if (href === "/dashboard") return pathname === "/dashboard";
-    return pathname.startsWith(href);
+    if (pathname !== href && !pathname.startsWith(href + "/")) return false;
+    // Prefer the longest matching href so parent links don't stay lit on child pages
+    return !allHrefs.some((h) => h.length > href.length && (pathname === h || pathname.startsWith(h + "/")));
   };
 
   return (
@@ -121,26 +172,43 @@ function DashboardShell({ children }: { children: React.ReactNode }) {
 
         {/* Main Nav */}
         <nav className="sidebar-nav" aria-label="Primary">
-          {navItems.map((item) => {
-            const Icon = item.icon;
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={`sidebar-link ${isActive(item.href) ? "active" : ""}`}
-                onClick={() => setSidebarOpen(false)}
-                aria-current={isActive(item.href) ? "page" : undefined}
-              >
-                <span className="nav-icon">
-                  <Icon size={18} strokeWidth={isActive(item.href) ? 2.5 : 1.75} />
-                </span>
-                {item.label}
-                {isActive(item.href) && (
-                  <ChevronRight size={14} style={{ marginLeft: "auto", opacity: 0.5 }} />
-                )}
-              </Link>
-            );
-          })}
+          {navSections.map((section, si) => (
+            <div key={section.label ?? `s${si}`} style={{ marginTop: section.label ? 14 : 0 }}>
+              {section.label && (
+                <div
+                  style={{
+                    padding: "0 12px 4px",
+                    fontSize: 11,
+                    fontWeight: 600,
+                    letterSpacing: "0.06em",
+                    textTransform: "uppercase",
+                    color: "var(--text-muted)",
+                  }}
+                >
+                  {section.label}
+                </div>
+              )}
+              {section.items.map((item) => {
+                const Icon = item.icon;
+                const active = isActive(item.href);
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={`sidebar-link ${active ? "active" : ""}`}
+                    onClick={() => setSidebarOpen(false)}
+                    aria-current={active ? "page" : undefined}
+                  >
+                    <span className="nav-icon">
+                      <Icon size={18} strokeWidth={active ? 2.5 : 1.75} />
+                    </span>
+                    {item.label}
+                    {active && <ChevronRight size={14} style={{ marginLeft: "auto", opacity: 0.5 }} />}
+                  </Link>
+                );
+              })}
+            </div>
+          ))}
         </nav>
 
         {/* Bottom Nav */}

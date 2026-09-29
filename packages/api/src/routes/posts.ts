@@ -3,7 +3,8 @@ import type { FastifyInstance } from "fastify";
 import { eq, and, desc, inArray, gte, lte } from "drizzle-orm";
 import { createPostSchema, updatePostSchema } from "@agentsocial/shared";
 import { db, posts, postChannels, brands, channels, postMedia, mediaAssets } from "../db/index.js";
-import { enqueuePostPublish } from "../queues/index.js";
+import { enqueuePostPublish, removePostPublishJobs } from "../queues/index.js";
+import { validateForPlatform } from "../services/publishing/index.js";
 
 export const postsRoutes = async (server: FastifyInstance) => {
   // POST /posts
@@ -72,6 +73,19 @@ export const postsRoutes = async (server: FastifyInstance) => {
       }
 
       const platformMap = new Map(channelRecords.map((c) => [c.id, c.platform]));
+
+      // Catch over-limit text / missing media now, not at publish time
+      if (scheduled_at) {
+        const problems = [...new Set(channelRecords.map((c) => c.platform))].flatMap((pl) =>
+          validateForPlatform(pl, content, media?.length ?? 0),
+        );
+        if (problems.length) {
+          await db.delete(posts).where(eq(posts.id, post.id));
+          return reply.status(400).send({
+            error: { code: "validation_error", message: problems.join("; "), request_id: request.id },
+          });
+        }
+      }
 
       const channelEntries = channelIds.map((channelId: string) => ({
         postId: post.id,
@@ -409,6 +423,8 @@ export const postsRoutes = async (server: FastifyInstance) => {
       }
     }
 
+    const previousChannels = await db.select().from(postChannels).where(eq(postChannels.postId, id));
+
     const [updated] = await db
       .update(posts)
       .set(updateData)
@@ -441,6 +457,23 @@ export const postsRoutes = async (server: FastifyInstance) => {
       .select()
       .from(postChannels)
       .where(eq(postChannels.postId, id));
+
+    // Keep the queue in step with the edit: drop old jobs, then re-enqueue at the new time.
+    await removePostPublishJobs(id, [...previousChannels, ...updatedChannels].map((c) => c.channelId));
+    if (updated.status === "scheduled" && updated.scheduledAt) {
+      await Promise.all(
+        updatedChannels
+          .filter((pc) => pc.status === "pending")
+          .map((pc) =>
+            enqueuePostPublish({
+              postId: id,
+              channelId: pc.channelId,
+              content: updated.content,
+              scheduledFor: updated.scheduledAt!.toISOString(),
+            }),
+          ),
+      );
+    }
 
     return reply.send({
       id: updated.id,
@@ -490,6 +523,9 @@ export const postsRoutes = async (server: FastifyInstance) => {
       .where(eq(posts.id, id))
       .returning();
 
+    const doomed = await db.select().from(postChannels).where(eq(postChannels.postId, id));
+    await removePostPublishJobs(id, doomed.map((c) => c.channelId));
+
     return reply.send({
       id: updated.id,
       status: updated.status,
@@ -523,11 +559,25 @@ export const postsRoutes = async (server: FastifyInstance) => {
       });
     }
 
+    if (!["draft", "scheduled", "failed"].includes(post.status)) {
+      return reply.status(400).send({
+        error: { code: "validation_error", message: `Post is already ${post.status}`, request_id: request.id },
+      });
+    }
+
+    // Publish now = schedule for now. The worker marks the post published only after
+    // the platform accepts it, and settles failed posts with the real error message.
     const [updated] = await db
       .update(posts)
-      .set({ status: "published", publishedAt: new Date(), updatedAt: new Date() })
+      .set({ status: "scheduled", scheduledAt: new Date(), updatedAt: new Date() })
       .where(eq(posts.id, id))
       .returning();
+
+    // Failed channels get another attempt
+    await db
+      .update(postChannels)
+      .set({ status: "pending", errorMessage: null, updatedAt: new Date() })
+      .where(and(eq(postChannels.postId, id), eq(postChannels.status, "failed")));
 
     // Enqueue all pending channels for this post
     const pendingChannels = await db
@@ -543,11 +593,12 @@ export const postsRoutes = async (server: FastifyInstance) => {
             postId: id,
             channelId: pc.channelId,
             content: post.content,
+            scheduledFor: updated.scheduledAt!.toISOString(),
           })
         )
     );
 
-    return reply.send({ id: updated.id, status: updated.status, published_at: updated.publishedAt });
+    return reply.status(202).send({ id: updated.id, status: updated.status, published_at: null });
   });
 
   // POST /posts/:id/cancel
@@ -581,6 +632,9 @@ export const postsRoutes = async (server: FastifyInstance) => {
       .set({ status: "draft", scheduledAt: null, updatedAt: new Date() })
       .where(eq(posts.id, id))
       .returning();
+
+    const cancelled = await db.select().from(postChannels).where(eq(postChannels.postId, id));
+    await removePostPublishJobs(id, cancelled.map((c) => c.channelId));
 
     return reply.send({ id: updated.id, status: updated.status });
   });

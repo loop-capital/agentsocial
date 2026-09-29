@@ -7,7 +7,7 @@
  * Port: 3015 (exposed as 3015:3015)
  */
 
-import express from "express";
+import express, { type Application, type Request, type Response } from "express";
 import cors from "cors";
 import {
   handleAvailabilityCheck,
@@ -17,7 +17,7 @@ import {
   STYLIST_MAP,
 } from "./square-booking.js";
 
-const app = express();
+const app: Application = express();
 const PORT = process.env.VOICE_API_PORT || 3015;
 
 app.use(cors());

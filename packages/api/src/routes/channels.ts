@@ -1,5 +1,6 @@
 import type { FastifyInstance } from "fastify";
 import { eq, and } from "drizzle-orm";
+import { z } from "zod";
 import { connectChannelSchema, updateChannelSchema } from "@agentsocial/shared";
 import { db, channels, brands } from "../db/index.js";
 import { getTwitterOAuthUrl } from "../connectors/twitter.js";
@@ -9,6 +10,7 @@ import { getInstagramOAuthUrl } from "../connectors/instagram.js";
 import { getTikTokOAuthUrl, setTikTokPkceStore } from "../connectors/tiktok.js";
 import { generatePKCE } from "../connectors/pkce.js";
 import { getConnectionLink, getConnectedAccounts, PLATFORM_TO_TOOLKIT } from "../services/composio.js";
+import { syncBrandComposioChannels } from "../services/composio-channels.js";
 
 // Simple in-memory store for PKCE code_verifiers (state -> codeVerifier)
 // In production, use Redis or a database table
@@ -351,39 +353,18 @@ export const channelsRoutes = async (server: FastifyInstance) => {
 
     try {
       const accounts = await getConnectedAccounts(channel.brandId);
-      const toolkit = PLATFORM_TO_TOOLKIT[channel.platform];
-      const matching = accounts.find((a) => a.app_name === toolkit || a.app_unique_id === toolkit);
+      await syncBrandComposioChannels(channel.brandId, { accounts, includeChannelId: channel.id });
+      const [synced] = await db.select().from(channels).where(eq(channels.id, id)).limit(1);
+      const accountId = (Object(synced.settings) as Record<string, unknown>).composio_account_id;
+      const account = accounts.find((a) => a.id === accountId);
 
-      if (matching) {
-        const newStatus = matching.status === "ACTIVE" ? "active" : matching.status === "FAILED" ? "error" : "disconnected";
-        const [updated] = await db.update(channels)
-          .set({
-            status: newStatus as any,
-            accountId: matching.id,
-            settings: { ...(Object(channel.settings) as Record<string, unknown>), composio_account_id: matching.id },
-            updatedAt: new Date(),
-          })
-          .where(eq(channels.id, id))
-          .returning();
-
-        return reply.send({
-          id: updated.id,
-          brand_id: updated.brandId,
-          platform: updated.platform,
-          status: updated.status,
-          composio_status: matching.status,
-          synced_at: updated.updatedAt,
-        });
-      }
-
-      // No matching Composio account found
       return reply.send({
-        id: channel.id,
-        brand_id: channel.brandId,
-        platform: channel.platform,
-        status: channel.status,
-        composio_status: "NOT_CONNECTED",
-        synced_at: new Date().toISOString(),
+        id: synced.id,
+        brand_id: synced.brandId,
+        platform: synced.platform,
+        status: synced.status,
+        composio_status: account?.status ?? "NOT_CONNECTED",
+        synced_at: synced.updatedAt,
       });
     } catch (err: any) {
       request.log.error({ err: err.message }, "Composio sync failed");
@@ -394,14 +375,32 @@ export const channelsRoutes = async (server: FastifyInstance) => {
   });
 
   // PATCH /channels/:id
+  /** Load a channel only if it belongs to one of the caller's brands. */
+  async function ownedChannel(id: string, userId: string) {
+    const [row] = await db
+      .select({ channel: channels })
+      .from(channels)
+      .innerJoin(brands, eq(brands.id, channels.brandId))
+      .where(and(eq(channels.id, id), eq(brands.userId, userId)))
+      .limit(1);
+    return row?.channel ?? null;
+  }
+
+  // PATCH /channels/:id — rename and/or merge settings
   server.patch("/:id", {
     onRequest: [server.authenticate],
-    schema: { body: updateChannelSchema },
+    schema: {
+      tags: ["Channels"],
+      summary: "Update a channel",
+      description: "Rename a channel and/or merge settings (auto_reply_enabled, auto_reply_message, post_defaults). Omitted fields are unchanged.",
+      params: z.object({ id: z.string().uuid() }),
+      body: updateChannelSchema,
+    },
   }, async (request, reply) => {
     const { id } = request.params as { id: string };
-    const { settings } = request.body as { settings?: Record<string, unknown> };
+    const { name, settings } = request.body as { name?: string; settings?: Record<string, unknown> };
 
-    const [channel] = await db.select().from(channels).where(eq(channels.id, id)).limit(1);
+    const channel = await ownedChannel(id, request.userId!);
     if (!channel) {
       return reply.status(404).send({
         error: { code: "resource_not_found", message: "Channel not found", request_id: request.id },
@@ -411,7 +410,7 @@ export const channelsRoutes = async (server: FastifyInstance) => {
     const mergedSettings = settings ? { ...(Object(channel.settings) as Record<string, unknown>), ...settings } : channel.settings as Record<string, unknown>;
 
     const [updated] = await db.update(channels)
-      .set({ settings: mergedSettings, updatedAt: new Date() })
+      .set({ ...(name ? { name } : {}), settings: mergedSettings, updatedAt: new Date() })
       .where(eq(channels.id, id))
       .returning();
 
@@ -430,6 +429,13 @@ export const channelsRoutes = async (server: FastifyInstance) => {
     onRequest: [server.authenticate],
   }, async (request, reply) => {
     const { id } = request.params as { id: string };
+
+    const channel = await ownedChannel(id, request.userId!);
+    if (!channel) {
+      return reply.status(404).send({
+        error: { code: "resource_not_found", message: "Channel not found", request_id: request.id },
+      });
+    }
 
     const [updated] = await db.update(channels)
       .set({ status: "disconnected", accessTokenEncrypted: null, refreshTokenEncrypted: null, updatedAt: new Date() })

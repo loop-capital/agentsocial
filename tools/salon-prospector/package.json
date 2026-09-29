@@ -1,0 +1,15 @@
+{
+  "name": "salon-prospector",
+  "version": "1.0.0",
+  "description": "Find salons with weak websites, generate previews, convert to AgentSocial customers",
+  "main": "prospect.js",
+  "scripts": {
+    "prospect": "node prospect.js",
+    "deploy": "node deploy.js",
+    "outreach": "node outreach.js"
+  },
+  "dependencies": {
+    "axios": "^1.20.0",
+    "commander": "^11.1.0"
+  }
+}

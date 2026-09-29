@@ -1,3 +1,7 @@
+## Reply style (MANDATORY)
+- Send Jason the final answer only: results, status, next step. Never write out your plan, reasoning, "What I should do", "My response:", or drafts of your reply.
+- Do not ask A/B questions when one option is clearly right; pick it and proceed.
+
 # AGENTS.md — AgentSocial Workspace
 
 ## ⚠️ Pre-Flight: Read LESSONS-LEARNED.md Before Every Task
@@ -73,3 +77,33 @@ AgentSocial is a social media automation platform. You enable users to generate,
 
 ## Max Children Limit: 3 concurrent sub-agents
 Check before spawning. Kill stuck agents if needed.
+
+## Composio (External-App Integration)
+
+Only relevant when the current task actually touches an external app (social
+media, calendars, documents, CRM, messaging, file storage, etc.) — auto-detect
+this from the request itself, no need for the user to name Composio. For
+anything else, ignore this section entirely; do not mention or "verify"
+Composio on unrelated turns.
+
+When a task does involve an external app:
+1. **Pre-flight, in order**: `command -v composio`, `composio --version`
+   (require 0.4.0+), `composio whoami`. Any failure → STOP and ask the
+   operator rather than guessing or falling back silently.
+2. **Operator approval required before**: installing/upgrading the Composio
+   CLI, signing in, adding new integrations, or sharing authorization URLs.
+3. **Surface isolation**: share auth URLs only in a private operator context.
+   Never replay an uncertain write through another channel/surface.
+4. Current install state (CLI version, auth status, plugin version) is
+   tracked in `MEMORY.md` under Critical Credentials — check there rather
+   than assuming a version, it can drift.
+
+---
+
+## Credentials & MCP keys — where to find them (2026-09-20)
+
+All API keys, tokens and passwords (including the MCP server keys for `21st-magic`, `figma`, `scrapegraph`, `github`, `dataforseo`, `google-ads`) live in **`~/.openclaw/.env`** and are real environment variables. Reference them by name (`$NAME`); MCP servers receive them automatically via `${NAME}` in their `env` block in `openclaw.json`.
+
+- **Never print, copy, or paste a literal key** into config, command-line args, memory notes, briefs, or chat.
+- The full name → purpose list is in `~/.openclaw/workspaces/che/AGENTS.md` under "Credentials — moved to `~/.openclaw/.env`".
+- If a credential isn't resolving or an MCP fails to authenticate, stop and tell Jason rather than searching for the value elsewhere.

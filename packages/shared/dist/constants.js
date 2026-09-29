@@ -8,7 +8,7 @@ export const API_VERSIONS = {
     // instagram: 'v18.0',
     // linkedin: 'v1.0'
 };
-export const SOCIAL_PLATFORMS = ['facebook', 'twitter', 'instagram', 'linkedin'];
+export const SOCIAL_PLATFORMS = ['facebook', 'twitter', 'instagram', 'linkedin', 'tiktok'];
 export const TASK_STATUSES = ['pending', 'assigned', 'in_progress', 'completed', 'failed'];
 export const TASK_PRIORITIES = ['low', 'medium', 'high', 'urgent'];
 export const AGENT_STATUSES = ['active', 'inactive', 'suspended'];

@@ -192,4 +192,8 @@ export interface ApiError {
         request_id: string;
     };
 }
+export * from "./gbp.js";
+export * from "./billing.js";
+export * from "./campaigns.js";
+export * from "./account-manager.js";
 //# sourceMappingURL=index.d.ts.map

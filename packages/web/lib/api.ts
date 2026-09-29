@@ -7,6 +7,14 @@ function getToken(): string | null {
   return localStorage.getItem("token");
 }
 
+/** fetch() with the logged-in user's token. Relative paths are sent to the API server. */
+export function authedFetch(input: string, init: RequestInit = {}): Promise<Response> {
+  const token = getToken();
+  const headers = new Headers(init.headers);
+  if (token) headers.set("Authorization", `Bearer ${token}`);
+  return fetch(input.startsWith("/") ? `${API_BASE}${input}` : input, { ...init, headers });
+}
+
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   const token = getToken();
   const headers: Record<string, string> = {
@@ -36,6 +44,42 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
 }
 
 // ─── Auth ────────────────────────────────────────────────────────────────────
+
+export interface BrandProfile {
+  industry?: string;
+  description?: string;
+  website?: string;
+  city?: string;
+  tone?: string;
+  audience?: { icp?: string; pain_points?: string[]; dream_outcomes?: string[] };
+  pillars?: string[];
+  goals?: string[];
+  dos?: string[];
+  donts?: string[];
+  hashtags?: string[];
+  booking_provider?: "square" | "phorest" | "vagaro" | "boulevard" | "mindbody" | "other" | "none";
+}
+
+export interface BrandHub {
+  brand: { id: string; name: string; logo_url: string | null; timezone: string };
+  profile: BrandProfile;
+  voice_profile: string;
+  channels: Array<{ id: string; platform: string; name: string; status: string; provider: string; ready: boolean; issues: string[] }>;
+  integrations: Array<{ type: string; provider: string; sync_enabled: boolean }>;
+  media_count: number;
+  checklist: { score: number; items: Array<{ key: string; label: string; done: boolean; hint: string }> };
+}
+
+export interface AiPlanItem {
+  platform: string;
+  pillar: string;
+  hook: string;
+  caption: string;
+  media_idea: string;
+  hashtags: string[];
+  scheduled_at: string;
+  warnings: string[];
+}
 
 export const api = {
   auth: {
@@ -215,13 +259,28 @@ export const api = {
       brand_id: string;
       content: string;
       channels: string[];
+      media?: Array<{ type: "image" | "video"; url: string; alt_text?: string }>;
       scheduled_at?: string;
+      tags?: string[];
     }) =>
       request<{
         id: string;
         status: string;
         channels: Array<{ channel_id: string; platform: string; status: string }>;
       }>("/api/v1/posts", { method: "POST", body: JSON.stringify(data) }),
+
+    update: (id: string, data: {
+      content?: string;
+      channels?: string[];
+      media?: Array<{ type: "image" | "video"; url: string; alt_text?: string }>;
+      scheduled_at?: string;
+      tags?: string[];
+      status?: string;
+    }) =>
+      request<{ id: string; status: string; channels: Array<{ channel_id: string; platform: string; status: string }> }>(
+        `/api/v1/posts/${id}`,
+        { method: "PATCH", body: JSON.stringify(data) }
+      ),
 
     publish: (id: string) =>
       request<{ id: string; status: string; published_at: string }>(
@@ -241,6 +300,48 @@ export const api = {
 
     delete: (id: string) =>
       request<{ id: string; status: string; message: string }>(`/api/v1/posts/${id}`, { method: "DELETE" }),
+  },
+
+  hub: {
+    get: (brandId: string) => request<BrandHub>(`/api/v1/hub/${brandId}`),
+    update: (
+      brandId: string,
+      body: { name?: string; timezone?: string; profile?: BrandProfile; voice_profile?: string }
+    ) => request<BrandHub>(`/api/v1/hub/${brandId}`, { method: "PUT", body: JSON.stringify(body) }),
+  },
+
+  ai: {
+    status: () => request<{ configured: boolean }>("/api/v1/ai/status"),
+    getVoice: (brandId: string) =>
+      request<{ brand_id: string; voice_profile: string }>(`/api/v1/ai/voice?brand_id=${brandId}`),
+    setVoice: (brandId: string, voiceProfile: string) =>
+      request<{ brand_id: string; voice_profile: string }>("/api/v1/ai/voice", {
+        method: "PUT",
+        body: JSON.stringify({ brand_id: brandId, voice_profile: voiceProfile }),
+      }),
+    bestTimes: (brandId: string, platform: string, count = 3) =>
+      request<{ platform: string; timezone: string; basis: string; slots: string[] }>(
+        `/api/v1/ai/best-times?brand_id=${brandId}&platform=${platform}&count=${count}`
+      ),
+    captions: (body: { brand_id: string; brief: string; platforms: string[]; variants?: number }) =>
+      request<{ captions: Record<string, Array<{ caption: string; hashtags: string[] }>> }>(
+        "/api/v1/ai/captions",
+        { method: "POST", body: JSON.stringify(body) }
+      ),
+    plan: (body: { brand_id: string; platforms: string[]; days: number; posts_per_platform: number; theme?: string }) =>
+      request<{ timezone: string; times_basis: string; items: AiPlanItem[] }>("/api/v1/ai/plan", {
+        method: "POST",
+        body: JSON.stringify(body),
+      }),
+    applyPlan: (body: {
+      brand_id: string;
+      schedule: boolean;
+      items: Array<{ platform: string; caption: string; scheduled_at?: string }>;
+    }) =>
+      request<{
+        created: Array<{ post_id: string; platform: string; status: string }>;
+        skipped: Array<{ platform: string; reason: string }>;
+      }>("/api/v1/ai/plan/apply", { method: "POST", body: JSON.stringify(body) }),
   },
 
   analytics: {
@@ -1204,5 +1305,120 @@ export const api = {
         }>;
         completion_percentage: number;
       }>(`/api/v1/ad-management/setup-checklist?brandId=${brandId}`),
+  },
+
+  generation: {
+    image: (data: {
+      prompt: string;
+      aspectRatio?: "1:1" | "3:4" | "4:3" | "9:16" | "16:9";
+      numberOfImages?: number;
+      negativePrompt?: string;
+    }, brandId: string) =>
+      request<{
+        provider: string;
+        model: string;
+        images: Array<{ url: string; width?: number; height?: number }>;
+        cost: number;
+      }>("/api/v1/generate/image", {
+        method: "POST",
+        body: JSON.stringify(data),
+        headers: { "x-brand-id": brandId },
+      }),
+
+    imageFromCaption: (data: {
+      caption: string;
+      aspectRatio?: "1:1" | "3:4" | "4:3" | "9:16" | "16:9";
+      model?: string;
+    }, brandId: string) =>
+      request<{
+        imageUrl: string;
+        model: string;
+        provider: string;
+        cloudinaryStored: boolean;
+        cost: number;
+      }>("/api/v1/generate/image-from-caption", {
+        method: "POST",
+        body: JSON.stringify(data),
+        headers: { "x-brand-id": brandId },
+      }),
+
+    video: (data: {
+      prompt: string;
+      aspectRatio?: "16:9" | "9:16" | "1:1" | "4:5";
+      duration?: number;
+      resolution?: "720p" | "1080p" | "4K";
+      negativePrompt?: string;
+      style?: "social-short" | "cinematic" | "promotional" | "tutorial";
+    }, brandId: string) =>
+      request<{
+        jobId: string;
+        status: string;
+        model: string;
+        provider: string;
+        cost: number;
+        message?: string;
+      }>("/api/v1/generate/video", {
+        method: "POST",
+        body: JSON.stringify(data),
+        headers: { "x-brand-id": brandId },
+      }),
+
+    videoFromCaption: (data: {
+      caption: string;
+      imageUrl?: string | null;
+      aspectRatio?: "16:9" | "9:16" | "1:1" | "4:5";
+      model?: string;
+    }, brandId: string) =>
+      request<{
+        jobId: string;
+        status: string;
+        model: string;
+        provider: string;
+        cost: number;
+      }>("/api/v1/generate/video-from-caption", {
+        method: "POST",
+        body: JSON.stringify(data),
+        headers: { "x-brand-id": brandId },
+      }),
+
+    videoStatus: (jobId: string) =>
+      request<{
+        jobId: string;
+        status: "pending" | "processing" | "completed" | "failed";
+        progress?: number;
+        result?: { url: string; thumbnail_url?: string };
+        error?: string;
+      }>(`/api/v1/generate/video/${jobId}`),
+
+    videoFromCaptionStatus: (jobId: string) =>
+      request<{
+        jobId?: string;
+        status: string;
+        model?: string;
+        provider?: string;
+        videoUrl?: string;
+        error?: string;
+        cost?: number;
+        cloudinaryStored?: boolean;
+      }>(`/api/v1/generate/video-from-caption/${jobId}`),
+
+    relatedPosts: (data: {
+      postId: string;
+      targetPlatforms: ("twitter" | "linkedin" | "facebook" | "instagram" | "tiktok")[];
+    }, brandId: string) =>
+      request<{
+        sourcePostId: string;
+        relatedPosts: Array<{
+          platform: string;
+          caption: string;
+          hashtags: string[];
+          suggestedImagePrompt: string;
+          sourcePostId: string;
+        }>;
+      }>("/api/v1/generate/related-posts", {
+        method: "POST",
+        body: JSON.stringify(data),
+        headers: { "x-brand-id": brandId },
+      }),
   },
 };

@@ -74,4 +74,15 @@ export const {
   depositPayments,
   riskLevelEnum,
   clientFlagTypeEnum,
+  // CRM Phase 1A
+  contacts,
+  crmProviders,
+  crmContactMappings,
+  crmSyncJobs,
+  crmSyncLogs,
+  crmWebhookEvents,
+  crmProviderEnum,
+  crmSyncDirectionEnum,
+  crmSyncStatusEnum,
+  crmConflictResolutionEnum,
 } = schema;

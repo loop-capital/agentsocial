@@ -4,15 +4,10 @@
  * Replaces the need for 6 custom social connectors (Twitter, LinkedIn, Facebook,
  * Instagram, TikTok, GBP) by delegating auth and API calls to Composio.
  *
- * Mapping: our `brand_id` → Composio `entityId` (called clientUniqueUserId in their API)
+ * Mapping: our `brand_id` → Composio `userId` (v3 API, @composio/core)
  */
 
-import { Composio } from "composio-core";
-import type {
-  ConnectedAccountResponseDTO,
-  ActionExecuteResponse,
-  ConnectionRequest,
-} from "composio-core";
+import { Composio } from "@composio/core";
 
 // ─── Singleton client ────────────────────────────────────────────────────────
 
@@ -24,8 +19,7 @@ function getComposio(): Composio {
     if (!apiKey) {
       throw new Error("COMPOSIO_API_KEY is not set in environment");
     }
-    const projectId = process.env.COMPOSIO_PROJECT_ID;
-    _composio = new Composio({ apiKey, ...(projectId ? { projectId } : {}) });
+    _composio = new Composio({ apiKey });
   }
   return _composio;
 }
@@ -69,65 +63,68 @@ export interface ActionResult {
   error?: string;
 }
 
-// ─── Methods ─────────────────────────────────────────────────────────────────
+// ─── Helpers ─────────────────────────────────────────────────────────────────
 
-/**
- * List all connected accounts for a given brand (mapped as entityId).
- */
-export async function getConnectedAccounts(brandId: string): Promise<ConnectedAccountInfo[]> {
-  const composio = getComposio();
-  const entity = composio.getEntity(brandId);
-
-  // Entity.getConnections() returns raw connection items
-  const connections = await entity.getConnections();
-
-  return connections.map((conn: any) => ({
-    id: conn.id ?? conn.connectedAccountId ?? "",
-    entity_id: conn.clientUniqueUserId ?? conn.entityId ?? brandId,
-    app_name: conn.appName ?? conn.appUniqueId ?? "",
-    app_unique_id: conn.appUniqueId ?? conn.appName ?? "",
+function toAccountInfo(conn: any, fallbackUser = ""): ConnectedAccountInfo {
+  const slug = conn.toolkit?.slug ?? "";
+  return {
+    id: conn.id ?? "",
+    entity_id: conn.userId ?? conn.user_id ?? fallbackUser,
+    app_name: slug,
+    app_unique_id: slug,
     status: conn.status ?? "UNKNOWN",
     created_at: conn.createdAt ?? new Date().toISOString(),
     updated_at: conn.updatedAt ?? new Date().toISOString(),
-    is_disabled: conn.isDisabled ?? conn.disabled ?? false,
-  }));
+    is_disabled: conn.isDisabled ?? conn.status === "DISABLED",
+  };
+}
+
+async function resolveAuthConfigId(toolkit: string): Promise<string> {
+  const composio = getComposio();
+  const res: any = await composio.authConfigs.list({ toolkit } as any);
+  const items: any[] = res?.items ?? [];
+  const cfg = items.find((c) => c.status === "ENABLED") ?? items[0];
+  if (!cfg?.id) throw new Error(`No Composio auth config found for toolkit "${toolkit}"`);
+  return cfg.id;
+}
+
+// ─── Methods ─────────────────────────────────────────────────────────────────
+
+/** List all connected accounts for a given brand (mapped as Composio userId). */
+export async function getConnectedAccounts(brandId: string): Promise<ConnectedAccountInfo[]> {
+  const res: any = await getComposio().connectedAccounts.list({ userIds: [brandId] });
+  return (res?.items ?? []).map((c: any) => toAccountInfo(c, brandId));
 }
 
 /**
  * Generate an OAuth connection link for a toolkit so the user can
  * authorize their social account via Composio's hosted flow.
- *
- * @param brandId  — Our brand_id, used as Composio entityId
- * @param toolkit — Composio app key (e.g. "instagram", "twitter")
- * @param redirectUrl — Optional URL to redirect after OAuth completes
  */
 export async function getConnectionLink(
   brandId: string,
   toolkit: string,
   redirectUrl?: string,
 ): Promise<ConnectionLinkResult> {
-  const composio = getComposio();
-  const entity = composio.getEntity(brandId);
-
-  const connectionRequest: ConnectionRequest = await entity.initiateConnection({
-    appName: toolkit,
-    ...(redirectUrl ? { redirectUri: redirectUrl } : {}),
+  const authConfigId = await resolveAuthConfigId(toolkit);
+  // allowMultiple: without it Composio rejects a second link for the same brand + toolkit
+  const req: any = await getComposio().connectedAccounts.link(brandId, authConfigId, {
+    allowMultiple: true,
+    ...(redirectUrl ? { callbackUrl: redirectUrl } : {}),
   });
-
   return {
-    redirect_url: connectionRequest.redirectUrl,
-    connected_account_id: connectionRequest.connectedAccountId,
-    connection_status: connectionRequest.connectionStatus,
+    redirect_url: req.redirectUrl ?? null,
+    connected_account_id: req.id ?? "",
+    connection_status: req.status ?? "INITIATED",
   };
 }
 
+/** Delete a connected account in Composio. */
+export async function deleteConnectedAccount(connectedAccountId: string): Promise<void> {
+  await getComposio().connectedAccounts.delete(connectedAccountId);
+}
+
 /**
- * Execute a Composio action (e.g. post to social, respond to comment).
- *
- * @param brandId           — Our brand_id, used as Composio entityId
- * @param actionName        — Composio action enum (e.g. "INSTAGRAM_CREATE_MEDIA_POST")
- * @param params            — Action input parameters
- * @param connectedAccountId — Optional: specific connected account to use
+ * Execute a Composio action (e.g. "INSTAGRAM_CREATE_POST").
  */
 export async function executeAction(
   brandId: string,
@@ -135,63 +132,39 @@ export async function executeAction(
   params: Record<string, unknown>,
   connectedAccountId?: string,
 ): Promise<ActionResult> {
-  const composio = getComposio();
-  const entity = composio.getEntity(brandId);
-
-  const result: ActionExecuteResponse = await entity.execute({
-    actionName,
-    params,
+  const result: any = await getComposio().tools.execute(actionName, {
+    userId: brandId,
+    arguments: params,
+    ...(process.env.COMPOSIO_TOOLKIT_VERSION
+      ? { version: process.env.COMPOSIO_TOOLKIT_VERSION }
+      : { dangerouslySkipVersionCheck: true }),
     ...(connectedAccountId ? { connectedAccountId } : {}),
-  });
-
+  } as any);
   return {
-    success: result.successful ?? false,
-    data: result.data as Record<string, unknown>,
-    error: result.error,
+    success: result?.successful ?? false,
+    data: (result?.data ?? {}) as Record<string, unknown>,
+    error: result?.error ?? undefined,
   };
 }
 
-/**
- * List all connected accounts across all entities (admin-level).
- * Uses the top-level connectedAccounts.list() method.
- */
+/** List all connected accounts across all users (admin-level), optionally for one user. */
 export async function listAllConnectedAccounts(
   entityId?: string,
 ): Promise<ConnectedAccountInfo[]> {
-  const composio = getComposio();
-
-  const response = await composio.connectedAccounts.list({
-    ...(entityId ? { entityId } : {}),
-  });
-
-  const items = (response as any).items ?? (Array.isArray(response) ? response : []);
-  return items.map((conn: any) => ({
-    id: conn.id ?? conn.connectedAccountId ?? "",
-    entity_id: conn.clientUniqueUserId ?? conn.entityId ?? "",
-    app_name: conn.appName ?? conn.appUniqueId ?? "",
-    app_unique_id: conn.appUniqueId ?? conn.appName ?? "",
-    status: conn.status ?? "UNKNOWN",
-    created_at: conn.createdAt ?? new Date().toISOString(),
-    updated_at: conn.updatedAt ?? new Date().toISOString(),
-    is_disabled: conn.isDisabled ?? conn.disabled ?? false,
-  }));
+  const res: any = await getComposio().connectedAccounts.list(
+    entityId ? { userIds: [entityId] } : {},
+  );
+  return (res?.items ?? []).map((c: any) => toAccountInfo(c, entityId ?? ""));
 }
 
-/**
- * Wait for a connection to become active (useful after OAuth redirect).
- */
+/** Wait for a pending connection to become active (useful after OAuth redirect). */
 export async function waitForConnectionActive(
-  brandId: string,
-  toolkit: string,
+  connectedAccountId: string,
   timeoutMs = 60000,
-): Promise<ConnectedAccountResponseDTO | null> {
-  const composio = getComposio();
-  const entity = composio.getEntity(brandId);
-
-  const connectionRequest = await entity.initiateConnection({ appName: toolkit });
+): Promise<ConnectedAccountInfo | null> {
   try {
-    const activeAccount = await connectionRequest.waitUntilActive(Math.floor(timeoutMs / 1000));
-    return activeAccount;
+    const acct: any = await getComposio().connectedAccounts.waitForConnection(connectedAccountId, timeoutMs);
+    return toAccountInfo(acct);
   } catch {
     return null;
   }

@@ -625,7 +625,7 @@ export async function listAutomations(params?: {
   if (params?.page) query.set("page", String(params.page));
   if (params?.limit) query.set("limit", String(params.limit));
   const qs = query.toString();
-  return zernioFetch(`/automations${qs ? `?${qs}` : ""}`);
+  return zernioFetch(`/comment-automations${qs ? `?${qs}` : ""}`);
 }
 
 export async function createAutomation(data: {
@@ -637,15 +637,15 @@ export async function createAutomation(data: {
   dmMessage: string;
   commentReply?: string;
 }): Promise<ZernioAutomation> {
-  return zernioFetch<ZernioAutomation>("/automations", {
+  return zernioFetch<ZernioAutomation>("/comment-automations", {
     method: "POST",
     body: JSON.stringify(data),
   });
 }
 
 export async function updateAutomation(automationId: string, data: Record<string, unknown>): Promise<ZernioAutomation> {
-  return zernioFetch<ZernioAutomation>(`/automations/${automationId}`, {
-    method: "PUT",
+  return zernioFetch<ZernioAutomation>(`/comment-automations/${automationId}`, {
+    method: "PATCH",
     body: JSON.stringify(data),
   });
 }
@@ -657,14 +657,14 @@ export async function getPostAnalytics(params?: {
   accountId?: string;
   startDate?: string;
   endDate?: string;
-}): Promise<{ analytics: ZernioAnalyticsPost[] }> {
+}): Promise<{ posts: ZernioAnalyticsPost[]; overview?: Record<string, unknown> }> {
   const query = new URLSearchParams();
   if (params?.profileId) query.set("profileId", params.profileId);
   if (params?.accountId) query.set("accountId", params.accountId);
-  if (params?.startDate) query.set("startDate", params.startDate);
-  if (params?.endDate) query.set("endDate", params.endDate);
+  if (params?.startDate) query.set("fromDate", params.startDate);
+  if (params?.endDate) query.set("toDate", params.endDate);
   const qs = query.toString();
-  return zernioFetch(`/analytics/posts${qs ? `?${qs}` : ""}`);
+  return zernioFetch(`/analytics${qs ? `?${qs}` : ""}`);
 }
 
 export async function getDailyAnalytics(params?: {
@@ -672,14 +672,14 @@ export async function getDailyAnalytics(params?: {
   accountId?: string;
   startDate?: string;
   endDate?: string;
-}): Promise<{ analytics: ZernioAnalyticsDaily[] }> {
+}): Promise<{ dailyData: ZernioAnalyticsDaily[] }> {
   const query = new URLSearchParams();
   if (params?.profileId) query.set("profileId", params.profileId);
   if (params?.accountId) query.set("accountId", params.accountId);
-  if (params?.startDate) query.set("startDate", params.startDate);
-  if (params?.endDate) query.set("endDate", params.endDate);
+  if (params?.startDate) query.set("fromDate", params.startDate);
+  if (params?.endDate) query.set("toDate", params.endDate);
   const qs = query.toString();
-  return zernioFetch(`/analytics/daily${qs ? `?${qs}` : ""}`);
+  return zernioFetch(`/analytics/daily-metrics${qs ? `?${qs}` : ""}`);
 }
 
 export async function getBestTimes(profileId?: string, accountId?: string): Promise<{ bestTimes: ZernioBestTime[] }> {

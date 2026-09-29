@@ -74,7 +74,7 @@ function checkRateLimit(brandId: string): void {
 // ─── Types ────────────────────────────────────────────────────────────────
 
 export interface TextGenerationOptions {
-  model?: string;            // e.g. "gemini-2.0-flash" (default)
+  model?: string;            // e.g. "gemini-3.6-flash" (default)
   maxTokens?: number;
   temperature?: number;      // 0.0 – 2.0
   topP?: number;
@@ -132,7 +132,7 @@ export async function generateText(
   prompt: string,
   options: TextGenerationOptions = {}
 ): Promise<TextGenerationResult> {
-  const modelName = options.model || "gemini-2.0-flash";
+  const modelName = options.model || "gemini-3.6-flash";
 
   const generationConfig: GenerationConfig = {};
   if (options.maxTokens) generationConfig.maxOutputTokens = options.maxTokens;
@@ -424,13 +424,13 @@ export async function getApiKeyStatus(): Promise<{
 
   try {
     const genAI = getGenAI();
-    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+    const model = genAI.getGenerativeModel({ model: "gemini-3.6-flash" });
     await model.generateContent({
       contents: [{ role: "user", parts: [{ text: "Say OK" }] }],
       generationConfig: { maxOutputTokens: 3 },
     } as any);
 
-    return { configured: true, model: "gemini-2.0-flash" };
+    return { configured: true, model: "gemini-3.6-flash" };
   } catch (err: any) {
     return { configured: false, error: err?.message ?? "API key validation failed" };
   }

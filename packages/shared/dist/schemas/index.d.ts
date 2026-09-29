@@ -40,12 +40,13 @@ export declare const connectChannelSchema: z.ZodObject<{
     platform: z.ZodEnum<["twitter", "linkedin", "facebook", "instagram", "youtube", "tiktok", "wordpress", "bluesky"]>;
 }, "strip", z.ZodTypeAny, {
     brand_id: string;
-    platform: "facebook" | "twitter" | "instagram" | "linkedin" | "youtube" | "tiktok" | "wordpress" | "bluesky";
+    platform: "facebook" | "twitter" | "instagram" | "linkedin" | "tiktok" | "youtube" | "wordpress" | "bluesky";
 }, {
     brand_id: string;
-    platform: "facebook" | "twitter" | "instagram" | "linkedin" | "youtube" | "tiktok" | "wordpress" | "bluesky";
+    platform: "facebook" | "twitter" | "instagram" | "linkedin" | "tiktok" | "youtube" | "wordpress" | "bluesky";
 }>;
 export declare const updateChannelSchema: z.ZodObject<{
+    name: z.ZodOptional<z.ZodString>;
     settings: z.ZodOptional<z.ZodObject<{
         auto_reply_enabled: z.ZodOptional<z.ZodBoolean>;
         auto_reply_message: z.ZodOptional<z.ZodString>;
@@ -75,6 +76,7 @@ export declare const updateChannelSchema: z.ZodObject<{
         } | undefined;
     }>>;
 }, "strip", z.ZodTypeAny, {
+    name?: string | undefined;
     settings?: {
         auto_reply_enabled?: boolean | undefined;
         auto_reply_message?: string | undefined;
@@ -84,6 +86,7 @@ export declare const updateChannelSchema: z.ZodObject<{
         } | undefined;
     } | undefined;
 }, {
+    name?: string | undefined;
     settings?: {
         auto_reply_enabled?: boolean | undefined;
         auto_reply_message?: string | undefined;
@@ -260,17 +263,17 @@ export declare const uploadMediaSchema: z.ZodObject<{
 }>;
 export declare const createWebhookSchema: z.ZodObject<{
     url: z.ZodString;
-    events: z.ZodArray<z.ZodEnum<["post.scheduled", "post.published", "post.failed", "comment.received"]>, "many">;
+    events: z.ZodArray<z.ZodEnum<["post.scheduled", "post.published", "post.failed", "comment.received", "generate.completed", "generate.failed"]>, "many">;
     secret: z.ZodOptional<z.ZodString>;
     active: z.ZodDefault<z.ZodBoolean>;
 }, "strip", z.ZodTypeAny, {
     active: boolean;
     url: string;
-    events: ("post.scheduled" | "post.published" | "post.failed" | "comment.received")[];
+    events: ("post.scheduled" | "post.published" | "post.failed" | "comment.received" | "generate.completed" | "generate.failed")[];
     secret?: string | undefined;
 }, {
     url: string;
-    events: ("post.scheduled" | "post.published" | "post.failed" | "comment.received")[];
+    events: ("post.scheduled" | "post.published" | "post.failed" | "comment.received" | "generate.completed" | "generate.failed")[];
     active?: boolean | undefined;
     secret?: string | undefined;
 }>;

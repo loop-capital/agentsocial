@@ -3,10 +3,10 @@
  * Call metrics and performance data
  */
 
-import { Router } from 'express';
+import { Router, type Request, type Response } from 'express';
 import { agentsocial } from '../services/agentsocial-client.js';
 
-export const analyticsRouter = Router();
+export const analyticsRouter: Router = Router();
 
 // Log call event
 analyticsRouter.post('/call', async (req, res) => {

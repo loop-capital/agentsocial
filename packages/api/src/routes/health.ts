@@ -1,4 +1,5 @@
 import type { FastifyInstance } from "fastify";
+import { z } from "zod";
 import { pool } from "../db/index.js";
 
 export const healthRoutes = async (server: FastifyInstance) => {
@@ -7,14 +8,11 @@ export const healthRoutes = async (server: FastifyInstance) => {
   server.get("/ready", {
     schema: {
       response: {
-        200: {
-          type: "object",
-          properties: {
-            status: { type: "string" },
-            postgres: { type: "string" },
-            redis: { type: "string" },
-          },
-        },
+        200: z.object({
+          status: z.string(),
+          postgres: z.string(),
+          redis: z.string().optional(),
+        }),
       },
     },
   }, async (_request, reply) => {

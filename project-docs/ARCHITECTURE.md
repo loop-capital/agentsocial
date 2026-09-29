@@ -1,6 +1,6 @@
 # AgentSocial Platform Architecture
 
-**Last Updated:** 2026-06-01
+**Last Updated:** 2026-09-14
 **Status:** Active development
 
 ## System Overview
@@ -12,12 +12,13 @@ AgentSocial is a social media automation platform with an integrated website bui
 ```
 agentsocial/
 ├── packages/
-│   ├── api/              # Fastify 4 backend (port 3001, 31 route files, 25 services)
+│   ├── api/              # Fastify 4 backend (port 3001, 34 route files, 25 services)
 │   ├── web/              # Next.js 14 frontend (port 3000)
 │   ├── backend/          # Legacy creative engine (48 TS errors, not active)
 │   ├── shared/           # Zod schemas, types, constants
 │   ├── voice-agent/      # Gisele AI receptionist + Square API (port 3015)
 │   ├── adobe-toolkit/    # Firefly + Stock API clients (327 + 247 lines)
+│   ├── frontend/         # New frontend package (social create page with AI generation)
 │   └── facebook-connector/ # Facebook integration (legacy)
 ├── siteflow/             # Website builder (Next.js 14 + Tailwind + 21st.dev)
 ├── infra/                # Infrastructure config (Docker, Caddy, Ansible)
@@ -33,14 +34,14 @@ agentsocial/
 
 | Service | Port | Status | Purpose |
 |---------|------|--------|---------|
-| API Server | 3001 | ✅ Running | Main backend API (31 route modules) |
+| API Server | 3001 | ✅ Running | Main backend API (34 route modules) |
 | Web App | 3000 | ✅ Running | Next.js dashboard |
 | Voice Agent | 3015 | ✅ Running | Square booking API for Gisele |
 | Dograh UI | 3020 | ✅ Running | Voice agent management UI |
 | Dograh API | 8010 | ✅ Running | Voice workflow engine |
 | SiteFlow Preview | 3456 | On-demand | Website builder preview |
 
-## API Routes (31 modules, ~50+ endpoints)
+## API Routes (34 modules, ~270+ endpoints)
 
 | Module | Key Endpoints |
 |--------|--------------|
@@ -49,7 +50,8 @@ agentsocial/
 | brands, channels, profiles | Brand management, social profiles |
 | analytics, competitors | Dashboard data, competitor monitoring |
 | billing, billing-tiers | Square billing, tier management |
-| generation | **12 endpoints** — image, video, character, voice profile (muapi + Gemini) |
+| generation | **17 endpoints** — image, video, character, voice profile, voice clone, lipsync, TTS, Seedance multi-ref (muapi + Gemini) |
+| generate-post-assets | **4 endpoints** — image-from-caption, video-from-caption, video-status, related-posts (new Sep 2026) |
 | gbp, google-oauth | Google Business Profile (pending API access) |
 | clientvet | Client risk flags, deposit requirements |
 | review-sentry, review-solicitation, review-templates | Review management |
@@ -77,7 +79,8 @@ agentsocial/
 - Multi-tier billing (Core $49, Pro $199, Elite $499)
 
 ### Social Media (via Composio MCP)
-- Composio handles OAuth for IG, FB, X, LinkedIn, TikTok
+- Composio CLI v0.7.21 at /home/jason/.local/bin/composio, authenticated with uak_* key
+- Plugin `@composio/openclaw-plugin@0.0.12` enabled in OpenClaw
 - API key: `ak_ZUf…qtCYx` (Free tier, 20K calls/mo)
 - Upgrade to Pro ($29/mo) when we have paying customers
 
@@ -85,15 +88,17 @@ agentsocial/
 - **muapi**: 200+ AI models (images, video, character, voice profile)
 - **Gemini**: Free-tier fallback for generation
 - **Claude API + OpenAI**: Text generation fallback
-- **Cloudinary**: Media upload & transformations
+- **Cloudinary**: Media upload & CDN for generated assets (added Sep 2026)
 - **Clipify**: Video repurposing (Whisper transcription → moment detection → reframe → captions)
 - **yt-dlp**: YouTube download
 - **Adobe Express Embed SDK**: In-app image editing (free tier)
+- **Adobe Firefly MCP**: 5 tools (generate, generate_video, variations, expand, remove_background) — WSLg wrapper, account clawstudioai@outlook.com
 
 ### Voice AI
 - **Dograh**: Self-hosted Vapi alternative (~$15/mo vs $32/mo)
 - **Gisele**: AI phone receptionist for PLEIJ salon
 - **3 workflows**: Inbound receptionist, rebooking reminders, review requests
+- **check_client_risk**: Integrated into PLEIJ booking flow (ClientVet)
 - **Square production API** connected (10 stylists, 334 services)
 - **Fish S2**: Planned TTS swap for better voice quality (at 20+ salon scale)
 
@@ -101,9 +106,10 @@ agentsocial/
 - Next.js 14 + Tailwind + 21st.dev + Vercel
 - Template engine for customer sites
 - 3 clones built: Pedro, Amie, Notion (port 3456)
+- **Open Design integration**: 157 skills, 152 design systems, MCP wired into OpenClaw (v0.9.0, Apache-2.0)
 
 ### Analytics
-- **Plausible**: Self-hosted on Hetzner (free, open source)
+- **Plausible**: Self-hosted on Hetzner (free, open source) — **not yet deployed**
 - Built into all plans (not an upsell)
 - Tracking script on every SiteFlow site
 - API pulls 3 metrics into AgentSocial dashboard (visitors, top pages, conversion rate)
@@ -115,6 +121,7 @@ agentsocial/
 - Need DNS wildcard for *.clawstudio.co
 - Need Docker + Caddy reverse proxy config
 - Supabase DB pauses when idle (needs fix for production)
+- **Last commit:** `5781c52` (Sep 13, 2026) — checkpointed 98 days of uncommitted work
 
 ## Frontend Pages (35+)
 
@@ -122,9 +129,10 @@ Dashboard + marketing pages + 3 voice-specific pages + generation UI + account m
 
 ## Architecture Decision Records
 
-See `project-docs/DECISIONS.md` for 12 ADRs including:
+See `project-docs/DECISIONS.md` for 13+ ADRs including:
 - ADR-001: Fastify over Express
 - ADR-003: Self-hosted Dograh over Vapi
 - ADR-004: Composio for social OAuth
 - ADR-011: muapi adapter pattern for generation
 - ADR-012: Self-hosted Plausible for analytics
+- ADR-014: Cloudinary for generated asset CDN

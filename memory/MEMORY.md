@@ -1,7 +1,18 @@
 # MEMORY.md — AgentSocial-CEO Long-Term Memory
 
-> **Last updated:** 2026-07-19
+> **Last updated:** 2026-09-20
 > **Daily notes:** `memory/YYYY-MM-DD.md`
+
+---
+
+## 🔴 CRITICAL: 106 Days Since Last Commit
+
+Last commit: `8da9913` (June 6). **~104 uncommitted files** at risk of loss.
+No user sessions since Sep 13 (7 days). All activity is automated cron/maintenance.
+
+**Sep 13 checkpoint:** 5781c52 — "98 days of uncommitted AgentSocial work"
+
+---
 
 ---
 
@@ -14,11 +25,6 @@
 | **PC3** | Eiza (main), Pleij | `ssh pc3` (100.109.228.58, user: loopcapital) |
 
 ---
-
-## 🔴 CRITICAL: 43 Days Since Last Commit
-
-Last commit: `8da9913` (June 6). **371 uncommitted files** at risk of loss.
-No user sessions in 5+ days. All activity is automated cron/maintenance.
 
 ---
 
@@ -34,12 +40,14 @@ No user sessions in 5+ days. All activity is automated cron/maintenance.
 - **ClientVet**: Auth-wired, integrated into Voice Agent booking flow
 
 ### Blocked Items
-- **GBP API**: Rejected June 2, reapply **July 22** (3 days)
+- **GBP API**: Rejected June 2, reapply eligible since **July 22** — now **60 days past**, still not applied
 - **Hetzner Cloud**: Need account + API key from Jason
 - **DNS wildcard**: *.clawstudio.co needed
 - **Phorest API**: Need to apply for credentials
 - **Video add-on pricing**: Jason to decide $99 vs $149
 - **PM2 startup script**: Needs sudo on PC3
+- **OpenAI quota exhausted** — voice agent blocked, need credits or switch to Gemini
+- **DataForSEO**: Free trial with zero limits — needs payment method from Jason
 
 ### Voice Agent (PLEIJ Salon)
 - Phone: +16146651751, Twilio SID: AC_REDACTED
@@ -66,11 +74,34 @@ No user sessions in 5+ days. All activity is automated cron/maintenance.
 
 ---
 
+## Recent Work (Sep 13 — Last User Session)
+
+### Phase 2 Task 3: AI Generation Integration
+- Added `generateText` to `GenerationService` using muapi `gemini-2.0-flash`
+- Created Cloudinary helper for asset storage
+- New API routes: `/generate/image-from-caption`, `/generate/video-from-caption`, `/generate/related-posts`
+- Frontend: Generate Image/Video/Related Posts buttons in post creation flow
+- **Status**: Code delivered; full build blocked by pre-existing TS errors (MCP server missing `GenerationService` methods, `@agentsocial/shared` types not resolving, `gbp/page.tsx` missing `GbpAccount` type)
+- Targeted type-check of changed files = 0 errors
+
+### Adobe Firefly MCP Setup
+- MCP server configured with `firefly_generate` and `firefly_generate_video` tools
+- Added to agent toolkit for social content generation
+
+### Composio Troubleshooting
+- OAuth session resets blocked proper Adobe Firefly connection via Composio
+- Firefly MCP remains the working alternative
+
+---
+
+---
+
 ## Key Accounts
 - **Square:** hello@pleijsalon.com / Nat1shafl0! (2FA)
 - **Davines Pro:** tiche@pleijsalon.com / Luxott1ca!
 - **OpenAI**: Quota exhausted — needs credits or switch to Gemini
 - **Twilio**: Account SID AC_REDACTED (ClawStudio)
+- **DataForSEO**: Account active, free trial with zero limits — needs billing activation
 
 ---
 
@@ -85,3 +116,5 @@ No user sessions in 5+ days. All activity is automated cron/maintenance.
 - **Cloudflare breaks Twilio signature validation** — HMAC-SHA1 computed against wrong URL
 - **Use volume mounts, not docker cp** — docker cp can corrupt files
 - **Dograh BYOK schema**: provider as discriminator (flat), not nested
+- **Pre-existing TS errors block all verification** — must be fixed before any build can be declared green
+- **Daily cron notes accumulate identical stale entries** — weekly curation is essential

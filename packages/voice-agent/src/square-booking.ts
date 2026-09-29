@@ -37,12 +37,14 @@ const square = new SquareClient({
 
 // These map our salon services to Square catalog item IDs
 // We'll populate these after syncing with Square catalog
-const SERVICE_CATALOG: Record<string, {
+export interface ServiceCatalogEntry {
   name: string;
-  duration: number;  // minutes
+  duration: number; // minutes
   price: string;
-  squareVariationId?: string;  // Square catalog item variation ID
-}> = {
+  squareVariationId?: string; // Square catalog item variation ID
+}
+
+export const SERVICE_CATALOG: Record<string, ServiceCatalogEntry> = {
   "women_haircut":     { name: "Women Haircut",        duration: 45,  price: "$55-$85" },
   "men_haircut":       { name: "Men Haircut",          duration: 30,  price: "$35-$45" },
   "balayage":          { name: "Balayage",             duration: 180, price: "$180-$250" },
@@ -62,10 +64,12 @@ const SERVICE_CATALOG: Record<string, {
 
 // ─── Stylist → Square Team Member Mapping ─────────────────────────────────────
 
-const STYLIST_MAP: Record<string, {
+export interface StylistMapEntry {
   displayName: string;
-  squareTeamMemberId?: string;  // Populated after sync
-}> = {
+  squareTeamMemberId?: string; // Populated after sync
+}
+
+export const STYLIST_MAP: Record<string, StylistMapEntry> = {
   "ashley":  { displayName: "Ashley (Senior)" },
   "jessica": { displayName: "Jessica (Senior)" },
   "morgan":  { displayName: "Morgan" },
@@ -111,7 +115,8 @@ export async function searchAvailability(
   }
 
   try {
-    const result = await square.bookings.searchAvailability({
+    // @ts-expect-error Square SDK types mismatch: response uses `data` accessor
+    const result: { data?: { availabilities?: unknown[] } } = await square.bookings.searchAvailability({
       query: {
         filter: {
           locationId: SQUARE_LOCATION_ID,
@@ -181,7 +186,8 @@ export async function createBooking(req: BookingRequest): Promise<BookingResult>
   }
 
   try {
-    const result = await square.bookings.create({
+    // @ts-expect-error Square SDK types mismatch: response uses `data` accessor
+    const result: { data?: { booking?: { id?: string; startAt?: string } } } = await square.bookings.create({
       booking: {
         locationId: SQUARE_LOCATION_ID,
         startAt: startAt.toISOString(),
@@ -319,6 +325,16 @@ export async function handleCreateBooking(body: BookingRequest): Promise<Booking
 
 // ─── Catalog Sync (run once to map Square IDs) ────────────────────────────────
 
+interface CatalogItemShape {
+  itemData?: {
+    name?: string;
+    variations?: Array<{
+      id?: string;
+      itemVariationData?: { itemId?: string };
+    }>;
+  };
+}
+
 /**
  * Sync Square catalog items and team members to our local mappings.
  * Run this once when setting up a new salon.
@@ -335,9 +351,9 @@ export async function syncSquareCatalog(): Promise<{
     const catalogResult = await square.catalog.list({
       types: "ITEM",
       locationId: SQUARE_LOCATION_ID,
-    });
+    } as any);
 
-    for await (const item of catalogResult) {
+    for await (const item of catalogResult as unknown as AsyncIterable<CatalogItemShape>) {
       if (!item.itemData?.name) continue;
       const name = item.itemData.name.toLowerCase();
       
@@ -354,11 +370,12 @@ export async function syncSquareCatalog(): Promise<{
     }
 
     // Sync team members (stylists)
+    // @ts-expect-error Square SDK types mismatch: list accepts locationId and returns async-iterable
     const teamResult = await square.teamMembers.list({
       locationId: SQUARE_LOCATION_ID,
     });
 
-    for await (const member of teamResult) {
+    for await (const member of teamResult as unknown as AsyncIterable<{ id?: string; givenName?: string }>) {
       if (!member.givenName) continue;
       const name = member.givenName.toLowerCase();
 

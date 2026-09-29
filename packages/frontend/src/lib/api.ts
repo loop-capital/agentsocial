@@ -82,6 +82,46 @@ export const contentApi = {
     return apiFetch(`/content/peak-hours${qs}`);
   },
   platforms: () => apiFetch('/content/platforms'),
+
+  /** POST /generate/image-from-caption */
+  generateImageFromCaption: (data: {
+    caption: string;
+    aspectRatio?: '1:1' | '3:4' | '4:3' | '9:16' | '16:9';
+    model?: string;
+    brandId: string;
+  }) => apiFetch('/generate/image-from-caption', {
+    method: 'POST',
+    headers: { 'x-brand-id': data.brandId },
+    body: JSON.stringify({ caption: data.caption, aspectRatio: data.aspectRatio, model: data.model }),
+  }),
+
+  /** POST /generate/video-from-caption */
+  generateVideoFromCaption: (data: {
+    caption: string;
+    imageUrl?: string | null;
+    aspectRatio?: '16:9' | '9:16' | '1:1' | '4:5';
+    model?: string;
+    brandId: string;
+  }) => apiFetch('/generate/video-from-caption', {
+    method: 'POST',
+    headers: { 'x-brand-id': data.brandId },
+    body: JSON.stringify({ caption: data.caption, imageUrl: data.imageUrl, aspectRatio: data.aspectRatio, model: data.model }),
+  }),
+
+  /** GET /generate/video-from-caption/:jobId */
+  getVideoJobStatus: (data: { jobId: string; brandId: string }) =>
+    apiFetch(`/generate/video-from-caption/${data.jobId}`, { headers: { 'x-brand-id': data.brandId } }),
+
+  /** POST /generate/related-posts */
+  generateRelatedPosts: (data: {
+    postId: string;
+    targetPlatforms: string[];
+    brandId: string;
+  }) => apiFetch('/generate/related-posts', {
+    method: 'POST',
+    headers: { 'x-brand-id': data.brandId },
+    body: JSON.stringify({ postId: data.postId, targetPlatforms: data.targetPlatforms }),
+  }),
 };
 
 export const socialApi = {

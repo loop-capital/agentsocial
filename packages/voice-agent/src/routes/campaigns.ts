@@ -3,10 +3,10 @@
  * Manages outbound voice campaigns (rebooking, reviews, promos)
  */
 
-import { Router } from 'express';
+import { Router, type Request, type Response } from 'express';
 import { agentsocial } from '../services/agentsocial-client.js';
 
-export const campaignRouter = Router();
+export const campaignRouter: Router = Router();
 
 // Trigger a campaign
 campaignRouter.post('/trigger', async (req, res) => {

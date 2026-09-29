@@ -2,7 +2,7 @@
 
 ## Setup
 - **MCP Server**: Configured in OpenClaw (`scrapegraph`)
-- **API Key**: sgai-17447d35-f7dc-478c-96b3-27bf84827632
+- **API Key**: ${SCRAPEGRAPH_API_KEY} (see ~/.openclaw/.env)
 - **Plan**: Free (500 credits, 472 remaining after initial research)
 - **Cost per search**: ~8 credits per 6-8 result search
 
