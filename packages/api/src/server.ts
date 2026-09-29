@@ -10,6 +10,7 @@ import swaggerUi from "@fastify/swagger-ui";
 import { serializerCompiler, validatorCompiler, jsonSchemaTransform, ZodTypeProvider } from "fastify-type-provider-zod";
 import authPlugin from "./plugins/auth.js";
 import { accessControl } from "./plugins/access-control.js";
+import { isPublicRoute } from "./plugins/public-routes.js";
 import { healthRoutes } from "./routes/health.js";
 import { legalRoutes } from "./routes/legal.js";
 import { authRoutes } from "./routes/auth.js";
@@ -48,9 +49,11 @@ import { crmRoutes } from "./routes/crm.js";
 import { startWorkers, stopWorkers } from "./workers/index.js";
 import { requeueScheduledPosts } from "./queues/requeue.js";
 import { ensureGenerationTables, sweepGenerationJobs } from "./services/generation-jobs.js";
+import { checkChannelHealth } from "./services/channel-health.js";
 import { aiRoutes } from "./routes/ai.js";
 import { brandHubRoutes } from "./routes/brand-hub.js";
 import { pool } from "./db/index.js";
+import { runMigrations } from "./db/migrate.js";
 
 const server = Fastify({
   logger: {
@@ -159,51 +162,12 @@ await server.register(swaggerUi, {
 await server.register(authPlugin);
 
 // ─── Global Auth Guard ──────────────────────────────────────────────────────
-// Protect all routes except explicitly public ones. Entries are path prefixes,
-// optionally limited to one method ("GET /profiles"); a trailing "$" means an
-// exact path match.
-const PUBLIC_PREFIXES = [
-  "/auth/register",
-  "/auth/login",
-  "/health",
-  "/clientvet/deposits/webhook", // Square-signed; verified in the handler (fails closed)
-  "/webhooks",
-  "/browser-auth",
-  "/channels/callback",
-  "/channels/facebook/callback",
-  "/channels/facebook/pages",
-  "/channels/facebook/connect-pages",
-  "/channels/instagram/callback",
-  "/billing/plans",
-  "/billing/tiers",
-  "/billing/webhook",
-  "/docs",
-  "/legal",
-  "GET /landing-pages/",
-  "GET /profiles",
-  "GET /review-sentry/business/",
-  "POST /review-sentry/rate$",
-  "POST /review-sentry/feedback$",
-  "/review-sentry/sms/webhook",
-  "GET /review-sentry/templates",
-  "/twilio/sms",
-  "/twilio/sms-status",
-  "/twilio/voice",
-];
-
+// Protect all routes except explicitly public ones (plugins/public-routes.ts)
 server.addHook("onRequest", async (request, reply) => {
   const fullUrl = request.url.split("?")[0]; // strip query string
   // Normalize: strip /api/v1 prefix for matching
   const path = fullUrl.startsWith("/api/v1") ? fullUrl.slice("/api/v1".length) || "/" : fullUrl;
-  const isPublic = PUBLIC_PREFIXES.some((entry) => {
-    const [method, pattern] = entry.includes(" ") ? entry.split(" ") : [null, entry];
-    if (method && method !== request.method) return false;
-    return pattern.endsWith("$") ? path === pattern.slice(0, -1) : path.startsWith(pattern);
-  });
-  if (isPublic) return;
-  // Also allow root / and favicon
-  if (path === "/" || path === "/favicon.ico") return;
-  // For all other routes, require authentication
+  if (isPublicRoute(request.method, path)) return;
   await server.authenticate(request, reply);
 });
 
@@ -295,6 +259,11 @@ const start = async () => {
     // ── Run DB migrations (auto-create tables) ─────────────────────────────────
     // Run async — don't block server startup if DB is slow/unreachable
     const migrationPromise = (async () => {
+      try {
+        await runMigrations((m) => server.log.info(m));
+      } catch (e: any) {
+        server.log.error({ err: e.message }, "❌ SQL migrations failed");
+      }
       try {
         await pool.query(`ALTER TABLE brands ADD COLUMN IF NOT EXISTS voice_profile text`);
         await pool.query(`ALTER TABLE brands ADD COLUMN IF NOT EXISTS profile jsonb NOT NULL DEFAULT '{}'::jsonb`);
@@ -521,6 +490,13 @@ const start = async () => {
     };
     void sweep();
     setInterval(sweep, 5 * 60_000).unref();
+
+    // Daily channel health check (first run shortly after start)
+    const healthCheck = () =>
+      checkChannelHealth((m) => server.log.info(m)).catch((e: any) =>
+        server.log.warn({ err: e.message }, "⚠️ Channel health check failed"));
+    setTimeout(healthCheck, 60_000).unref();
+    setInterval(healthCheck, 24 * 60 * 60_000).unref();
 
     // Poll in-flight muapi generation jobs so clients never wait on a request
     setInterval(() => {

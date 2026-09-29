@@ -1,6 +1,7 @@
 import type { FastifyInstance } from "fastify";
 import { z } from "zod";
 import { pool } from "../db/index.js";
+import { redis } from "../queues/redis.js";
 
 export const healthRoutes = async (server: FastifyInstance) => {
   server.get("/health", async () => ({ status: "ok", timestamp: new Date().toISOString() }));
@@ -9,6 +10,11 @@ export const healthRoutes = async (server: FastifyInstance) => {
     schema: {
       response: {
         200: z.object({
+          status: z.string(),
+          postgres: z.string(),
+          redis: z.string().optional(),
+        }),
+        503: z.object({
           status: z.string(),
           postgres: z.string(),
           redis: z.string().optional(),
@@ -25,10 +31,22 @@ export const healthRoutes = async (server: FastifyInstance) => {
       postgresStatus = "disconnected";
     }
 
-    return reply.send({
-      status: postgresStatus === "connected" ? "ready" : "degraded",
+    let redisStatus = "disconnected";
+    try {
+      const pong = await Promise.race([
+        redis.ping(),
+        new Promise((_, reject) => setTimeout(() => reject(new Error("timeout")), 2000)),
+      ]);
+      if (pong === "PONG") redisStatus = "connected";
+    } catch {
+      // stays disconnected
+    }
+
+    const ready = postgresStatus === "connected" && redisStatus === "connected";
+    return reply.status(ready ? 200 : 503).send({
+      status: ready ? "ready" : "degraded",
       postgres: postgresStatus,
-      redis: "connected",
+      redis: redisStatus,
     });
   });
 };

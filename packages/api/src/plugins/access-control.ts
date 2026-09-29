@@ -6,7 +6,7 @@
  *   brand owning any resource addressed by id in the path (RESOURCE_BRAND) must
  *   belong to the caller, otherwise 404 brand_not_found.
  * - Admin-only areas: cross-tenant routes (account manager, the shared Zernio
- *   account under /social, plan setup) require an email listed in ADMIN_EMAILS.
+ *   account under /social, plan setup) require users.is_admin.
  *
  * - API key permissions: keys without "write" or "admin" are read-only.
  *
@@ -21,17 +21,12 @@ const ADMIN_ONLY_PREFIXES = ["/manager", "/social", "/billing/init-plans"];
 const adminCache = new Map<string, { admin: boolean; at: number }>();
 const ADMIN_CACHE_MS = 60_000;
 
-function adminEmails(): Set<string> {
-  return new Set(
-    (process.env.ADMIN_EMAILS ?? "").split(",").map((e) => e.trim().toLowerCase()).filter(Boolean),
-  );
-}
-
+/** Admins are users with users.is_admin = true. */
 export async function isAdmin(userId: string): Promise<boolean> {
   const cached = adminCache.get(userId);
   if (cached && Date.now() - cached.at < ADMIN_CACHE_MS) return cached.admin;
-  const { rows } = await pool.query(`SELECT email FROM users WHERE id = $1`, [userId]);
-  const admin = !!rows[0] && adminEmails().has(String(rows[0].email).toLowerCase());
+  const { rows } = await pool.query(`SELECT is_admin FROM users WHERE id = $1`, [userId]);
+  const admin = rows[0]?.is_admin === true;
   adminCache.set(userId, { admin, at: Date.now() });
   return admin;
 }
@@ -94,6 +89,7 @@ sqlBrand("/review-sentry/feedback/{id}",
 sqlBrand("/review-sentry/removal/cases/{id}", "SELECT brand_id FROM review_removal_cases WHERE id::text = $1");
 sqlBrand("/clientvet/clients/{id}", "SELECT brand_id FROM client_risk_flags WHERE id::text = $1");
 sqlBrand("/clientvet/deposits/{id}", "SELECT brand_id FROM deposit_payments WHERE id::text = $1");
+sqlBrand("/campaigns/{id}", "SELECT brand_id FROM campaigns WHERE id::text = $1");
 
 // Landing pages are addressed by slug; only writes need an owner (GET is public)
 RESOURCE_BRAND.push({
@@ -101,15 +97,6 @@ RESOURCE_BRAND.push({
   methods: ["PUT", "PATCH", "POST", "DELETE"],
   brandOf: async (slug) =>
     (await pool.query(`SELECT brand_id FROM landing_pages WHERE slug = $1`, [slug])).rows[0]?.brand_id ?? null,
-});
-
-// Campaigns are held by the campaign service, not a table
-RESOURCE_BRAND.push({
-  pattern: new RegExp(`^/campaigns/([^/]+)(/|$)`),
-  brandOf: async (id) => {
-    const { getCampaign } = await import("../services/campaigns.js");
-    return (await getCampaign(id))?.brandId ?? null;
-  },
 });
 
 /** Brands owning the resources addressed in the path (see RESOURCE_BRAND). */

@@ -58,3 +58,10 @@ media/
 # Runtime / generated workspace outputs
 agentsocial-schema-engine-v*.zip
 *.log
+graphify-out/
+**/graphify-out/
+memory/.dreams/
+memory/dreaming/
+memory/events/
+*.pidfile
+.pidfile

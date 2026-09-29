@@ -20,6 +20,66 @@ function statusFor(account: ConnectedAccountInfo | undefined): ChannelStatus {
   return "error"; // EXPIRED, FAILED, disabled
 }
 
+export interface ChannelSyncPlan {
+  status: ChannelStatus;
+  accountId: string;
+  settings: Record<string, unknown>;
+}
+
+type SyncableChannel = Pick<ChannelRow, "id" | "platform" | "status" | "accountId" | "settings">;
+
+/**
+ * Decide a channel's new state from the brand's Composio accounts, or null when
+ * nothing changes. Pure, so the rules are unit-testable.
+ */
+export function planChannelSync(
+  channel: SyncableChannel,
+  accounts: ConnectedAccountInfo[],
+  includeChannelId?: string,
+): ChannelSyncPlan | null {
+  const toolkit = PLATFORM_TO_TOOLKIT[channel.platform];
+  if (!toolkit) return null;
+
+  const settings = { ...(Object(channel.settings) as Record<string, unknown>) };
+  const current = settings.composio_account_id as string | undefined;
+  const pending = settings.composio_pending_account_id as string | undefined;
+  if (!current && !pending && channel.id !== includeChannelId) return null;
+
+  const byId = (id?: string) => (id ? accounts.find((a) => a.id === id) : undefined);
+  const pendingAccount = byId(pending);
+  let currentId = current;
+
+  if (pending && statusFor(pendingAccount) === "active") {
+    currentId = pending;
+    delete settings.composio_pending_account_id;
+  } else if (pending && (!pendingAccount || statusFor(pendingAccount) === "error")) {
+    delete settings.composio_pending_account_id; // abandoned, deleted or failed
+  }
+
+  if (!byId(currentId)) {
+    const newestActive = accounts
+      .filter((a) => a.app_name === toolkit && statusFor(a) === "active")
+      .sort((a, b) => b.created_at.localeCompare(a.created_at))[0];
+    if (newestActive) currentId = newestActive.id;
+  }
+
+  // A channel whose only Composio link was an abandoned pending connect keeps
+  // its own status; it is not Composio-managed
+  if (!currentId) {
+    return JSON.stringify(settings) !== JSON.stringify(channel.settings)
+      ? { status: channel.status as ChannelStatus, accountId: channel.accountId, settings }
+      : null;
+  }
+
+  const status = statusFor(byId(currentId));
+  settings.composio_account_id = currentId;
+  const changed =
+    status !== channel.status ||
+    currentId !== channel.accountId ||
+    JSON.stringify(settings) !== JSON.stringify(channel.settings);
+  return changed ? { status, accountId: currentId, settings } : null;
+}
+
 /**
  * Sync the brand's Composio-managed channels. `includeChannelId` also syncs a
  * channel that has no Composio ids yet, adopting the newest ACTIVE account.
@@ -33,59 +93,11 @@ export async function syncBrandComposioChannels(
   const updated: ChannelRow[] = [];
 
   for (const channel of rows) {
-    const toolkit = PLATFORM_TO_TOOLKIT[channel.platform];
-    if (!toolkit) continue;
-
-    const settings = { ...(Object(channel.settings) as Record<string, unknown>) };
-    const current = settings.composio_account_id as string | undefined;
-    const pending = settings.composio_pending_account_id as string | undefined;
-    if (!current && !pending && channel.id !== opts.includeChannelId) continue;
-
-    const byId = (id?: string) => (id ? accounts.find((a) => a.id === id) : undefined);
-    const pendingAccount = byId(pending);
-    let currentId = current;
-
-    if (pending && statusFor(pendingAccount) === "active") {
-      currentId = pending;
-      delete settings.composio_pending_account_id;
-    } else if (pending && (!pendingAccount || statusFor(pendingAccount) === "error")) {
-      delete settings.composio_pending_account_id; // abandoned, deleted or failed
-    }
-
-    if (!byId(currentId)) {
-      const newestActive = accounts
-        .filter((a) => a.app_name === toolkit && statusFor(a) === "active")
-        .sort((a, b) => b.created_at.localeCompare(a.created_at))[0];
-      if (newestActive) currentId = newestActive.id;
-    }
-
-    // A channel whose only Composio link was an abandoned pending connect keeps
-    // its own status; it is not Composio-managed
-    if (!currentId) {
-      if (JSON.stringify(settings) !== JSON.stringify(channel.settings)) {
-        const [row] = await db
-          .update(channels)
-          .set({ settings, updatedAt: new Date() })
-          .where(eq(channels.id, channel.id))
-          .returning();
-        updated.push(row);
-      }
-      continue;
-    }
-
-    const status = statusFor(byId(currentId));
-    if (currentId) settings.composio_account_id = currentId;
-    else delete settings.composio_account_id;
-
-    const changed =
-      status !== channel.status ||
-      (currentId ?? channel.accountId) !== channel.accountId ||
-      JSON.stringify(settings) !== JSON.stringify(channel.settings);
-    if (!changed) continue;
-
+    const plan = planChannelSync(channel, accounts, opts.includeChannelId);
+    if (!plan) continue;
     const [row] = await db
       .update(channels)
-      .set({ status, accountId: currentId ?? channel.accountId, settings, updatedAt: new Date() })
+      .set({ ...plan, updatedAt: new Date() })
       .where(eq(channels.id, channel.id))
       .returning();
     updated.push(row);

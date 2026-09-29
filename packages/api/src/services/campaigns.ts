@@ -1,378 +1,181 @@
 // ─── Rebooking Campaigns Service ──────────────────────────────────────────────
 //
-// Provides campaign management, stats, and message tracking for automated
-// SMS/email rebooking reminders. Uses mock data in dev mode.
+// Campaign definitions and their message log, stored in `campaigns` and
+// `campaign_messages`. Stats are computed from the message log.
+//
+// Note: nothing sends campaign messages yet; campaigns are definitions only
+// until a sender writes rows to campaign_messages.
 
 import type {
   Campaign,
   CampaignMessage,
+  CampaignMessageStatus,
   CampaignStats,
   CampaignStatus,
   CampaignType,
-  CampaignMessageStatus,
-  CampaignTrigger,
   CreateCampaignInput,
   UpdateCampaignInput,
 } from "@agentsocial/shared";
+import { pool } from "../db/index.js";
 
-// ─── Mock Data ────────────────────────────────────────────────────────────────
+/** Estimated cost per message in cents, used for ROI. */
+const COST_PER_MESSAGE_CENTS = 1;
 
-const MOCK_TRIGGERS: Record<string, CampaignTrigger[]> = {
-  rebooking: [
-    {
-      eventType: "appointment_completed",
-      delayDays: 3,
-      maxPerCustomer: 1,
-      timeOfDay: "10:00",
-      daysOfWeek: [1, 2, 3, 4, 5],
-    },
-  ],
-  birthday: [
-    {
-      eventType: "birthday",
-      delayDays: 7,
-      maxPerCustomer: 1,
-      timeOfDay: "09:00",
-      daysOfWeek: [0, 1, 2, 3, 4, 5, 6],
-    },
-  ],
-  winback: [
-    {
-      eventType: "days_since_visit",
-      delayDays: 0,
-      maxPerCustomer: 2,
-      timeOfDay: "11:00",
-      daysOfWeek: [1, 2, 3, 4, 5],
-    },
-    {
-      eventType: "days_since_visit",
-      delayDays: 30,
-      maxPerCustomer: 1,
-      timeOfDay: "11:00",
-      daysOfWeek: [1, 2, 3, 4, 5],
-    },
-  ],
-};
+const iso = (v: unknown): string | null => (v ? new Date(v as string).toISOString() : null);
 
-const MOCK_CAMPAIGNS: Campaign[] = [
-  {
-    id: "camp-rebook-001",
-    brandId: "00000000-0000-0000-0000-000000000000",
-    name: "Rebooking Reminder",
-    type: "rebooking",
-    status: "active",
-    template:
-      "Hi {{name}}! 💇 It's been a few days since your {{service}} appointment. We'd love to see you again — book your next visit at {{bookingLink}}",
-    channel: "sms",
-    triggers: MOCK_TRIGGERS.rebooking,
-    stats: {
-      sent: 847,
-      delivered: 812,
-      opened: 0,
-      clicked: 289,
-      booked: 134,
-      failed: 23,
-      optedOut: 12,
-      openRate: 0,           // N/A for SMS
-      clickRate: 0.341,
-      bookRate: 0.158,
-      revenue: 134 * 95,     // avg booking value ~$95
-      roi: 4.2,
-    },
-    createdAt: "2025-11-15T10:00:00Z",
-    updatedAt: "2026-05-01T14:30:00Z",
-  },
-  {
-    id: "camp-bday-002",
-    brandId: "00000000-0000-0000-0000-000000000000",
-    name: "Birthday Offer",
-    type: "birthday",
-    status: "active",
-    template:
-      "🎂 Happy Birthday, {{name}}! Celebrate with 20% off your next service. Book your appointment: {{bookingLink}}",
-    subject: "🎂 A special birthday treat from us!",
-    channel: "both",
-    triggers: MOCK_TRIGGERS.birthday,
-    stats: {
-      sent: 156,
-      delivered: 148,
-      opened: 112,
-      clicked: 67,
-      booked: 38,
-      failed: 5,
-      optedOut: 3,
-      openRate: 0.757,
-      clickRate: 0.453,
-      bookRate: 0.244,
-      revenue: 38 * 120,
-      roi: 6.1,
-    },
-    createdAt: "2025-12-01T09:00:00Z",
-    updatedAt: "2026-04-20T11:00:00Z",
-  },
-  {
-    id: "camp-winback-003",
-    brandId: "00000000-0000-0000-0000-000000000000",
-    name: "Win-back Inactive Clients",
-    type: "winback",
-    status: "paused",
-    template:
-      "Hey {{name}}, we miss you! 🌟 It's been a while since your last visit. Come back and enjoy 15% off with code COMEBACK15. Book now: {{bookingLink}}",
-    subject: "We miss you, {{name}}! Here's 15% off your next visit",
-    channel: "both",
-    triggers: MOCK_TRIGGERS.winback,
-    stats: {
-      sent: 312,
-      delivered: 295,
-      opened: 98,
-      clicked: 42,
-      booked: 18,
-      failed: 14,
-      optedOut: 27,
-      openRate: 0.332,
-      clickRate: 0.135,
-      bookRate: 0.058,
-      revenue: 18 * 85,
-      roi: 1.8,
-    },
-    createdAt: "2026-01-10T08:00:00Z",
-    updatedAt: "2026-03-15T16:00:00Z",
-  },
-];
+function toCampaign(r: any, stats: CampaignStats): Campaign {
+  return {
+    id: r.id,
+    brandId: r.brand_id,
+    name: r.name,
+    type: r.type,
+    status: r.status,
+    template: r.template,
+    subject: r.subject ?? undefined,
+    channel: r.channel,
+    triggers: r.triggers ?? [],
+    stats,
+    createdAt: iso(r.created_at)!,
+    updatedAt: iso(r.updated_at)!,
+  };
+}
 
-const MOCK_MESSAGES: CampaignMessage[] = [
-  // Rebooking campaign messages
-  {
-    id: "msg-001",
-    campaignId: "camp-rebook-001",
-    brandId: "00000000-0000-0000-0000-000000000000",
-    recipientName: "Sarah Johnson",
-    recipientPhone: "+1-555-0101",
-    recipientEmail: "sarah.j@email.com",
-    channel: "sms",
-    status: "booked",
-    sentAt: "2026-05-11T15:00:00Z",
-    deliveredAt: "2026-05-11T15:01:00Z",
-    openedAt: null,
-    clickedAt: "2026-05-11T15:45:00Z",
-    bookedAt: "2026-05-11T16:20:00Z",
-    content: "Hi Sarah! 💇 It's been a few days since your Haircut & Blowout appointment. We'd love to see you again — book your next visit at https://book.agentsocial.app/s/abc123",
-    errorMessage: null,
-    createdAt: "2026-05-11T14:55:00Z",
-  },
-  {
-    id: "msg-002",
-    campaignId: "camp-rebook-001",
-    brandId: "00000000-0000-0000-0000-000000000000",
-    recipientName: "Emily Chen",
-    recipientPhone: "+1-555-0102",
-    recipientEmail: "emily.c@email.com",
-    channel: "sms",
-    status: "clicked",
-    sentAt: "2026-05-10T15:00:00Z",
-    deliveredAt: "2026-05-10T15:01:00Z",
-    openedAt: null,
-    clickedAt: "2026-05-10T16:30:00Z",
-    bookedAt: null,
-    content: "Hi Emily! 💇 It's been a few days since your Balayage Color appointment. We'd love to see you again — book your next visit at https://book.agentsocial.app/s/def456",
-    errorMessage: null,
-    createdAt: "2026-05-10T14:55:00Z",
-  },
-  {
-    id: "msg-003",
-    campaignId: "camp-rebook-001",
-    brandId: "00000000-0000-0000-0000-000000000000",
-    recipientName: "Maria Garcia",
-    recipientPhone: "+1-555-0103",
-    recipientEmail: "maria.g@email.com",
-    channel: "sms",
-    status: "sent",
-    sentAt: "2026-05-09T15:00:00Z",
-    deliveredAt: "2026-05-09T15:01:00Z",
-    openedAt: null,
-    clickedAt: null,
-    bookedAt: null,
-    content: "Hi Maria! 💇 It's been a few days since your Gel Manicure appointment. We'd love to see you again — book your next visit at https://book.agentsocial.app/s/ghi789",
-    errorMessage: null,
-    createdAt: "2026-05-09T14:55:00Z",
-  },
-  {
-    id: "msg-004",
-    campaignId: "camp-rebook-001",
-    brandId: "00000000-0000-0000-0000-000000000000",
-    recipientName: "Aisha Patel",
-    recipientPhone: "+1-555-0104",
-    recipientEmail: null,
-    channel: "sms",
-    status: "failed",
-    sentAt: null,
-    deliveredAt: null,
-    openedAt: null,
-    clickedAt: null,
-    bookedAt: null,
-    content: "Hi Aisha! 💇 It's been a few days since your Facial Treatment appointment. We'd love to see you again — book your next visit at https://book.agentsocial.app/s/jkl012",
-    errorMessage: "Phone number opted out",
-    createdAt: "2026-05-08T14:55:00Z",
-  },
-  // Birthday campaign messages
-  {
-    id: "msg-005",
-    campaignId: "camp-bday-002",
-    brandId: "00000000-0000-0000-0000-000000000000",
-    recipientName: "Rachel Kim",
-    recipientPhone: "+1-555-0201",
-    recipientEmail: "rachel.k@email.com",
-    channel: "email",
-    status: "booked",
-    sentAt: "2026-05-08T09:00:00Z",
-    deliveredAt: "2026-05-08T09:02:00Z",
-    openedAt: "2026-05-08T10:15:00Z",
-    clickedAt: "2026-05-08T10:20:00Z",
-    bookedAt: "2026-05-08T10:45:00Z",
-    content: "🎂 Happy Birthday, Rachel! Celebrate with 20% off your next service. Book your appointment: https://book.agentsocial.app/b/mno345",
-    errorMessage: null,
-    createdAt: "2026-05-08T08:55:00Z",
-  },
-  {
-    id: "msg-006",
-    campaignId: "camp-bday-002",
-    brandId: "00000000-0000-0000-0000-000000000000",
-    recipientName: "Nicole Brown",
-    recipientPhone: "+1-555-0202",
-    recipientEmail: "nicole.b@email.com",
-    channel: "email",
-    status: "opened",
-    sentAt: "2026-05-05T09:00:00Z",
-    deliveredAt: "2026-05-05T09:01:00Z",
-    openedAt: "2026-05-05T12:30:00Z",
-    clickedAt: null,
-    bookedAt: null,
-    content: "🎂 Happy Birthday, Nicole! Celebrate with 20% off your next service. Book your appointment: https://book.agentsocial.app/b/pqr678",
-    errorMessage: null,
-    createdAt: "2026-05-05T08:55:00Z",
-  },
-  // Winback campaign messages
-  {
-    id: "msg-007",
-    campaignId: "camp-winback-003",
-    brandId: "00000000-0000-0000-0000-000000000000",
-    recipientName: "Jessica Martinez",
-    recipientPhone: "+1-555-0301",
-    recipientEmail: "jess.m@email.com",
-    channel: "email",
-    status: "opted_out",
-    sentAt: "2026-03-01T11:00:00Z",
-    deliveredAt: "2026-03-01T11:01:00Z",
-    openedAt: "2026-03-01T14:00:00Z",
-    clickedAt: null,
-    bookedAt: null,
-    content: "Hey Jessica, we miss you! 🌟 It's been a while since your last visit. Come back and enjoy 15% off with code COMEBACK15. Book now: https://book.agentsocial.app/w/stu901",
-    errorMessage: null,
-    createdAt: "2026-03-01T10:55:00Z",
-  },
-];
+function toMessage(r: any): CampaignMessage {
+  return {
+    id: r.id,
+    campaignId: r.campaign_id,
+    brandId: r.brand_id,
+    recipientName: r.recipient_name ?? "",
+    recipientPhone: r.recipient_phone,
+    recipientEmail: r.recipient_email,
+    channel: r.channel,
+    status: r.status,
+    sentAt: iso(r.sent_at),
+    deliveredAt: iso(r.delivered_at),
+    openedAt: iso(r.opened_at),
+    clickedAt: iso(r.clicked_at),
+    bookedAt: iso(r.booked_at),
+    content: r.content,
+    errorMessage: r.error_message,
+    createdAt: iso(r.created_at)!,
+  };
+}
 
-// ─── In-memory store ──────────────────────────────────────────────────────────
-
-const campaignStore = new Map<string, Campaign>();
-
-// Initialize with mock data
-MOCK_CAMPAIGNS.forEach((c) => campaignStore.set(c.id, { ...c }));
+/** Stats for each campaign id, computed from campaign_messages. */
+async function statsFor(campaignIds: string[]): Promise<Map<string, CampaignStats>> {
+  const result = new Map<string, CampaignStats>();
+  if (campaignIds.length === 0) return result;
+  const { rows } = await pool.query(
+    `SELECT campaign_id,
+       count(*) FILTER (WHERE sent_at IS NOT NULL)::int      AS sent,
+       count(*) FILTER (WHERE delivered_at IS NOT NULL)::int AS delivered,
+       count(*) FILTER (WHERE opened_at IS NOT NULL)::int    AS opened,
+       count(*) FILTER (WHERE clicked_at IS NOT NULL)::int   AS clicked,
+       count(*) FILTER (WHERE booked_at IS NOT NULL)::int    AS booked,
+       count(*) FILTER (WHERE status = 'failed')::int        AS failed,
+       count(*) FILTER (WHERE status = 'opted_out')::int     AS opted_out,
+       coalesce(sum(revenue_cents), 0)::bigint               AS revenue_cents
+     FROM campaign_messages WHERE campaign_id::text = ANY($1) GROUP BY campaign_id`,
+    [campaignIds],
+  );
+  for (const id of campaignIds) {
+    const r = rows.find((x) => x.campaign_id === id);
+    const sent = r?.sent ?? 0;
+    const revenueCents = Number(r?.revenue_cents ?? 0);
+    const cost = sent * COST_PER_MESSAGE_CENTS;
+    const rate = (n: number) => (sent > 0 ? n / sent : 0);
+    result.set(id, {
+      sent,
+      delivered: r?.delivered ?? 0,
+      opened: r?.opened ?? 0,
+      clicked: r?.clicked ?? 0,
+      booked: r?.booked ?? 0,
+      failed: r?.failed ?? 0,
+      optedOut: r?.opted_out ?? 0,
+      openRate: rate(r?.opened ?? 0),
+      clickRate: rate(r?.clicked ?? 0),
+      bookRate: rate(r?.booked ?? 0),
+      revenue: revenueCents / 100,
+      roi: cost > 0 ? revenueCents / cost : 0,
+    });
+  }
+  return result;
+}
 
 // ─── Service Functions ───────────────────────────────────────────────────────
 
-/** List all campaigns for a brand. */
+/** List all non-archived campaigns for a brand. */
 export async function listCampaigns(brandId: string, status?: CampaignStatus, type?: CampaignType): Promise<Campaign[]> {
-  let campaigns = Array.from(campaignStore.values()).filter(
-    (c) => c.brandId === brandId && c.status !== "archived"
+  const { rows } = await pool.query(
+    `SELECT * FROM campaigns
+     WHERE brand_id::text = $1 AND status <> 'archived'
+       AND ($2::text IS NULL OR status = $2) AND ($3::text IS NULL OR type = $3)
+     ORDER BY updated_at DESC`,
+    [brandId, status ?? null, type ?? null],
   );
-
-  if (status) campaigns = campaigns.filter((c) => c.status === status);
-  if (type) campaigns = campaigns.filter((c) => c.type === type);
-
-  return campaigns.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
+  const stats = await statsFor(rows.map((r) => r.id));
+  return rows.map((r) => toCampaign(r, stats.get(r.id)!));
 }
 
 /** Get a single campaign by ID. */
 export async function getCampaign(campaignId: string): Promise<Campaign | null> {
-  return campaignStore.get(campaignId) ?? null;
+  const { rows } = await pool.query(`SELECT * FROM campaigns WHERE id::text = $1`, [campaignId]);
+  if (!rows[0]) return null;
+  const stats = await statsFor([rows[0].id]);
+  return toCampaign(rows[0], stats.get(rows[0].id)!);
 }
 
-/** Create a new campaign. */
+/** Create a new campaign (starts as a draft). */
 export async function createCampaign(input: CreateCampaignInput): Promise<Campaign> {
-  const id = `camp-${Date.now().toString(36)}`;
-
-  const campaign: Campaign = {
-    id,
-    brandId: input.brandId,
-    name: input.name,
-    type: input.type,
-    status: "draft",
-    template: input.template,
-    subject: input.subject,
-    channel: input.channel,
-    triggers: input.triggers,
-    stats: {
-      sent: 0,
-      delivered: 0,
-      opened: 0,
-      clicked: 0,
-      booked: 0,
-      failed: 0,
-      optedOut: 0,
-      openRate: 0,
-      clickRate: 0,
-      bookRate: 0,
-      revenue: 0,
-      roi: 0,
-    },
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  };
-
-  campaignStore.set(id, campaign);
-  return campaign;
+  const { rows } = await pool.query(
+    `INSERT INTO campaigns (brand_id, name, type, template, subject, channel, triggers)
+     VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
+    [input.brandId, input.name, input.type, input.template, input.subject ?? null, input.channel, JSON.stringify(input.triggers ?? [])],
+  );
+  const stats = await statsFor([rows[0].id]);
+  return toCampaign(rows[0], stats.get(rows[0].id)!);
 }
 
-/** Update a campaign. */
+/** Update a campaign's editable fields. */
 export async function updateCampaign(campaignId: string, updates: UpdateCampaignInput): Promise<Campaign | null> {
-  const existing = campaignStore.get(campaignId);
-  if (!existing) return null;
-
-  const updated: Campaign = {
-    ...existing,
-    ...updates,
-    id: existing.id,
-    brandId: existing.brandId,
-    stats: existing.stats,
-    createdAt: existing.createdAt,
-    updatedAt: new Date().toISOString(),
+  const columns: Record<string, unknown> = {
+    name: updates.name,
+    type: updates.type,
+    status: updates.status,
+    template: updates.template,
+    subject: updates.subject,
+    channel: updates.channel,
+    triggers: updates.triggers === undefined ? undefined : JSON.stringify(updates.triggers),
   };
+  const keys = Object.keys(columns).filter((k) => columns[k] !== undefined);
+  if (keys.length === 0) return getCampaign(campaignId);
 
-  campaignStore.set(campaignId, updated);
-  return updated;
+  const sets = keys.map((k, i) => `${k} = $${i + 2}`).join(", ");
+  const { rowCount } = await pool.query(
+    `UPDATE campaigns SET ${sets}, updated_at = now() WHERE id::text = $1`,
+    [campaignId, ...keys.map((k) => columns[k])],
+  );
+  return rowCount ? getCampaign(campaignId) : null;
 }
 
 /** Get aggregated stats for a campaign. */
 export async function getCampaignStats(campaignId: string): Promise<CampaignStats | null> {
-  const campaign = campaignStore.get(campaignId);
-  if (!campaign) return null;
-  return campaign.stats;
+  const campaign = await getCampaign(campaignId);
+  return campaign?.stats ?? null;
 }
 
-/** List messages sent for a campaign. */
+/** List messages sent for a campaign, newest first. */
 export async function getCampaignMessages(
   campaignId: string,
   status?: CampaignMessageStatus,
   limit: number = 50,
   offset: number = 0
 ): Promise<CampaignMessage[]> {
-  let messages = MOCK_MESSAGES.filter((m) => m.campaignId === campaignId);
-
-  if (status) messages = messages.filter((m) => m.status === status);
-
-  // Sort by most recent first
-  messages.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-
-  return messages.slice(offset, offset + limit);
+  const { rows } = await pool.query(
+    `SELECT * FROM campaign_messages
+     WHERE campaign_id::text = $1 AND ($2::text IS NULL OR status = $2)
+     ORDER BY created_at DESC LIMIT $3 OFFSET $4`,
+    [campaignId, status ?? null, limit, offset],
+  );
+  return rows.map(toMessage);
 }
