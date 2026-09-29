@@ -21,6 +21,7 @@ import {
   executeAction,
   PLATFORM_TO_TOOLKIT,
   SUPPORTED_TOOLKITS,
+  ToolkitNotConfiguredError,
 } from "../services/composio.js";
 import { syncBrandComposioChannels } from "../services/composio-channels.js";
 
@@ -269,6 +270,11 @@ export const composioRoutes = async (server: FastifyInstance) => {
       });
     } catch (err: any) {
       request.log.error({ err: err.message }, "Composio getConnectionLink failed");
+      if (err instanceof ToolkitNotConfiguredError) {
+        return reply.status(422).send({
+          error: { code: "toolkit_not_configured", message: err.message, toolkit: err.toolkit, request_id: request.id },
+        });
+      }
       return reply.status(502).send({
         error: {
           code: "composio_error",

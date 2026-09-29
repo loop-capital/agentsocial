@@ -33,7 +33,8 @@ export const PLATFORM_TO_TOOLKIT: Record<string, string> = {
   facebook: "facebook",
   instagram: "instagram",
   tiktok: "tiktok",
-  gbp: "google_business_profile",
+  youtube: "youtube",
+  // gbp is not a Composio toolkit; it publishes through Zernio
 };
 
 export const SUPPORTED_TOOLKITS = Object.values(PLATFORM_TO_TOOLKIT);
@@ -79,12 +80,20 @@ function toAccountInfo(conn: any, fallbackUser = ""): ConnectedAccountInfo {
   };
 }
 
+/** The Composio project has no auth config for this toolkit, so it can't be connected. */
+export class ToolkitNotConfiguredError extends Error {
+  constructor(public toolkit: string) {
+    super(`No Composio auth config for "${toolkit}" — add one in the Composio dashboard (Auth Configs) to enable it`);
+  }
+}
+
 async function resolveAuthConfigId(toolkit: string): Promise<string> {
   const composio = getComposio();
   const res: any = await composio.authConfigs.list({ toolkit } as any);
-  const items: any[] = res?.items ?? [];
+  // Composio ignores an unknown toolkit filter and returns every config, so match the slug
+  const items: any[] = (res?.items ?? []).filter((c: any) => c.toolkit?.slug === toolkit);
   const cfg = items.find((c) => c.status === "ENABLED") ?? items[0];
-  if (!cfg?.id) throw new Error(`No Composio auth config found for toolkit "${toolkit}"`);
+  if (!cfg?.id) throw new ToolkitNotConfiguredError(toolkit);
   return cfg.id;
 }
 
